@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LemonPunch - Groupe de Musique</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header Section -->
+    <header class="header" id="home">
+        <!-- Navigation intégrée dans le header -->
+        <nav class="header-nav">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <img src="LP-logo-noir.png" alt="LemonPunch Logo" class="logo">
+                </div>
+                <div class="nav-menu" id="nav-menu">
+                    <a href="#home" class="nav-link">HOME</a>
+                    <a href="#music" class="nav-link">MUSIC</a>
+                    <a href="#shop" class="nav-link">SHOP</a>
+                    <a href="#concerts" class="nav-link">VIDEOS</a>
+                    <a href="#contact" class="nav-link">CONTACT</a>
+                </div>
+                <div class="social-nav">
+                    <a href="#" class="social-nav-link"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-nav-link"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-nav-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-nav-link"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-nav-link"><i class="fab fa-spotify"></i></a>
+                </div>
+                <div class="nav-toggle" id="nav-toggle">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Background image et contenu -->
+        <div class="header-background">
+            <img src="image-site.jpg" alt="LemonPunch Band" class="header-bg-image">
+        </div>
+        
+        <div class="scroll-indicator">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </header>
+
+    <!-- Music Section -->
+    <section class="music-section" id="music">
+        <div class="container">
+            <h2 class="section-title">Music</h2>
+            
+            <!-- Latest Release Card -->
+            <div class="latest-release">
+                <div class="latest-release-art">
+                    <img src="misterpunch.png" alt="Latest Album Art" class="release-image">
+                    <div class="play-overlay">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="latest-release-info">
+                    <span class="release-badge">NOUVEL ALBUM</span>
+                    <h3 class="release-title">Latest Album</h3>
+                    <p class="release-description">Notre nouvel album est disponible partout ! Plongez dans un univers sonore unique, entre énergie rock et mélodies entêtantes.</p>
+                    
+                    <div class="tracklist">
+                        <h4>Tracklist</h4>
+                        <ul>
+                            <li><span>1.</span> Levé du Soleil Acide</li>
+                            <li><span>2.</span> Punch Urbain</li>
+                            <li><span>3.</span> Nuit Électrique</li>
+                            <li><span>4.</span> Mirage Sonore</li>
+                            <li><span>5.</span> Écho Urbain</li>
+                        </ul>
+                    </div>
+
+                    <div class="release-links">
+                        <a href="#" class="btn btn-primary-stream"><i class="fab fa-spotify"></i> Spotify</a>
+                        <a href="#" class="btn btn-secondary-stream"><i class="fab fa-apple"></i> Apple Music</a>
+                        <a href="#" class="btn btn-secondary-stream"><i class="fab fa-youtube"></i> YouTube Music</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Videos Subsection -->
+            <div class="videos-subsection">
+                <h3 class="subsection-title">Nos Clips</h3>
+                <div class="video-grid">
+                    <a href="#" class="video-card">
+                        <img src="image-site.jpg" alt="Music Video Thumbnail" class="video-thumbnail">
+                        <div class="video-overlay"><i class="fas fa-play"></i></div>
+                        <p class="video-title">Levé du Soleil Acide (Clip Officiel)</p>
+                    </a>
+                    <a href="#" class="video-card">
+                        <img src="site.jpg" alt="Music Video Thumbnail" class="video-thumbnail">
+                        <div class="video-overlay"><i class="fas fa-play"></i></div>
+                        <p class="video-title">Punch Urbain (Live Session)</p>
+                    </a>
+                    <a href="#" class="video-card">
+                        <img src="logo-fond-jaune.jpg" alt="Music Video Thumbnail" class="video-thumbnail">
+                        <div class="video-overlay"><i class="fas fa-play"></i></div>
+                        <p class="video-title">Nuit Électrique (Visualizer)</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Shop Section -->
+    <section class="shop-section" id="shop">
+        <div class="container">
+            <h2 class="section-title">Shop</h2>
+            <div class="shop-grid">
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="logo-fond-jaune.jpg" alt="T-shirt LemonPunch" class="product-img">
+                        <div class="product-overlay">
+                            <button class="btn-add-cart">Ajouter au panier</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">T-shirt LemonPunch Classic</h3>
+                        <p class="product-price">25€</p>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="logo-fond-jaune.jpg" alt="Hoodie LemonPunch" class="product-img">
+                        <div class="product-overlay">
+                            <button class="btn-add-cart">Ajouter au panier</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Hoodie LemonPunch</h3>
+                        <p class="product-price">45€</p>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="logo-fond-jaune.jpg" alt="Casquette LemonPunch" class="product-img">
+                        <div class="product-overlay">
+                            <button class="btn-add-cart">Ajouter au panier</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Casquette LemonPunch</h3>
+                        <p class="product-price">20€</p>
+                    </div>
+                </div>
+                
+                <div class="product-card">
+                    <div class="product-image">
+                        <img src="logo-fond-jaune.jpg" alt="Vinyle LemonPunch" class="product-img">
+                        <div class="product-overlay">
+                            <button class="btn-add-cart">Ajouter au panier</button>
+                        </div>
+                    </div>
+                    <div class="product-info">
+                        <h3 class="product-name">Vinyle - Latest Album</h3>
+                        <p class="product-price">35€</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bouton accéder au merch -->
+            <div class="shop-more">
+                <a href="#" class="btn btn-shop-more">Accéder au merch</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Concerts Section -->
+    <section class="concerts-section" id="concerts">
+        <div class="container">
+            <h2 class="section-title">Nos Concerts</h2>
+            <div class="concerts-list">
+                <div class="concert-card">
+                    <div class="concert-date">
+                        <span class="day">15</span>
+                        <span class="month">DÉC</span>
+                    </div>
+                    <div class="concert-info">
+                        <h3 class="concert-venue">Le Bataclan</h3>
+                        <p class="concert-city">Paris, France</p>
+                        <p class="concert-time">20h00</p>
+                    </div>
+                    <div class="concert-action">
+                        <a href="#" class="btn btn-ticket">Billets</a>
+                    </div>
+                </div>
+                
+                <div class="concert-card">
+                    <div class="concert-date">
+                        <span class="day">22</span>
+                        <span class="month">DÉC</span>
+                    </div>
+                    <div class="concert-info">
+                        <h3 class="concert-venue">Le Transbordeur</h3>
+                        <p class="concert-city">Lyon, France</p>
+                        <p class="concert-time">21h00</p>
+                    </div>
+                    <div class="concert-action">
+                        <a href="#" class="btn btn-ticket">Billets</a>
+                    </div>
+                </div>
+                
+                <div class="concert-card">
+                    <div class="concert-date">
+                        <span class="day">05</span>
+                        <span class="month">JAN</span>
+                    </div>
+                    <div class="concert-info">
+                        <h3 class="concert-venue">Le Bikini</h3>
+                        <p class="concert-city">Toulouse, France</p>
+                        <p class="concert-time">20h30</p>
+                    </div>
+                    <div class="concert-action">
+                        <a href="#" class="btn btn-ticket">Billets</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bouton voir plus de concerts -->
+            <div class="concerts-more">
+                <a href="#" class="btn btn-concerts-more">Voir plus de concerts</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">À propos de Lemon Punch</h2>
+                    <p>LemonPunch est un groupe français d'électro-pop qui mélange des sonorités modernes avec une énergie live explosive. Formé de trois musiciens passionnés, le groupe propose un univers musical unique, coloré et énergique.</p>
+                    <p>Avec des influences allant de la pop française aux beats électroniques contemporains, LemonPunch crée une atmosphère festive et engageante qui fait danser les foules dans toute la France.</p>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <img src="lemon punch-11.jpg" alt="LemonPunch Band Photo" class="about-photo">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section" id="contact">
+        <div class="container">
+            <h2 class="section-title">Contact</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>N'hésitez pas à nous contacter pour des questions ou collaborations.</h3>
+                    <div class="contact-details">
+                        <p><i class="fas fa-envelope"></i> contact@lemonpunch.fr</p>
+                        <p><i class="fas fa-phone"></i> +33 1 23 45 67 89</p>
+                    </div>
+                    <div class="social-links">
+                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-spotify"></i></a>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" placeholder="Votre nom" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Votre email" required>
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Votre message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Envoyer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="LP-logo-blanc.png" alt="LemonPunch Logo" class="footer-logo-img">
+                </div>
+                <div class="footer-links">
+                    <a href="#music">Music</a>
+                    <a href="#shop">Shop</a>
+                    <a href="#concerts">Concerts</a>
+                    <a href="#contact">Contact</a>
+                </div>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-spotify"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LemonPunch. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
