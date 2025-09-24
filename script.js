@@ -273,3 +273,104 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Gestion de la modal newsletter
+const newsletterModal = document.getElementById('newsletterModal');
+const newsletterTrigger = document.getElementById('newsletterTrigger');
+const closeNewsletterModal = document.getElementById('closeNewsletterModal');
+const newsletterForm = document.getElementById('newsletterForm');
+
+// Ouvrir la modal
+if (newsletterTrigger) {
+    newsletterTrigger.addEventListener('click', () => {
+        newsletterModal.style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Empêcher le scroll
+    });
+}
+
+// Fermer la modal avec le bouton X
+if (closeNewsletterModal) {
+    closeNewsletterModal.addEventListener('click', () => {
+        newsletterModal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Réactiver le scroll
+    });
+}
+
+// Fermer la modal en cliquant sur le fond
+if (newsletterModal) {
+    newsletterModal.addEventListener('click', (e) => {
+        if (e.target === newsletterModal) {
+            newsletterModal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+    });
+}
+
+// Fermer la modal avec la touche Escape
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && newsletterModal.style.display === 'block') {
+        newsletterModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+});
+
+// Gestion du formulaire newsletter
+if (newsletterForm) {
+    newsletterForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const nameInput = document.getElementById('newsletterName');
+        const emailInput = document.getElementById('newsletterEmail');
+        const submitBtn = newsletterForm.querySelector('.btn-newsletter');
+        
+        // Validation simple
+        if (!nameInput.value.trim() || !emailInput.value.trim()) {
+            alert('Veuillez remplir tous les champs');
+            return;
+        }
+        
+        // Validation email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value)) {
+            alert('Veuillez entrer une adresse email valide');
+            return;
+        }
+        
+        const originalText = submitBtn.textContent;
+        
+        // Animation d'envoi
+        submitBtn.textContent = 'Inscription en cours...';
+        submitBtn.disabled = true;
+        submitBtn.style.background = 'var(--gray)';
+        
+        // Simulation d'envoi
+        setTimeout(() => {
+            submitBtn.textContent = 'Inscription réussie !';
+            submitBtn.style.background = '#27AE60';
+            
+            setTimeout(() => {
+                // Réinitialiser le formulaire
+                newsletterForm.reset();
+                submitBtn.textContent = originalText;
+                submitBtn.style.background = '';
+                submitBtn.disabled = false;
+                
+                // Fermer la modal
+                newsletterModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                
+                // Message de confirmation
+                alert('Merci pour votre inscription ! Vous recevrez bientôt nos dernières actualités.');
+            }, 2000);
+        }, 1500);
+    });
+}
+
+// Animation du bouton trigger au chargement de la page
+window.addEventListener('load', () => {
+    if (newsletterTrigger) {
+        setTimeout(() => {
+            newsletterTrigger.style.animation = 'pulseGlow 2s infinite, bounce 1s ease-out';
+        }, 3000); // Attendre 3 secondes après le chargement
+    }
+});
