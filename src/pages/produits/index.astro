@@ -11,7 +11,8 @@ const response = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${S
 const allProducts = await response.json();
 
 // Récupérer les catégories pour les filtres
-const categoriesResponse = await fetch(`https://lemonpunch.spaarple.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+const categoriesResponse = await
+    fetch(`https://lemonpunch.spaarple.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
 const categories = await categoriesResponse.json();
 ---
 
