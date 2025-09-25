@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import Footer from '../components/Footer.astro';
-import Navigation from "../components/Navigation.astro";
+import Header from "../components/Header.astro";
 import NewsLetter from "../components/ui/NewsLetter.astro";
 import Favicon from '../assets/images/lmp-logo-yellow.png';
 ---
@@ -18,7 +18,7 @@ import Favicon from '../assets/images/lmp-logo-yellow.png';
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	</head>
 	<body>
-		<Navigation />
+		<Header />
 		<slot />
 		<NewsLetter />
 		<Footer />
@@ -403,4 +403,3 @@ import Favicon from '../assets/images/lmp-logo-yellow.png';
 		}
 	});
 </script>
-

@@ -1,14 +1,474 @@
 ---
-import Shop from "../../components/sections/Shop.astro";
-import Contact from "../../components/sections/Contact.astro";
 import Layout from "../../layouts/Layout.astro";
+import CardProduct from "../../components/ui/CardProduct.astro";
 
+const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
+const KEY = import.meta.env.WOOCOMMERCE_KEY;
+const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
+
+// Récupérer tous les produits
+const response = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+const allProducts = await response.json();
+
+// Récupérer les catégories pour les filtres
+const categoriesResponse = await fetch(`https://lemonpunch.spaarple.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+const categories = await categoriesResponse.json();
 ---
+
 <Layout title="E-boutique LemonPunch">
-    <Shop />
-    <Contact/>
-    <div class="newsletter-trigger" id="newsletterTrigger">
-        <i class="fas fa-envelope"></i>
-        <span>Newsletter</span>
-    </div>
+    <!-- Hero Section -->
+    <section class="products-hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Notre Merch</h1>
+                <p class="hero-subtitle">Découvrez notre collection officielle LemonPunch</p>
+                <div class="hero-decoration">
+                    <div class="sunburst-bg"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-main">
+        <div class="container">
+            <!-- Filters -->
+            <div class="products-filters">
+                <div class="filter-tabs">
+                    <button class="filter-btn active" data-category="all">Tous les produits</button>
+                    {categories.filter(cat => cat.count > 0).map(category => (
+                        <button class="filter-btn" data-category={category.id}>
+                            {category.name}
+                        </button>
+                    ))}
+                </div>
+
+                <div class="filter-controls">
+                    <div class="sort-control">
+                        <select id="sort-products" class="sort-select">
+                            <option value="menu_order">Par défaut</option>
+                            <option value="price">Prix croissant</option>
+                            <option value="price-desc">Prix décroissant</option>
+                            <option value="title">Nom A-Z</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Count -->
+            <div class="products-count">
+                <span id="products-counter">{allProducts.length} produits trouvés</span>
+            </div>
+
+            <!-- Products Grid -->
+            <div class="products-grid" id="products-container">
+                {allProducts.map(product => (
+                    <div class="product-item"
+                         data-category={product.categories.map(cat => cat.id).join(',')}
+                         data-price={product.price}
+                         data-name={product.name.toLowerCase()}>
+                        <CardProduct
+                            id={product.id}
+                            slug={product.slug}
+                            name={product.name}
+                            price={product.price}
+                            imageSrc={product.images[0]?.src}
+                            imageAlt={product.images[0]?.alt || `Image pour ${product.name}`}
+                        />
+                    </div>
+                ))}
+            </div>
+
+            <!-- Load More Button -->
+            <div class="load-more-section">
+                <button class="btn-load-more" id="loadMoreBtn" style="display: none;">
+                    Voir plus de produits
+                </button>
+            </div>
+        </div>
+    </section>
 </Layout>
+
+<style>
+/* Products Hero Section */
+.products-hero {
+    background: var(--black);
+    background-image: url('../../assets/images/black-bg-with-noise.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-blend-mode: multiply;
+    padding: 150px 0 100px;
+    margin-top: 80px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 900;
+    color: var(--white);
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: var(--gray);
+    margin-bottom: 2rem;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero-decoration {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+.sunburst-bg {
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, var(--primary-yellow) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* Products Main Section */
+.products-main {
+    background: var(--white);
+    background-image: url('../../assets/images/white-bg-with-noise.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-blend-mode: multiply;
+    padding: 80px 0;
+}
+
+/* Filters */
+.products-filters {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px var(--shadow);
+}
+
+.filter-tabs {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: transparent;
+    border: 2px solid var(--gray);
+    color: var(--black);
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: var(--primary-yellow);
+    border-color: var(--primary-yellow);
+    color: var(--black);
+    transform: translateY(-2px);
+}
+
+.filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.sort-select {
+    background: var(--white);
+    border: 2px solid var(--gray);
+    padding: 10px 15px;
+    border-radius: 5px;
+    font-weight: 600;
+    color: var(--black);
+    cursor: pointer;
+}
+
+
+/* Products Count */
+.products-count {
+    margin-bottom: 2rem;
+    font-weight: 600;
+    color: var(--gray);
+    font-size: 1.1rem;
+}
+
+/* Products Grid */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 4rem;
+    max-width: 1200px;
+}
+
+.products-grid .product-item {
+    max-width: 300px;
+    width: 100%;
+}
+
+
+.product-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.product-item.hidden {
+    display: none;
+}
+
+/* Load More Button */
+.load-more-section {
+    text-align: center;
+}
+
+.btn-load-more {
+    background: var(--primary-yellow);
+    color: var(--black);
+    border: none;
+    padding: 15px 40px;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-load-more:hover {
+    background: var(--black);
+    color: var(--primary-yellow);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(244, 208, 63, 0.4);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .products-filters {
+        flex-direction: column;
+        gap: 2rem;
+        align-items: stretch;
+    }
+
+    .filter-tabs {
+        justify-content: center;
+    }
+
+    .filter-controls {
+        justify-content: space-between;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        max-width: 520px;
+    }
+
+    .products-grid .product-item {
+        max-width: 250px;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+
+    .filter-tabs {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .products-grid {
+        grid-template-columns: 1fr;
+        max-width: 280px;
+    }
+
+    .products-grid .product-item {
+        max-width: 280px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const sortSelect = document.getElementById('sort-products');
+    const productsContainer = document.getElementById('products-container');
+    const productsCounter = document.getElementById('products-counter');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+
+    let currentFilter = 'all';
+    let currentSort = 'menu_order';
+    let displayedProducts = 12;
+    let allProductItems = Array.from(document.querySelectorAll('.product-item'));
+    let currentFilteredProducts = [];
+
+    // Filtrage par catégorie
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.dataset.category;
+            displayedProducts = 12; // Reset pagination when filtering
+            filterAndSort();
+        });
+    });
+
+    // Tri des produits
+    sortSelect.addEventListener('change', function() {
+        currentSort = this.value;
+        filterAndSort();
+    });
+
+    // Load more functionality
+    loadMoreBtn.addEventListener('click', function() {
+        displayedProducts += 12;
+        filterAndSort();
+    });
+
+    function filterAndSort() {
+        // Sauvegarder une copie des produits originaux pour le tri
+        let filteredProducts = [...allProductItems];
+
+        // Filtrage par catégorie
+        if (currentFilter !== 'all') {
+            filteredProducts = filteredProducts.filter(item => {
+                const itemCategories = item.dataset.category;
+                if (!itemCategories) return false;
+
+                // Vérifier si la catégorie sélectionnée est présente dans les catégories du produit
+                const categories = itemCategories.split(',').map(cat => cat.trim());
+                return categories.includes(currentFilter);
+            });
+        }
+
+        // Tri des produits
+        filteredProducts.sort((a, b) => {
+            switch (currentSort) {
+                case 'price':
+                    const priceA = parseFloat(a.dataset.price) || 0;
+                    const priceB = parseFloat(b.dataset.price) || 0;
+                    return priceA - priceB;
+                case 'price-desc':
+                    const priceDescA = parseFloat(a.dataset.price) || 0;
+                    const priceDescB = parseFloat(b.dataset.price) || 0;
+                    return priceDescB - priceDescA;
+                case 'title':
+                    const nameA = (a.dataset.name || '').toLowerCase();
+                    const nameB = (b.dataset.name || '').toLowerCase();
+                    return nameA.localeCompare(nameB);
+                default:
+                    return 0;
+            }
+        });
+
+        // Sauvegarder les produits filtrés pour le Load More
+        currentFilteredProducts = filteredProducts;
+
+        // Vider le conteneur
+        productsContainer.innerHTML = '';
+
+        // Ajouter les produits triés dans l'ordre correct
+        const productsToShow = currentFilteredProducts.slice(0, displayedProducts);
+        productsToShow.forEach((item, index) => {
+            // Cloner l'élément pour éviter les problèmes de référence
+            const clonedItem = item.cloneNode(true);
+
+            // Réinitialiser les styles d'animation
+            clonedItem.style.opacity = '0';
+            clonedItem.style.transform = 'translateY(20px)';
+            clonedItem.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+
+            // Ajouter au conteneur
+            productsContainer.appendChild(clonedItem);
+
+            // Déclencher l'animation après un court délai
+            setTimeout(() => {
+                clonedItem.style.opacity = '1';
+                clonedItem.style.transform = 'translateY(0)';
+            }, index * 50 + 100);
+        });
+
+        // Mettre à jour le compteur
+        productsCounter.textContent = `${currentFilteredProducts.length} produit${currentFilteredProducts.length > 1 ? 's' : ''} trouvé${currentFilteredProducts.length > 1 ? 's' : ''}`;
+
+        // Gérer le bouton "Load More"
+        if (currentFilteredProducts.length > displayedProducts) {
+            loadMoreBtn.style.display = 'block';
+            const remaining = currentFilteredProducts.length - displayedProducts;
+            loadMoreBtn.textContent = `Voir plus de produits (${remaining} restant${remaining > 1 ? 's' : ''})`;
+        } else {
+            loadMoreBtn.style.display = 'none';
+        }
+    }
+
+    // Initialisation
+    setTimeout(() => {
+        filterAndSort();
+    }, 100);
+
+    // Debug : Afficher les données des produits dans la console pour vérifier
+    console.log('Produits chargés:', allProductItems.length);
+    allProductItems.forEach((item, index) => {
+        console.log(`Produit ${index + 1}:`, {
+            name: item.dataset.name,
+            price: item.dataset.price,
+            category: item.dataset.category
+        });
+    });
+});
+</script>
