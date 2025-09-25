@@ -17,8 +17,8 @@ const { id, slug, imageSrc, imageAlt, name, price } = Astro.props;
     <div class="product-image">
         <img src={imageSrc} alt={imageAlt} class="product-img">
         <div class="product-overlay">
-            <a href={`https://lemonpunch.spaarple.fr/panier/?add-to-cart=${id}`} class="btn-add-cart">
-                Ajouter au panier
+            <a href={`https://lemonpunch.spaarple.fr/panier/?add-to-cart=${id}`} >
+                Voir le produit
             </a>
         </div>
     </div>
