@@ -1,0 +1,31 @@
+---
+// src/components/ui/CardProduct.astro
+
+// On définit les informations que ce composant a besoin de recevoir
+interface Props {
+    id: number;
+    slug: string;
+    imageSrc: string;
+    imageAlt: string;
+    name: string;
+    price: number;
+}
+const { id, slug, imageSrc, imageAlt, name, price } = Astro.props;
+---
+
+<div class="product-card">
+    <div class="product-image">
+        <img src={imageSrc} alt={imageAlt} class="product-img">
+        <div class="product-overlay">
+            <a href={`https://lemonpunch.spaarple.fr/panier/?add-to-cart=${id}`} class="btn-add-cart">
+                Ajouter au panier
+            </a>
+        </div>
+    </div>
+    <div class="product-info">
+        <a href={`/produits/${slug}/`}>
+            <h3 class="product-name">{name}</h3>
+            <p class="product-price">{price}€</p>
+        </a>
+    </div>
+</div>

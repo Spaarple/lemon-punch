@@ -1,0 +1,407 @@
+---
+import '../styles/global.css';
+import '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Header from "../components/Header.astro";
+import NewsLetter from "../components/ui/NewsLetter.astro";
+import Favicon from '../assets/images/lmp-logo-yellow.png';
+---
+
+<!doctype html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href={Favicon.src} />
+		<meta name="generator" content={Astro.generator} />
+		<title>Lemon Punch</title>
+		<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+	</head>
+	<body>
+		<Header />
+		<slot />
+		<NewsLetter />
+		<Footer />
+	</body>
+</html>
+
+<script>
+	// Navigation mobile toggle
+	const navToggle = document.getElementById('nav-toggle');
+	const navMenu = document.getElementById('nav-menu');
+
+	navToggle.addEventListener('click', () => {
+		navMenu.classList.toggle('active');
+
+		// Animation du hamburger menu
+		const bars = navToggle.querySelectorAll('.bar');
+		bars.forEach((bar, index) => {
+			if (navMenu.classList.contains('active')) {
+				if (index === 0) bar.style.transform = 'rotate(45deg) translate(5px, 5px)';
+				if (index === 1) bar.style.opacity = '0';
+				if (index === 2) bar.style.transform = 'rotate(-45deg) translate(7px, -6px)';
+			} else {
+				bar.style.transform = 'none';
+				bar.style.opacity = '1';
+			}
+		});
+	});
+
+	// Fermer le menu mobile lors du clic sur un lien
+	document.querySelectorAll('.nav-link').forEach(link => {
+		link.addEventListener('click', () => {
+			navMenu.classList.remove('active');
+			const bars = navToggle.querySelectorAll('.bar');
+			bars.forEach(bar => {
+				bar.style.transform = 'none';
+				bar.style.opacity = '1';
+			});
+		});
+	});
+
+	// Smooth scrolling pour les liens d'ancrage
+	document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+		anchor.addEventListener('click', function (e) {
+			e.preventDefault();
+			const target = document.querySelector(this.getAttribute('href'));
+			if (target) {
+				const offsetTop = target.offsetTop - 70; // Offset pour la navbar fixe
+				window.scrollTo({
+					top: offsetTop,
+					behavior: 'smooth'
+				});
+			}
+		});
+	});
+
+	// Header navigation scroll effect
+	window.addEventListener('scroll', () => {
+		const headerNav = document.querySelector('.header-nav');
+		if (window.scrollY > 50) {
+			headerNav.style.background = 'rgba(238, 238, 238, 0.55)';
+			headerNav.style.backdropFilter = 'blur(15px)';
+			headerNav.style.boxShadow = '0 2px 20px rgba(0, 0, 0, 0.1)';
+
+			// Garder les couleurs noires pour le fond gris clair
+			document.querySelectorAll('.nav-link').forEach(link => {
+				link.style.color = 'var(--black)';
+			});
+			document.querySelectorAll('.social-nav-link').forEach(link => {
+				link.style.background = 'var(--black)';
+				link.style.color = 'var(--white)';
+			});
+		} else {
+			headerNav.style.background = 'transparent';
+			headerNav.style.backdropFilter = 'none';
+			headerNav.style.boxShadow = 'none';
+
+			// Restaurer les couleurs originales
+			document.querySelectorAll('.nav-link').forEach(link => {
+				link.style.color = '';
+			});
+			document.querySelectorAll('.social-nav-link').forEach(link => {
+				link.style.background = '';
+				link.style.color = '';
+			});
+		}
+	});
+
+	// Animation des éléments au scroll
+	const observerOptions = {
+		threshold: 0.1,
+		rootMargin: '0px 0px -50px 0px'
+	};
+
+	const observer = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting) {
+				entry.target.style.opacity = '1';
+				entry.target.style.transform = 'translateY(0)';
+			}
+		});
+	}, observerOptions);
+
+	// Observer les éléments à animer
+	document.querySelectorAll('.product-card, .concert-card, .album-card').forEach(el => {
+		el.style.opacity = '0';
+		el.style.transform = 'translateY(30px)';
+		el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+		observer.observe(el);
+	});
+
+	// Animation du logo principal
+	const heroLogo = document.querySelector('.hero-logo');
+	if (heroLogo) {
+		heroLogo.addEventListener('mouseenter', () => {
+			heroLogo.style.transform = 'scale(1.05) rotate(2deg)';
+			heroLogo.style.transition = 'transform 0.3s ease';
+		});
+
+		heroLogo.addEventListener('mouseleave', () => {
+			heroLogo.style.transform = 'scale(1) rotate(0deg)';
+		});
+	}
+
+	// Animation des boutons de produits
+	document.querySelectorAll('.btn-add-cart').forEach(btn => {
+		btn.addEventListener('click', (e) => {
+			e.preventDefault();
+
+			// Animation de confirmation
+			const originalText = btn.textContent;
+			btn.textContent = 'Ajouté !';
+			btn.style.background = '#27AE60';
+
+			setTimeout(() => {
+				btn.textContent = originalText;
+				btn.style.background = '';
+			}, 1500);
+		});
+	});
+
+	// Animation des liens de plateformes musicales
+	document.querySelectorAll('.platform-link').forEach(link => {
+		link.addEventListener('mouseenter', () => {
+			const icon = link.querySelector('i');
+			icon.style.transform = 'scale(1.2) rotate(5deg)';
+			icon.style.transition = 'transform 0.3s ease';
+		});
+
+		link.addEventListener('mouseleave', () => {
+			const icon = link.querySelector('i');
+			icon.style.transform = 'scale(1) rotate(0deg)';
+		});
+	});
+
+	// Gestion du formulaire de contact
+	const contactForm = document.querySelector('.contact-form form');
+	if (contactForm) {
+		contactForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const submitBtn = contactForm.querySelector('.btn-primary');
+			const originalText = submitBtn.textContent;
+
+			// Animation d'envoi
+			submitBtn.textContent = 'Envoi en cours...';
+			submitBtn.disabled = true;
+
+			// Simulation d'envoi
+			setTimeout(() => {
+				submitBtn.textContent = 'Message envoyé !';
+				submitBtn.style.background = '#27AE60';
+
+				setTimeout(() => {
+					submitBtn.textContent = originalText;
+					submitBtn.style.background = '';
+					submitBtn.disabled = false;
+					contactForm.reset();
+				}, 2000);
+			}, 1000);
+		});
+	}
+
+	// Effet parallaxe pour le header
+	window.addEventListener('scroll', () => {
+		const scrolled = window.pageYOffset;
+		const parallaxElements = document.querySelectorAll('.sunburst-bg');
+
+		parallaxElements.forEach(element => {
+			const speed = 0.5;
+			element.style.transform = `translate(-50%, -50%) rotate(${scrolled * speed * 0.1}deg)`;
+		});
+	});
+
+	// Animation de typing pour le sous-titre
+	const subtitle = document.querySelector('.hero-subtitle');
+	if (subtitle) {
+		const text = subtitle.textContent;
+		subtitle.textContent = '';
+
+		let i = 0;
+		const typeWriter = () => {
+			if (i < text.length) {
+				subtitle.textContent += text.charAt(i);
+				i++;
+				setTimeout(typeWriter, 100);
+			}
+		};
+
+		// Démarrer l'animation après un délai
+		setTimeout(typeWriter, 1000);
+	}
+
+	// Gestion des liens sociaux avec animation
+	document.querySelectorAll('.social-link').forEach(link => {
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+
+			// Animation de clic
+			link.style.transform = 'scale(0.95)';
+			setTimeout(() => {
+				link.style.transform = '';
+			}, 150);
+
+			// Ici vous pourriez ajouter la redirection réelle
+			console.log('Redirection vers:', link.href);
+		});
+	});
+
+	// Animation des cartes de concert au hover
+	document.querySelectorAll('.concert-card').forEach(card => {
+		card.addEventListener('mouseenter', () => {
+			const date = card.querySelector('.concert-date');
+			date.style.transform = 'scale(1.1) rotate(-5deg)';
+			date.style.transition = 'transform 0.3s ease';
+		});
+
+		card.addEventListener('mouseleave', () => {
+			const date = card.querySelector('.concert-date');
+			date.style.transform = 'scale(1) rotate(0deg)';
+		});
+	});
+
+	// Preloader simple
+	window.addEventListener('load', () => {
+		document.body.classList.add('loaded');
+	});
+
+	// Gestion du thème (pour une future fonctionnalité)
+	const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+	if (prefersDarkScheme.matches) {
+		document.body.classList.add('dark-theme');
+	}
+
+	// Easter egg - Animation spéciale au clic sur le logo
+	let clickCount = 0;
+	const logo = document.querySelector('.nav-logo .logo');
+	if (logo) {
+		logo.addEventListener('click', () => {
+			clickCount++;
+			if (clickCount === 5) {
+				// Animation spéciale après 5 clics
+				document.body.style.animation = 'rainbow 2s ease-in-out';
+				setTimeout(() => {
+					document.body.style.animation = '';
+					clickCount = 0;
+				}, 2000);
+			}
+		});
+	}
+
+	// Animation rainbow pour l'easter egg
+	const style = document.createElement('style');
+	style.textContent = `
+    @keyframes rainbow {
+        0% { filter: hue-rotate(0deg); }
+        25% { filter: hue-rotate(90deg); }
+        50% { filter: hue-rotate(180deg); }
+        75% { filter: hue-rotate(270deg); }
+        100% { filter: hue-rotate(360deg); }
+    }
+`;
+	document.head.appendChild(style);
+
+	// Gestion de la modal newsletter
+	const newsletterModal = document.getElementById('newsletterModal');
+	const newsletterTrigger = document.getElementById('newsletterTrigger');
+	const closeNewsletterModal = document.getElementById('closeNewsletterModal');
+	const newsletterForm = document.getElementById('newsletterForm');
+
+	// Ouvrir la modal
+	if (newsletterTrigger) {
+		newsletterTrigger.addEventListener('click', () => {
+			newsletterModal.style.display = 'block';
+			document.body.style.overflow = 'hidden'; // Empêcher le scroll
+		});
+	}
+
+	// Fermer la modal avec le bouton X
+	if (closeNewsletterModal) {
+		closeNewsletterModal.addEventListener('click', () => {
+			newsletterModal.style.display = 'none';
+			document.body.style.overflow = 'auto'; // Réactiver le scroll
+		});
+	}
+
+	// Fermer la modal en cliquant sur le fond
+	if (newsletterModal) {
+		newsletterModal.addEventListener('click', (e) => {
+			if (e.target === newsletterModal) {
+				newsletterModal.style.display = 'none';
+				document.body.style.overflow = 'auto';
+			}
+		});
+	}
+
+	// Fermer la modal avec la touche Escape
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape' && newsletterModal.style.display === 'block') {
+			newsletterModal.style.display = 'none';
+			document.body.style.overflow = 'auto';
+		}
+	});
+
+	// Gestion du formulaire newsletter
+	if (newsletterForm) {
+		newsletterForm.addEventListener('submit', (e) => {
+			e.preventDefault();
+
+			const nameInput = document.getElementById('newsletterName');
+			const emailInput = document.getElementById('newsletterEmail');
+			const submitBtn = newsletterForm.querySelector('.btn-newsletter');
+
+			// Validation simple
+			if (!nameInput.value.trim() || !emailInput.value.trim()) {
+				alert('Veuillez remplir tous les champs');
+				return;
+			}
+
+			// Validation email
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+			if (!emailRegex.test(emailInput.value)) {
+				alert('Veuillez entrer une adresse email valide');
+				return;
+			}
+
+			const originalText = submitBtn.textContent;
+
+			// Animation d'envoi
+			submitBtn.textContent = 'Inscription en cours...';
+			submitBtn.disabled = true;
+			submitBtn.style.background = 'var(--gray)';
+
+			// Simulation d'envoi
+			setTimeout(() => {
+				submitBtn.textContent = 'Inscription réussie !';
+				submitBtn.style.background = '#27AE60';
+
+				setTimeout(() => {
+					// Réinitialiser le formulaire
+					newsletterForm.reset();
+					submitBtn.textContent = originalText;
+					submitBtn.style.background = '';
+					submitBtn.disabled = false;
+
+					// Fermer la modal
+					newsletterModal.style.display = 'none';
+					document.body.style.overflow = 'auto';
+
+					// Message de confirmation
+					alert('Merci pour votre inscription ! Vous recevrez bientôt nos dernières actualités.');
+				}, 2000);
+			}, 1500);
+		});
+	}
+
+	// Animation du bouton trigger au chargement de la page
+	window.addEventListener('load', () => {
+		if (newsletterTrigger) {
+			setTimeout(() => {
+				newsletterTrigger.style.animation = 'pulseGlow 2s infinite, bounce 1s ease-out';
+			}, 3000); // Attendre 3 secondes après le chargement
+		}
+	});
+</script>
+

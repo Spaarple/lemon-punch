@@ -1,0 +1,83 @@
+---
+import Layout from "../../layouts/Layout.astro";
+
+// 1. getStaticPaths va lister toutes les pages à créer
+export async function getStaticPaths() {
+    const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
+    const KEY = import.meta.env.WOOCOMMERCE_KEY;
+    const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
+
+    const res = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+    const products = await res.json();
+
+    // On retourne un objet pour chaque produit
+    return products.map((product) => ({
+        params: { slug: product.slug }, // -> deviendra l'URL /produits/nom-du-produit
+        props: { product },             // -> enverra toutes les données du produit à la page
+    }));
+}
+
+// 2. On récupère les données du produit pour cette page spécifique
+const { product } = Astro.props;
+---
+
+<Layout title={product.name}>
+    <article class="product-detail">
+        <div class="product-image">
+            <img src={product.images[0]?.src} alt={product.name} />
+        </div>
+        <div class="product-info">
+            <h1>{product.name}</h1>
+
+            <div class="description" set:html={product.description} />
+
+            <p class="price">Prix : {product.price} €</p>
+
+            <a
+                    href={`https://lemonpunch.spaarple.fr/panier/?add-to-cart=${product.id}`}
+                    class="add-to-cart"
+            >
+                Ajouter au panier
+            </a>
+        </div>
+    </article>
+</Layout>
+
+<style>
+    .product-detail {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        max-width: 1000px;
+        margin: 2rem auto;
+    }
+    @media (min-width: 768px) {
+        .product-detail {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    .product-image img {
+        width: 100%;
+        border-radius: 8px;
+    }
+    .product-info h1 {
+        margin-top: 0;
+    }
+    .price {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .add-to-cart {
+        padding: 1rem 2rem;
+        font-size: 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .add-to-cart:hover {
+        background-color: #0056b3;
+    }
+</style>

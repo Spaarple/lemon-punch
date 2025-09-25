@@ -1,0 +1,20 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Contact from "../components/sections/Contact.astro";
+import Music from "../components/sections/Music.astro";
+import Shop from "../components/sections/Shop.astro";
+import Concert from "../components/sections/Concert.astro";
+import About from "../components/sections/About.astro";
+---
+
+<Layout title="LemonPunch">
+      <Music/>
+      <Shop limit={4} />
+      <Concert/>
+      <About/>
+      <Contact/>
+      <div class="newsletter-trigger" id="newsletterTrigger">
+            <i class="fas fa-envelope"></i>
+            <span>Newsletter</span>
+      </div>
+</Layout>

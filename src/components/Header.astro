@@ -1,0 +1,44 @@
+---
+// src/components/Header.astro
+import Logo from '../assets/images/lmp-logo-transparent-black.png';
+import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
+---
+
+<header class="header" id="home">
+    <!-- Navigation intégrée dans le header -->
+    <nav class="header-nav">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src={Logo.src} alt="LemonPunch Logo" class="logo">
+            </div>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#home" class="nav-link">HOME</a>
+                <a href="#music" class="nav-link">MUSIC</a>
+                <a href="#shop" class="nav-link">SHOP</a>
+                <a href="#concerts" class="nav-link">VIDEOS</a>
+                <a href="#contact" class="nav-link">CONTACT</a>
+            </div>
+            <div class="social-nav">
+                <a href="#" class="social-nav-link"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-nav-link"><i class="fab fa-facebook"></i></a>
+                <a href="#" class="social-nav-link"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-nav-link"><i class="fab fa-youtube"></i></a>
+                <a href="#" class="social-nav-link"><i class="fab fa-spotify"></i></a>
+            </div>
+            <div class="nav-toggle" id="nav-toggle">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Background image et contenu -->
+    <div class="header-background">
+        <img src={GroupBackground.src} alt="LemonPunch Band" class="header-bg-image">
+    </div>
+
+    <div class="scroll-indicator">
+        <i class="fas fa-chevron-down"></i>
+    </div>
+</header>

@@ -1,0 +1,65 @@
+---
+import AlbumMisterPunch from '../../assets/images/misterpunch.png';
+import LogoFondJaune from '../../assets/images/lmp-logo-bg-yellow.jpg';
+---
+
+<!-- Music Section -->
+<section class="music-section" id="music">
+    <div class="container">
+        <h2 class="section-title">Music</h2>
+
+        <!-- Latest Release Card -->
+        <div class="latest-release">
+            <div class="latest-release-art">
+                <img src={AlbumMisterPunch.src} alt="Latest Album Art" class="release-image">
+                <div class="play-overlay">
+                    <i class="fas fa-play"></i>
+                </div>
+            </div>
+            <div class="latest-release-info">
+                <span class="release-badge">NOUVEL ALBUM</span>
+                <h3 class="release-title">Latest Album</h3>
+                <p class="release-description">Notre nouvel album est disponible partout ! Plongez dans un univers sonore unique, entre énergie rock et mélodies entêtantes.</p>
+
+                <div class="tracklist">
+                    <h4>Tracklist</h4>
+                    <ul>
+                        <li><span>1.</span> Levé du Soleil Acide</li>
+                        <li><span>2.</span> Punch Urbain</li>
+                        <li><span>3.</span> Nuit Électrique</li>
+                        <li><span>4.</span> Mirage Sonore</li>
+                        <li><span>5.</span> Écho Urbain</li>
+                    </ul>
+                </div>
+
+                <div class="release-links">
+                    <a href="#" class="btn btn-primary-stream"><i class="fab fa-spotify"></i> Spotify</a>
+                    <a href="#" class="btn btn-secondary-stream"><i class="fab fa-apple"></i> Apple Music</a>
+                    <a href="#" class="btn btn-secondary-stream"><i class="fab fa-youtube"></i> YouTube Music</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Videos Subsection -->
+        <div class="videos-subsection">
+            <h3 class="subsection-title">Nos Clips</h3>
+            <div class="video-grid">
+                <a href="#" class="video-card">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <div class="video-overlay"><i class="fas fa-play"></i></div>
+                    <p class="video-title">Levé du Soleil Acide (Clip Officiel)</p>
+                </a>
+                <a href="#" class="video-card">
+                    <img src={LogoFondJaune.src}" alt="Music Video Thumbnail" class="video-thumbnail">
+                    <div class="video-overlay"><i class="fas fa-play"></i></div>
+                    <p class="video-title">Punch Urbain (Live Session)</p>
+                </a>
+                <a href="#" class="video-card">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <div class="video-overlay"><i class="fas fa-play"></i></div>
+                    <p class="video-title">Nuit Électrique (Visualizer)</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
