@@ -33,6 +33,7 @@ const productsToDisplay = limit ? allProducts.slice(0, limit) : allProducts;
                             price={product.price}
                             imageSrc={product.images[0]?.src}
                             imageAlt={product.images[0]?.alt || `Image pour ${product.name}`}
+                            category={product.categories[0]?.name}
                     />
             ))}
         </div>
