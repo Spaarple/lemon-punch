@@ -1,0 +1,336 @@
+---
+import Layout from "../../layouts/Layout.astro"; // Assurez-vous que le chemin est correct
+
+// ===== PARTIE 1 : GÉNÉRER TOUTES LES PAGES D'ALBUMS =====
+export async function getStaticPaths() {
+    // AJOUT : On ajoute ?_embed pour pré-charger les images et autres médias
+    const ALBUMS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/album?_embed";
+
+    const res = await fetch(ALBUMS_URL);
+    const albums = await res.json();
+
+    return albums.map((album) => ({
+        params: { slug: album.slug },
+        props: { album },
+    }));
+}
+
+// ===== PARTIE 2 : RÉCUPÉRER LES DONNÉES POUR CETTE PAGE SPÉCIFIQUE =====
+const { album } = Astro.props;
+
+// On va créer des tableaux propres pour nos champs numérotés
+const maxTracks = 20;
+const maxLinks = 10;
+
+// CORRIGÉ : Utilisation du bon nom de champ 'liste_des_piste_'
+const tracklist = Array.from({ length: maxTracks }, (_, i) => {
+    return album.acf['liste_des_piste_' + (i + 1)];
+}).filter(Boolean); // Retire les entrées vides
+
+const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
+    const platform = album.acf['plateforme_' + (i + 1)];
+    const url = album.acf['url_' + (i + 1)];
+    if (platform && url) {
+        return { platform, url };
+    }
+    return null;
+}).filter(Boolean);
+---
+
+<Layout title={album.title.rendered}>
+    <section class="music-section album-page">
+        <div class="container">
+            <h2 class="section-title">{album.title.rendered}</h2>
+
+            <!-- Album Release Card -->
+            <div class="latest-release">
+                <div class="latest-release-art">
+                    {album._embedded && album._embedded['wp:featuredmedia'] ? (
+                        <img
+                            src={album._embedded['wp:featuredmedia'][0].source_url}
+                            alt={`Pochette de ${album.title.rendered}`}
+                            class="release-image"
+                        />
+                    ) : (
+                        <div class="release-image placeholder">
+                            <span>Pas d'image</span>
+                        </div>
+                    )}
+                    <div class="play-overlay">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="latest-release-info">
+                    <span class="release-badge">ALBUM</span>
+                    <h3 class="release-title">{album.title.rendered}</h3>
+
+                    {album.content.rendered && (
+                        <div class="release-description" set:html={album.content.rendered} />
+                    )}
+
+                    {album.acf.extrait_de_lalbum && album.acf.extrait_de_lalbum.url && (
+                        <div class="audio-player">
+                            <h4>Écouter un extrait</h4>
+                            <audio controls src={album.acf.extrait_de_lalbum.url}></audio>
+                        </div>
+                    )}
+
+                    {tracklist.length > 0 && (
+                        <div class="tracklist">
+                            <h4>Liste des pistes</h4>
+                            <ul>
+                                {tracklist.map((trackTitle, index) => (
+                                    <li><span>{index + 1}.</span> {trackTitle}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {streamingLinks.length > 0 && (
+                        <div class="release-links">
+                            {streamingLinks.map(link => {
+                                const platform = link.platform.toLowerCase();
+                                let icon = 'fas fa-music';
+                                let btnClass = 'btn-secondary-stream';
+
+                                if (platform.includes('spotify')) {
+                                    icon = 'fab fa-spotify';
+                                    btnClass = 'btn-spotify';
+                                } else if (platform.includes('apple')) {
+                                    icon = 'fab fa-apple';
+                                    btnClass = 'btn-apple';
+                                } else if (platform.includes('youtube')) {
+                                    icon = 'fab fa-youtube';
+                                    btnClass = 'btn-youtube';
+                                } else if (platform.includes('deezer')) {
+                                    icon = 'fa-brands fa-deezer';
+                                    btnClass = 'btn-deezer';
+                                } else if (platform.includes('soundcloud')) {
+                                    icon = 'fab fa-soundcloud';
+                                    btnClass = 'btn-soundcloud';
+                                }
+
+                                return (
+                                    <a href={link.url} target="_blank" rel="noopener noreferrer" class={`btn ${btnClass}`}>
+                                        <i class={icon}></i> {link.platform}
+                                    </a>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </section>
+</Layout>
+
+<style is:global>
+    /* Album Page Specific Styles */
+    .album-page {
+        margin-top: 80px;
+        padding: 100px 0;
+    }
+
+    .album-page .section-title {
+        color: var(--black);
+        margin-bottom: 3rem;
+    }
+
+    .album-page .section-title::after {
+        background: var(--primary-yellow);
+    }
+
+    /* Audio Player Styling */
+    .audio-player {
+        margin: 2rem 0;
+        padding: 1.5rem;
+        background: var(--light-gray);
+        border-radius: 10px;
+        border-left: 4px solid var(--primary-yellow);
+    }
+
+    .audio-player h4 {
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--black);
+        font-size: 1.2rem;
+    }
+
+    .audio-player audio {
+        width: 100%;
+        height: 40px;
+    }
+
+    .audio-player audio::-webkit-media-controls-panel {
+        background-color: var(--white);
+    }
+
+    .audio-player audio::-webkit-media-controls-play-button {
+        background-color: var(--primary-yellow);
+        border-radius: 50%;
+    }
+
+    /* Placeholder Image Styling */
+    .release-image.placeholder {
+        width: 350px;
+        height: 350px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--light-gray);
+        color: var(--gray);
+        border: 2px dashed var(--gray);
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    /* Release Description Styling */
+    .release-description {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+        color: var(--gray);
+    }
+
+    .release-description p {
+        margin-bottom: 1rem;
+    }
+
+    .release-description h1,
+    .release-description h2,
+    .release-description h3 {
+        color: var(--black);
+        margin: 1.5rem 0 1rem 0;
+    }
+
+    .release-description ul,
+    .release-description ol {
+        margin: 1rem 0;
+        padding-left: 2rem;
+    }
+
+    .release-description li {
+        margin-bottom: 0.5rem;
+        line-height: 1.6;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .album-page {
+            padding: 60px 0;
+        }
+
+        .album-page .latest-release {
+            flex-direction: column;
+            text-align: center;
+            gap: 2rem;
+        }
+
+        .album-page .release-image,
+        .album-page .release-image.placeholder {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+        }
+
+        .album-page .release-title {
+            font-size: 2rem;
+        }
+
+        .audio-player {
+            padding: 1rem;
+        }
+    }
+
+    /* Platform Specific Button Styles */
+    .btn-spotify {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+    }
+
+    .btn-spotify:hover {
+        background: #1DB954;
+        border-color: #1DB954;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
+    }
+
+    .btn-apple {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+    }
+
+    .btn-apple:hover {
+        background: var(--black);
+        border-color: var(--black);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-youtube {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+    }
+
+    .btn-youtube:hover {
+        background: #FF0000;
+        border-color: #FF0000;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+    }
+
+    .btn-deezer {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+    }
+
+    .btn-deezer:hover {
+        background: #A238FF;
+        border-color: #A238FF;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(162, 56, 255, 0.4);
+    }
+
+    .btn-soundcloud {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+    }
+
+    .btn-soundcloud:hover {
+        background: #FF5500;
+        border-color: #FF5500;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 85, 0, 0.4);
+    }
+
+    @media (max-width: 480px) {
+        .album-page .release-image,
+        .album-page .release-image.placeholder {
+            width: 250px;
+            height: 250px;
+        }
+
+        .album-page .release-title {
+            font-size: 1.8rem;
+        }
+
+        .audio-player h4 {
+            font-size: 1rem;
+        }
+    }
+</style>
