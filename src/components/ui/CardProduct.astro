@@ -9,8 +9,9 @@ interface Props {
     imageAlt: string;
     name: string;
     price: number;
+    category?: string;
 }
-const { id, slug, imageSrc, imageAlt, name, price } = Astro.props;
+const { id, slug, imageSrc, imageAlt, name, price, category } = Astro.props;
 ---
 
 <div class="product-card">
@@ -24,6 +25,7 @@ const { id, slug, imageSrc, imageAlt, name, price } = Astro.props;
     </div>
     <div class="product-info">
         <a href={`/produits/${slug}/`}>
+            {category && category !== "Non classé" && <span class="product-category">{category}</span>}
             <h3 class="product-name">{name}</h3>
             <p class="product-price">{price}€</p>
         </a>
