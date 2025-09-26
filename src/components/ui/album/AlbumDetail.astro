@@ -1,0 +1,300 @@
+---
+import AlbumCover from './AlbumCover.astro';
+import StreamingLinks from './StreamingLinks.astro';
+import TrackList from './TrackList.astro';
+import AudioPlayer from './AudioPlayer.astro';
+
+export interface Props {
+    album: {
+        title: { rendered: string };
+        slug: string;
+        date: string;
+        content?: { rendered: string };
+        acf: {
+            extrait_de_lalbum?: { url: string };
+            type_de_sortie?: string;
+            [key: string]: any;
+        };
+        _embedded?: {
+            'wp:featuredmedia'?: Array<{
+                source_url: string;
+            }>;
+        };
+    };
+    variant?: 'full' | 'compact';
+    showTitle?: boolean;
+}
+
+const { album, variant = 'full', showTitle = true } = Astro.props;
+
+// Extraction des pistes
+const maxTracks = 20;
+const tracklist = Array.from({ length: maxTracks }, (_, i) => {
+    return album.acf[`liste_des_piste_${i + 1}`];
+}).filter(Boolean);
+
+// Extraction des liens de streaming
+const maxLinks = 10;
+const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
+    const platform = album.acf[`plateforme_${i + 1}`];
+    const url = album.acf[`url_${i + 1}`];
+    if (platform && url) {
+        return { platform, url };
+    }
+    return null;
+}).filter(Boolean);
+
+// Déterminer le type de release
+function getReleaseType(release) {
+    if (release.acf && release.acf.type_de_sortie) {
+        return release.acf.type_de_sortie;
+    }
+    if (tracklist.length <= 2) return 'Single';
+    if (tracklist.length <= 6) return 'EP';
+    return 'Album';
+}
+
+const releaseType = getReleaseType(album);
+const coverImage = album._embedded?.['wp:featuredmedia']?.[0];
+---
+
+<div class={`album-detail ${variant}`}>
+    {showTitle && (
+        <h2 class="album-detail-title">{album.title.rendered}</h2>
+    )}
+
+    <div class="album-detail-content">
+        <div class="album-detail-art">
+            <AlbumCover
+                image={coverImage}
+                title={album.title.rendered}
+                size={variant === 'full' ? 'standard' : 'older'}
+                showPlayButton={true}
+                releaseType={releaseType}
+            />
+        </div>
+
+        <div class="album-detail-info">
+            <div class="album-meta">
+                <span class="release-badge">{releaseType}</span>
+                {variant === 'full' && (
+                    <h3 class="release-title">{album.title.rendered}</h3>
+                )}
+                {album.date && (
+                    <p class="release-date">{new Date(album.date).getFullYear()}</p>
+                )}
+            </div>
+
+            {album.content?.rendered && variant === 'full' && (
+                <div class="release-description" set:html={album.content.rendered} />
+            )}
+
+            {album.acf.extrait_de_lalbum?.url && (
+                <AudioPlayer
+                    audioUrl={album.acf.extrait_de_lalbum.url}
+                    title="Écouter un extrait"
+                    variant={variant === 'full' ? 'expanded' : 'compact'}
+                />
+            )}
+
+            {tracklist.length > 0 && (
+                <TrackList
+                    tracks={tracklist}
+                    title="Liste des pistes"
+                    numbered={true}
+                    variant={variant === 'full' ? 'expanded' : 'compact'}
+                />
+            )}
+
+            {streamingLinks.length > 0 && (
+                <div class="release-links">
+                    <StreamingLinks
+                        links={streamingLinks}
+                        variant="horizontal"
+                        size={variant === 'full' ? 'medium' : 'small'}
+                    />
+                </div>
+            )}
+        </div>
+    </div>
+</div>
+
+<style>
+    .album-detail {
+        margin: 2rem 0;
+    }
+
+    .album-detail-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--black);
+        margin-bottom: 2rem;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        position: relative;
+    }
+
+    .album-detail-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--primary-yellow);
+        border-radius: 2px;
+    }
+
+    .album-detail-content {
+        display: flex;
+        gap: 3rem;
+        align-items: flex-start;
+    }
+
+    .album-detail-art {
+        flex-shrink: 0;
+    }
+
+    .album-detail-info {
+        flex: 1;
+    }
+
+    .album-meta {
+        margin-bottom: 2rem;
+    }
+
+    .release-badge {
+        display: inline-block;
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 4px;
+        margin-bottom: 1rem;
+    }
+
+    .release-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--black);
+        margin: 0.5rem 0;
+        line-height: 1.2;
+    }
+
+    .release-date {
+        font-size: 1.3rem;
+        color: var(--primary-yellow);
+        font-weight: 600;
+        margin: 0.5rem 0 0 0;
+    }
+
+    .release-description {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+        color: var(--gray);
+    }
+
+    .release-description p {
+        margin-bottom: 1rem;
+    }
+
+    .release-description h1,
+    .release-description h2,
+    .release-description h3 {
+        color: var(--black);
+        margin: 1.5rem 0 1rem 0;
+    }
+
+    .release-links {
+        margin-top: 2rem;
+    }
+
+    /* Compact variant */
+    .album-detail.compact .album-detail-content {
+        gap: 2rem;
+    }
+
+    .album-detail.compact .album-detail-title {
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .album-detail.compact .release-title {
+        font-size: 1.8rem;
+    }
+
+    .album-detail.compact .release-date {
+        font-size: 1.1rem;
+    }
+
+    .album-detail.compact .release-description {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .album-detail.compact .release-links {
+        margin-top: 1.5rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .album-detail-content {
+            flex-direction: column;
+            gap: 2rem;
+            text-align: center;
+        }
+
+        .album-detail-title {
+            font-size: 2rem;
+        }
+
+        .release-title {
+            font-size: 2rem;
+        }
+
+        .release-date {
+            font-size: 1.2rem;
+        }
+
+        .album-detail.compact .album-detail-title {
+            font-size: 1.8rem;
+        }
+
+        .album-detail.compact .release-title {
+            font-size: 1.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .album-detail-title {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .release-title {
+            font-size: 1.8rem;
+        }
+
+        .release-date {
+            font-size: 1.1rem;
+        }
+
+        .release-description {
+            font-size: 1rem;
+        }
+
+        .album-detail.compact .album-detail-title {
+            font-size: 1.6rem;
+        }
+
+        .album-detail.compact .release-title {
+            font-size: 1.4rem;
+        }
+    }
+</style>

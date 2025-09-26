@@ -1,0 +1,243 @@
+---
+import AlbumCover from './AlbumCover.astro';
+
+export interface Props {
+    album: {
+        title: { rendered: string };
+        slug: string;
+        date: string;
+        _embedded?: {
+            'wp:featuredmedia'?: Array<{
+                source_url: string;
+            }>;
+        };
+        releaseType?: string;
+    };
+    variant?: 'main' | 'older' | 'standard';
+    showDescription?: boolean;
+}
+
+const { album, variant = 'standard', showDescription = false } = Astro.props;
+
+const coverImage = album._embedded?.['wp:featuredmedia']?.[0];
+const releaseDate = album.date ? new Date(album.date).getFullYear() : null;
+---
+
+<div class={`album-card ${variant}-album`}>
+    <AlbumCover
+        image={coverImage}
+        title={album.title.rendered}
+        size={variant}
+        href={`/albums/${album.slug}/`}
+        releaseType={album.releaseType}
+    />
+
+    <div class="album-info">
+        <h3 class={`album-title ${variant}-album-title`}>
+            {album.title.rendered || 'Album sans titre'}
+        </h3>
+
+        {releaseDate && (
+            <p class={`album-date ${variant}-album-date`}>
+                {releaseDate}
+            </p>
+        )}
+
+        <a href={`/albums/${album.slug}/`} class={`album-link ${variant}-album-link`}>
+            {variant === 'main' ? 'Voir les détails' : 'Détails'}
+        </a>
+    </div>
+</div>
+
+<style>
+    .album-card {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .album-info {
+        text-align: center;
+        width: 100%;
+    }
+
+    /* Main Album Styles */
+    .main-album {
+        margin-bottom: 2rem;
+    }
+
+    .main-album-title {
+        font-size: 3rem;
+        font-weight: 900;
+        color: var(--black);
+        margin: 2rem 0 0.5rem;
+        line-height: 1.2;
+    }
+
+    .main-album-date {
+        font-size: 1.5rem;
+        color: var(--primary-yellow);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .main-album-link {
+        display: inline-block;
+        background: var(--black);
+        color: var(--white);
+        padding: 15px 30px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .main-album-link:hover {
+        background: var(--primary-yellow);
+        color: var(--black);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(244, 208, 63, 0.4);
+    }
+
+    /* Older Album Styles */
+    .older-album {
+        margin-bottom: 1.5rem;
+    }
+
+    .older-album-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--black);
+        margin: 1.5rem 0 0.5rem;
+        text-align: center;
+    }
+
+    .older-album-date {
+        font-size: 1.1rem;
+        color: var(--primary-yellow);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .older-album-link {
+        display: inline-block;
+        background: transparent;
+        color: var(--black);
+        padding: 10px 20px;
+        text-decoration: none;
+        border: 2px solid var(--black);
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .older-album-link:hover {
+        background: var(--black);
+        color: var(--white);
+        transform: translateY(-2px);
+    }
+
+    /* Standard Album Styles */
+    .standard-album {
+        margin-bottom: 2rem;
+    }
+
+    .standard-album-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--black);
+        margin: 1.5rem 0 0.5rem;
+        text-align: center;
+    }
+
+    .standard-album-date {
+        font-size: 1.2rem;
+        color: var(--primary-yellow);
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+    }
+
+    .standard-album-link {
+        display: inline-block;
+        background: var(--black);
+        color: var(--white);
+        padding: 12px 24px;
+        text-decoration: none;
+        border: 2px solid var(--black);
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .standard-album-link:hover {
+        background: var(--primary-yellow);
+        color: var(--black);
+        border-color: var(--primary-yellow);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(244, 208, 63, 0.3);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .main-album-title {
+            font-size: 2.2rem;
+        }
+
+        .main-album-date {
+            font-size: 1.3rem;
+        }
+
+        .older-album-title {
+            font-size: 1.3rem;
+        }
+
+        .standard-album-title {
+            font-size: 1.6rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .main-album-title {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-album-date {
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .main-album-link {
+            padding: 12px 25px;
+            font-size: 0.9rem;
+        }
+
+        .older-album-title {
+            font-size: 1.2rem;
+        }
+
+        .older-album-date {
+            font-size: 1rem;
+        }
+
+        .older-album-link {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        .standard-album-title {
+            font-size: 1.4rem;
+        }
+
+        .standard-album-link {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+        }
+    }
+</style>
