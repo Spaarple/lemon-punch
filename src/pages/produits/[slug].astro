@@ -35,6 +35,36 @@ function getColorValue(colorName) {
     return colors[colorKey] || '#cccccc';
 }
 
+// Fonction pour trier les tailles dans l'ordre logique
+function sortSizes(sizes) {
+    const sizeOrder = [
+        'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '3XL', '4XL', '5XL',
+        '34', '36', '38', '40', '42', '44', '46', '48', '50', '52', '54',
+        '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16',
+        '35', '37', '39', '41', '43', '45', '47', '49', '51', '53', '55'
+    ];
+
+    return sizes.sort((a, b) => {
+        const aUpper = a.toUpperCase();
+        const bUpper = b.toUpperCase();
+
+        const aIndex = sizeOrder.indexOf(aUpper);
+        const bIndex = sizeOrder.indexOf(bUpper);
+
+        // Si les deux tailles sont dans l'ordre prédéfini
+        if (aIndex !== -1 && bIndex !== -1) {
+            return aIndex - bIndex;
+        }
+
+        // Si seulement une taille est dans l'ordre prédéfini
+        if (aIndex !== -1) return -1;
+        if (bIndex !== -1) return 1;
+
+        // Si aucune taille n'est dans l'ordre prédéfini, tri alphabétique
+        return aUpper.localeCompare(bUpper);
+    });
+}
+
 // Récupérer les variations du produit si c'est un produit variable
 const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
 const KEY = import.meta.env.WOOCOMMERCE_KEY;
@@ -169,11 +199,12 @@ if (product.categories.length > 0) {
                                                     </div>
                                             );
                                         } else if (isSize) {
+                                            const sortedSizes = sortSizes([...attr.options]);
                                             return (
                                                     <div class="variation-group">
                                                         <label class="variation-label">Taille:</label>
                                                         <div class="size-options">
-                                                            {attr.options.map(option => (
+                                                            {sortedSizes.map(option => (
                                                                     <button class="size-option" data-attribute={attr.name} data-value={option}>
                                                                         {option}
                                                                     </button>
