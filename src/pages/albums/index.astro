@@ -1,5 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import DiscographyHeader from "../../components/ui/album/DiscographyHeader.astro";
+import AlbumCard from "../../components/ui/album/AlbumCard.astro";
 
 // Récupérer toutes les sorties musicales depuis WordPress (Albums, EPs, Singles)
 const MUSIC_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/album?_embed&per_page=100";
@@ -64,40 +66,7 @@ try {
 
 <Layout title="Albums - LemonPunch">
     <!-- Section Header Discographie -->
-    <section class="discography-header">
-        <div class="header-background"></div>
-        <div class="container">
-            <div class="header-content">
-                <div class="title-container">
-                    <h1 class="discography-title">
-                        <span class="title-accent">Disco</span>graphie
-                    </h1>
-                    <div class="title-underline"></div>
-                </div>
-                <p class="discography-subtitle">Explorez l'univers sonore de LemonPunch</p>
-                <div class="music-stats">
-                    <div class="stat-item">
-                        <i class="fas fa-compact-disc"></i>
-                        <span>Albums</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-music"></i>
-                        <span>Singles</span>
-                    </div>
-                    <div class="stat-item">
-                        <i class="fas fa-headphones"></i>
-                        <span>Streaming</span>
-                    </div>
-                </div>
-            </div>
-            <div class="floating-elements">
-                <div class="floating-note note-1">♪</div>
-                <div class="floating-note note-2">♫</div>
-                <div class="floating-note note-3">♪</div>
-                <div class="floating-note note-4">♬</div>
-            </div>
-        </div>
-    </section>
+    <DiscographyHeader/>
 
     <!-- Section Music avec Effet Parallaxe -->
     <section class="music-section-parallax">
@@ -105,30 +74,7 @@ try {
             <!-- Sortie Principale (Album/Single) -->
             {latestRelease && (
                 <div class="main-album">
-                    <div class="main-album-cover">
-                        {latestRelease._embedded && latestRelease._embedded['wp:featuredmedia'] ? (
-                            <img
-                                src={latestRelease._embedded['wp:featuredmedia'][0].source_url}
-                                alt={`Pochette de ${latestRelease.title.rendered}`}
-                                class="main-cover-image"
-                            />
-                        ) : (
-                            <div class="main-cover-image placeholder">
-                                <span>Pas d'image</span>
-                            </div>
-                        )}
-                        <div class="main-cover-overlay">
-                            <i class="fas fa-play"></i>
-                        </div>
-                        <div class={`release-type-badge main-badge ${latestRelease.releaseType.toLowerCase()}`}>
-                            {latestRelease.releaseType}
-                        </div>
-                    </div>
-                    <h2 class="main-album-title">{latestRelease.title?.rendered || 'Sortie sans titre'}</h2>
-                    {latestRelease.date && (
-                        <p class="main-album-date">{new Date(latestRelease.date).getFullYear()}</p>
-                    )}
-                    <a href={`/albums/${latestRelease.slug}/`} class="main-album-link">Voir les détails</a>
+                    <AlbumCard album={latestRelease} variant="main" />
                 </div>
             )}
 
@@ -137,32 +83,7 @@ try {
                 <div class="older-albums">
                     <div class="older-albums-grid">
                         {otherReleases.slice(0, 3).map((release) => (
-                            <div class="older-album">
-                                <div class="older-album-cover">
-                                    {release._embedded && release._embedded['wp:featuredmedia'] ? (
-                                        <img
-                                            src={release._embedded['wp:featuredmedia'][0].source_url}
-                                            alt={`Pochette de ${release.title.rendered}`}
-                                            class="older-cover-image"
-                                        />
-                                    ) : (
-                                        <div class="older-cover-image placeholder">
-                                            <span>Pas d'image</span>
-                                        </div>
-                                    )}
-                                    <div class="older-cover-overlay">
-                                        <i class="fas fa-play"></i>
-                                    </div>
-                                    <div class={`release-type-badge older-badge ${release.releaseType.toLowerCase()}`}>
-                                        {release.releaseType}
-                                    </div>
-                                </div>
-                                <h3 class="older-album-title">{release.title?.rendered || 'Sortie sans titre'}</h3>
-                                {release.date && (
-                                    <p class="older-album-date">{new Date(release.date).getFullYear()}</p>
-                                )}
-                                <a href={`/albums/${release.slug}/`} class="older-album-link">Détails</a>
-                            </div>
+                            <AlbumCard album={release} variant="older" />
                         ))}
                     </div>
                 </div>
@@ -506,94 +427,6 @@ try {
         margin-bottom: 6rem;
     }
 
-    .main-album-cover {
-        position: relative;
-        margin-bottom: 2rem;
-        cursor: pointer;
-    }
-
-    .main-cover-image {
-        width: 400px;
-        height: 400px;
-        object-fit: cover;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-        transition: all 0.4s ease;
-    }
-
-    .main-cover-image.placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--light-gray);
-        color: var(--gray);
-        border: 2px dashed var(--gray);
-        font-weight: 600;
-    }
-
-    .main-cover-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: all 0.4s ease;
-    }
-
-    .main-album-cover:hover .main-cover-overlay {
-        opacity: 1;
-    }
-
-    .main-album-cover:hover .main-cover-image {
-        transform: scale(1.03);
-        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
-    }
-
-    .main-cover-overlay i {
-        font-size: 4rem;
-        color: var(--white);
-    }
-
-    .main-album-title {
-        font-size: 3rem;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: var(--black);
-        margin-bottom: 0.5rem;
-        line-height: 1.2;
-    }
-
-    .main-album-date {
-        font-size: 1.5rem;
-        color: var(--primary-yellow);
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-    }
-
-    .main-album-link {
-        display: inline-block;
-        background: var(--black);
-        color: var(--white);
-        padding: 15px 30px;
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .main-album-link:hover {
-        background: var(--primary-yellow);
-        color: var(--black);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(244, 208, 63, 0.4);
-    }
-
     /* Albums Anciens - Grille Horizontale */
     .older-albums {
         margin-bottom: 6rem;
@@ -605,99 +438,6 @@ try {
         gap: 3rem;
         max-width: 900px;
         margin: 0 auto;
-    }
-
-    .older-album {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .older-album-cover {
-        position: relative;
-        margin-bottom: 1.5rem;
-        cursor: pointer;
-    }
-
-    .older-cover-image {
-        width: 250px;
-        height: 250px;
-        object-fit: cover;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-        transition: all 0.4s ease;
-    }
-
-    .older-cover-image.placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--light-gray);
-        color: var(--gray);
-        border: 2px dashed var(--gray);
-        font-weight: 600;
-    }
-
-    .older-cover-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: all 0.4s ease;
-    }
-
-    .older-album-cover:hover .older-cover-overlay {
-        opacity: 1;
-    }
-
-    .older-album-cover:hover .older-cover-image {
-        transform: scale(1.05);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    }
-
-    .older-cover-overlay i {
-        font-size: 3rem;
-        color: var(--white);
-    }
-
-    .older-album-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--black);
-        margin-bottom: 0.5rem;
-        text-align: center;
-    }
-
-    .older-album-date {
-        font-size: 1.1rem;
-        color: var(--primary-yellow);
-        font-weight: 600;
-        margin-bottom: 1rem;
-    }
-
-    .older-album-link {
-        display: inline-block;
-        background: transparent;
-        color: var(--black);
-        padding: 10px 20px;
-        text-decoration: none;
-        border: 2px solid var(--black);
-        font-weight: 600;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .older-album-link:hover {
-        background: var(--black);
-        color: var(--white);
-        transform: translateY(-2px);
     }
 
     /* Listen On Section */
