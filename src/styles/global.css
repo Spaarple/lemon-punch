@@ -312,7 +312,6 @@ a {
     background: transparent;
     padding: 3rem;
     margin-bottom: 4rem;
-    border: 8px solid var(--black);
     border-bottom: none;
     position: relative;
 }
@@ -325,8 +324,6 @@ a {
     left: -8px;
     right: -8px;
     bottom: -100px;
-    border-left: 8px solid var(--black);
-    border-right: 8px solid var(--black);
     pointer-events: none;
     z-index: -1;
 }
@@ -878,23 +875,7 @@ a {
     gap: 1.5rem;
     background: transparent;
     padding: 3rem;
-    border: 8px solid var(--black);
-    border-top: none;
     position: relative;
-}
-
-/* Prolongement des bordures vers le haut de la section */
-.concerts-list::before {
-    content: '';
-    position: absolute;
-    bottom: 100%;
-    left: -8px;
-    right: -8px;
-    top: -100px;
-    border-left: 8px solid var(--black);
-    border-right: 8px solid var(--black);
-    pointer-events: none;
-    z-index: -1;
 }
 
 .concert-card {

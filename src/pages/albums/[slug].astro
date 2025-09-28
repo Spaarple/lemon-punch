@@ -38,6 +38,15 @@ const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
     }
     return null;
 }).filter(Boolean);
+
+// Fonction pour déterminer le type de sortie basé sur le nombre de pistes
+function getReleaseType(trackCount) {
+    if (trackCount < 2) return 'SINGLE';
+    return 'ALBUM';
+}
+
+// Déterminer le type de cette sortie
+const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length);
 ---
 
 <Layout title={album.title.rendered}>
@@ -64,7 +73,7 @@ const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
                     </div>
                 </div>
                 <div class="latest-release-info">
-                    <span class="release-badge">ALBUM</span>
+                    <span class="release-badge">{releaseType}</span>
                     <h3 class="release-title">{album.title.rendered}</h3>
 
                     {album.content.rendered && (
@@ -126,7 +135,6 @@ const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
         background: transparent;
         padding: 3rem;
         margin-bottom: 4rem;
-        border: 8px solid var(--black);
         border-bottom: none;
         position: relative;
     }
@@ -139,8 +147,6 @@ const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
         left: -8px;
         right: -8px;
         bottom: -100px;
-        border-left: 8px solid var(--black);
-        border-right: 8px solid var(--black);
         pointer-events: none;
         z-index: -1;
     }
