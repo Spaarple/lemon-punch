@@ -474,15 +474,18 @@ const postCategories = post.categories?.map(catId =>
         color: var(--gray);
     }
 
-    /* Images dans le contenu */
+    /* Images dans le contenu - Taille maximale */
     .article-content img {
         max-width: 100%;
+        max-height: 600px;
+        width: auto;
         height: auto;
         border-radius: 12px;
         margin: 2.5rem 0;
         cursor: pointer;
         transition: all 0.3s ease;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        object-fit: cover;
     }
 
     .article-content img:hover {
@@ -490,127 +493,192 @@ const postCategories = post.categories?.map(catId =>
         box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
     }
 
-    /* Galeries WordPress - Vraie Masonry */
+    /* VRAIE GALERIE PHOTO MODERNE */
     .article-content .wp-block-gallery,
     .article-content .gallery {
         margin: 3rem 0;
         position: relative;
     }
 
-    .article-content .wp-block-gallery .blocks-gallery-grid,
-    .article-content .gallery .gallery-row {
-        column-count: 4;
-        column-gap: 1rem;
+    .photo-gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
         margin: 0;
         padding: 0;
-        list-style: none;
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item,
-    .article-content .gallery .gallery-item {
-        break-inside: avoid;
-        margin: 0 0 1rem 0;
-        padding: 0;
+    .gallery-photo {
         position: relative;
         overflow: hidden;
         border-radius: 12px;
         cursor: pointer;
         transition: all 0.3s ease;
-        background: transparent;
-        display: inline-block;
-        width: 100%;
+        background: #000;
+        aspect-ratio: 1;
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item img,
-    .article-content .gallery .gallery-item img {
+    .gallery-photo img {
         width: 100%;
-        height: auto;
-        margin: 0;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.4s ease;
         border-radius: 12px;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        display: block;
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item:hover,
-    .article-content .gallery .gallery-item:hover {
-        transform: translateY(-5px);
-        z-index: 10;
+    .gallery-photo:hover img {
+        transform: scale(1.1);
+        filter: brightness(1.2);
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item:hover img,
-    .article-content .gallery .gallery-item:hover img {
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    /* Overlay pour les galeries */
-    .article-content .wp-block-gallery .wp-block-gallery-item::before,
-    .article-content .gallery .gallery-item::before {
+    .gallery-photo::before {
         content: '';
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background: rgba(0, 0, 0, 0.5);
+        background: linear-gradient(45deg, rgba(244, 208, 63, 0.3), rgba(0, 0, 0, 0.3));
         opacity: 0;
         transition: opacity 0.3s ease;
+        z-index: 1;
         border-radius: 12px;
-        z-index: 2;
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item:hover::before,
-    .article-content .gallery .gallery-item:hover::before {
+    .gallery-photo:hover::before {
         opacity: 1;
     }
 
-    /* Icône de zoom */
-    .article-content .wp-block-gallery .wp-block-gallery-item::after,
-    .article-content .gallery .gallery-item::after {
-        content: '⚬';
+    .gallery-photo::after {
         position: absolute;
         top: 50%;
         left: 50%;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(0);
         font-size: 3rem;
         color: var(--white);
-        opacity: 0;
+        z-index: 2;
         transition: all 0.3s ease;
-        z-index: 3;
-        pointer-events: none;
-        font-weight: bold;
+        text-shadow: 0 0 20px rgba(244, 208, 63, 0.8);
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item:hover::after,
-    .article-content .gallery .gallery-item:hover::after {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.2);
+    .gallery-photo:hover::after {
+        transform: translate(-50%, -50%) scale(1);
     }
 
-    /* Légendes des galeries */
-    .article-content .wp-block-gallery .wp-block-gallery-item figcaption,
-    .article-content .gallery .gallery-item .gallery-caption {
-        position: absolute;
-        bottom: 0;
+    /* Lightbox moderne */
+    .photo-lightbox {
+        position: fixed;
+        top: 0;
         left: 0;
-        right: 0;
-        padding: 1rem;
-        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-        color: var(--white);
-        font-size: 0.85rem;
-        line-height: 1.3;
-        margin: 0;
-        font-style: italic;
-        text-align: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-        border-radius: 0 0 12px 12px;
-        z-index: 4;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.95);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        backdrop-filter: blur(10px);
     }
 
-    .article-content .wp-block-gallery .wp-block-gallery-item:hover figcaption,
-    .article-content .gallery .gallery-item:hover .gallery-caption {
-        opacity: 1;
+    .photo-lightbox.active {
+        display: flex;
+        animation: lightboxFadeIn 0.4s ease;
+    }
+
+    .lightbox-content {
+        position: relative;
+        max-width: 90vw;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .lightbox-image {
+        max-width: 100%;
+        max-height: 80vh;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        animation: imageZoomIn 0.4s ease;
+    }
+
+    .lightbox-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(244, 208, 63, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--black);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox-nav:hover {
+        background: var(--primary-yellow);
+        transform: translateY(-50%) scale(1.1);
+        box-shadow: 0 10px 30px rgba(244, 208, 63, 0.5);
+    }
+
+    .lightbox-prev {
+        left: -80px;
+    }
+
+    .lightbox-next {
+        right: -80px;
+    }
+
+    .lightbox-close {
+        position: absolute;
+        top: -80px;
+        right: 0;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--black);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .lightbox-close:hover {
+        background: var(--white);
+        transform: scale(1.1);
+        box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+    }
+
+    .lightbox-info {
+        margin-top: 2rem;
+        text-align: center;
+        max-width: 600px;
+    }
+
+    .lightbox-counter {
+        color: var(--primary-yellow);
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .lightbox-caption {
+        color: var(--white);
+        font-size: 1rem;
+        line-height: 1.5;
+        font-style: italic;
     }
 
     /* Images seules avec légendes - simplifiées */
@@ -646,25 +714,6 @@ const postCategories = post.categories?.map(catId =>
         margin: 1rem auto 0 auto;
     }
 
-    /* Configuration des colonnes pour masonry */
-    .article-content .gallery-columns-1 .gallery-row {
-        column-count: 1;
-    }
-    .article-content .gallery-columns-2 .gallery-row {
-        column-count: 2;
-    }
-    .article-content .gallery-columns-3 .gallery-row {
-        column-count: 3;
-    }
-    .article-content .gallery-columns-4 .gallery-row {
-        column-count: 4;
-    }
-    .article-content .gallery-columns-5 .gallery-row {
-        column-count: 5;
-    }
-    .article-content .gallery-columns-6 .gallery-row {
-        column-count: 6;
-    }
 
     /* Modal de zoom d'image amélioré */
     .image-modal {
@@ -1143,23 +1192,31 @@ const postCategories = post.categories?.map(catId =>
             font-size: 1rem;
         }
 
-        /* Responsive pour masonry - tablette */
-        .article-content .wp-block-gallery .blocks-gallery-grid,
-        .article-content .gallery .gallery-row {
-            column-count: 3;
-            column-gap: 0.8rem;
+        /* Responsive pour vraie galerie photo - tablette */
+        .photo-gallery-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.8rem;
         }
 
-        .article-content .wp-block-gallery .wp-block-gallery-item,
-        .article-content .gallery .gallery-item {
-            margin-bottom: 0.8rem;
+        .lightbox-nav {
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
 
-        /* Configuration responsive des colonnes */
-        .article-content .gallery-columns-4 .gallery-row,
-        .article-content .gallery-columns-5 .gallery-row,
-        .article-content .gallery-columns-6 .gallery-row {
-            column-count: 3;
+        .lightbox-prev {
+            left: -60px;
+        }
+
+        .lightbox-next {
+            right: -60px;
+        }
+
+        .lightbox-close {
+            top: -60px;
+            width: 40px;
+            height: 40px;
+            font-size: 1.2rem;
         }
 
         .article-content figure {
@@ -1172,33 +1229,48 @@ const postCategories = post.categories?.map(catId =>
     }
 
     @media (max-width: 480px) {
-        /* Responsive pour masonry - mobile */
-        .article-content .wp-block-gallery .blocks-gallery-grid,
-        .article-content .gallery .gallery-row {
-            column-count: 2;
-            column-gap: 0.6rem;
+        /* Responsive pour vraie galerie photo - mobile */
+        .photo-gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
         }
 
-        .article-content .wp-block-gallery .wp-block-gallery-item,
-        .article-content .gallery .gallery-item {
-            margin-bottom: 0.6rem;
-        }
-
-        .article-content .wp-block-gallery .wp-block-gallery-item::after,
-        .article-content .gallery .gallery-item::after {
+        .gallery-photo::after {
             font-size: 2rem;
         }
 
-        /* Toutes les galeries en 2 colonnes sur mobile */
-        .article-content .gallery-columns-1 .gallery-row {
-            column-count: 1;
+        .lightbox-nav {
+            position: absolute;
+            bottom: 20px;
+            transform: none;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
         }
-        .article-content .gallery-columns-2 .gallery-row,
-        .article-content .gallery-columns-3 .gallery-row,
-        .article-content .gallery-columns-4 .gallery-row,
-        .article-content .gallery-columns-5 .gallery-row,
-        .article-content .gallery-columns-6 .gallery-row {
-            column-count: 2;
+
+        .lightbox-prev {
+            left: 20px;
+            bottom: 20px;
+        }
+
+        .lightbox-next {
+            right: 20px;
+            bottom: 20px;
+        }
+
+        .lightbox-close {
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+        }
+
+        .lightbox-content {
+            padding: 1rem;
+        }
+
+        .lightbox-info {
+            margin-top: 1rem;
         }
 
         .article-content figure {
@@ -1439,23 +1511,161 @@ const postCategories = post.categories?.map(catId =>
             isGalleryMode = false;
         }
 
-        // Gérer les galeries WordPress classiques
-        const galleries = articleContent.querySelectorAll('.gallery');
-        galleries.forEach(gallery => {
-            const items = gallery.querySelectorAll('.gallery-item');
+        // ========== VRAIE GALERIE PHOTO MODERNE ==========
+        initializePhotoGalleries();
 
-            // Si la galerie n'a pas de structure de grille, on la crée
-            if (!gallery.querySelector('.gallery-row')) {
-                const row = document.createElement('div');
-                row.className = 'gallery-row';
+        function initializePhotoGalleries() {
+            const galleries = articleContent.querySelectorAll('.gallery, .wp-block-gallery');
 
-                items.forEach(item => {
-                    row.appendChild(item);
-                });
+            galleries.forEach(gallery => {
+                const images = Array.from(gallery.querySelectorAll('img'));
 
-                gallery.appendChild(row);
+                if (images.length === 0) return;
+
+                if (images.length === 1) {
+                    // Image seule - style simple
+                    gallery.classList.add('single-image');
+                    const img = images[0];
+                    img.style.cursor = 'pointer';
+                    img.style.borderRadius = '12px';
+                    img.style.transition = 'all 0.3s ease';
+                    return;
+                }
+
+                // Créer la vraie galerie photo moderne
+                createModernPhotoGallery(gallery, images);
+            });
+        }
+
+        function createModernPhotoGallery(gallery, images) {
+            // Vider le contenu existant et recréer la structure
+            gallery.innerHTML = '';
+            gallery.classList.add('modern-photo-gallery');
+
+            // Créer la grille de photos
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'photo-gallery-grid';
+
+            images.forEach((originalImg, index) => {
+                // Conteneur pour chaque photo
+                const photoContainer = document.createElement('div');
+                photoContainer.className = 'gallery-photo';
+
+                // Image dans la grille
+                const img = document.createElement('img');
+                img.src = originalImg.src;
+                img.alt = originalImg.alt || `Photo ${index + 1}`;
+                img.loading = 'lazy';
+
+                // Préserver les attributs de légende
+                const figcaption = originalImg.closest('figure')?.querySelector('figcaption');
+                if (figcaption) {
+                    img.setAttribute('data-caption', figcaption.textContent);
+                }
+
+                photoContainer.appendChild(img);
+                gridContainer.appendChild(photoContainer);
+            });
+
+            gallery.appendChild(gridContainer);
+
+            // Ajouter les animations et effets avec CSS
+            const style = document.createElement('style');
+            style.textContent = `
+                .modern-photo-gallery {
+                    margin: 3rem 0;
+                    width: 100%;
+                }
+
+                .photo-gallery-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 1rem;
+                    width: 100%;
+                }
+
+                .gallery-photo {
+                    position: relative;
+                    overflow: hidden;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    background: #000;
+                    aspect-ratio: 1;
+                }
+
+                .gallery-photo img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    transition: all 0.4s ease;
+                    border-radius: 12px;
+                }
+
+                .gallery-photo:hover img {
+                    transform: scale(1.1);
+                    filter: brightness(1.2);
+                }
+
+                .gallery-photo::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: linear-gradient(45deg, rgba(244, 208, 63, 0.3), rgba(0, 0, 0, 0.3));
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                    z-index: 1;
+                    border-radius: 12px;
+                }
+
+                .gallery-photo:hover::before {
+                    opacity: 1;
+                }
+
+                .gallery-photo::after {
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) scale(0);
+                    font-size: 3rem;
+                    color: var(--white);
+                    z-index: 2;
+                    transition: all 0.3s ease;
+                    text-shadow: 0 0 20px rgba(244, 208, 63, 0.8);
+                }
+
+                .gallery-photo:hover::after {
+                    transform: translate(-50%, -50%) scale(1);
+                }
+
+                @media (max-width: 768px) {
+                    .photo-gallery-grid {
+                        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                        gap: 0.8rem;
+                    }
+                }
+
+                @media (max-width: 480px) {
+                    .photo-gallery-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 0.5rem;
+                    }
+
+                    .gallery-photo::after {
+                        font-size: 2rem;
+                    }
+                }
+            `;
+
+            // Ajouter le style seulement s'il n'existe pas déjà
+            if (!document.querySelector('[data-gallery-styles]')) {
+                style.setAttribute('data-gallery-styles', 'true');
+                document.head.appendChild(style);
             }
-        });
+        }
 
         // Améliorer l'accessibilité des images
         allImages.forEach(img => {
