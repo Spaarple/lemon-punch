@@ -7,18 +7,12 @@ export async function getStaticPaths() {
     const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
 
     try {
-        console.log('🔍 Fetching events from:', EVENTS_URL);
         const res = await fetch(EVENTS_URL);
-        console.log('📡 Response status:', res.status);
 
         if (res.ok) {
             const events = await res.json();
-            console.log(events)
-            console.log('📊 Number of events found:', events.length);
-            console.log('🎯 Events data preview:', events.slice(0, 1));
 
             return events.map((event) => {
-                console.log('📋 Processing event:', event.slug, event.title?.rendered);
                 return {
                     params: { slug: event.slug },
                     props: { event },
@@ -35,16 +29,6 @@ export async function getStaticPaths() {
 }
 
 const { event } = Astro.props;
-
-// Debug des données de l'événement
-console.log('🎪 Event data received:', {
-    title: event?.title?.rendered,
-    slug: event?.slug,
-    acf: event?.acf,
-    meta: event?.meta,
-    date: event?.date,
-    content: event?.content?.rendered?.substring(0, 100) + '...'
-});
 
 // Fonction helper pour récupérer les valeurs ACF ou meta
 function getFieldValue(event, fieldName) {
@@ -96,29 +80,6 @@ function getEventTime(event) {
     return null;
 }
 
-// Debug des données formatées
-console.log('📅 Date processing:', {
-    rawACFDate: getFieldValue(event, 'date_de_levenement'),
-    rawWordPressDate: event.date,
-    processedEventDate: eventDate,
-    formattedDate: formattedDate,
-    extractedTime: getEventTime(event)
-});
-
-console.log('🖼️ Image data:', {
-    hasCoverImage: !!coverImage,
-    imageUrl: coverImage?.source_url
-});
-
-console.log('📍 Fields Values:', {
-    nom_du_lieu: getFieldValue(event, 'nom_du_lieu'),
-    date_de_levenement: getFieldValue(event, 'date_de_levenement'),
-    prix: getFieldValue(event, 'prix'),
-    lien_de_la_billeterie: getFieldValue(event, 'lien_de_la_billeterie'),
-    description: getFieldValue(event, 'description'),
-    lien_vers_actu_ou_blog: getFieldValue(event, 'lien_vers_actu_ou_blog')
-});
-
 // Déterminer si l'événement est à venir ou passé
 const isUpcoming = eventDate && eventDate >= new Date();
 
@@ -127,8 +88,6 @@ const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : '';
 const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
                   'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
 const month = eventDate ? monthNames[eventDate.getMonth()] : '';
-
-console.log('🗓️ Final date display:', { day, month, isUpcoming });
 
 // Breadcrumb items
 const breadcrumbItems = [
@@ -258,14 +217,46 @@ const breadcrumbItems = [
                             )}
                         </div>
 
-                        {getFieldValue(event, 'lien_de_la_billeterie') && isUpcoming && (
-                            <div class="ticket-action">
-                                <a href={getFieldValue(event, 'lien_de_la_billeterie')} target="_blank" class="btn-ticket-primary">
-                                    <i class="fas fa-ticket-alt"></i>
-                                    <span>Acheter des billets</span>
-                                </a>
-                            </div>
-                        )}
+                        {(() => {
+                            const prix = getFieldValue(event, 'prix');
+                            const lienBilleterie = getFieldValue(event, 'lien_de_la_billeterie');
+                            const isFree = prix === 0 || prix === '0';
+
+                            if (isUpcoming) {
+                                if (isFree && !lienBilleterie) {
+                                    // Gratuit et pas de lien de billeterie = libre d'accès
+                                    return (
+                                        <div class="ticket-action">
+                                            <div class="btn-ticket-free">
+                                                <i class="fas fa-check-circle"></i>
+                                                <span>Libre d'accès</span>
+                                            </div>
+                                        </div>
+                                    );
+                                } else if (isFree && lienBilleterie) {
+                                    // Gratuit mais avec lien de billeterie = prendre des billets
+                                    return (
+                                        <div class="ticket-action">
+                                            <a href={lienBilleterie} target="_blank" class="btn-ticket-primary">
+                                                <i class="fas fa-ticket-alt"></i>
+                                                <span>Prendre des billets</span>
+                                            </a>
+                                        </div>
+                                    );
+                                } else if (!isFree && lienBilleterie) {
+                                    // Payant avec lien de billeterie = acheter des billets
+                                    return (
+                                        <div class="ticket-action">
+                                            <a href={lienBilleterie} target="_blank" class="btn-ticket-primary">
+                                                <i class="fas fa-ticket-alt"></i>
+                                                <span>Acheter des billets</span>
+                                            </a>
+                                        </div>
+                                    );
+                                }
+                            }
+                            return null;
+                        })()}
 
                         <!-- Boutons de calendrier -->
                         {isUpcoming && eventDate && (
@@ -296,7 +287,32 @@ const breadcrumbItems = [
                             <div class="description-text" set:html={event.content.rendered} />
                         </div>
                     )}
+
+                    <!-- Lien vers article de blog -->
+                    {getFieldValue(event, 'lien_vers_actu_ou_blog') && (
+                        <div class="blog-article-link">
+                            <h3 class="blog-link-title">En savoir plus</h3>
+                            <a
+                                href={getFieldValue(event, 'lien_vers_actu_ou_blog')}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="btn-blog-article"
+                            >
+                                <i class="fas fa-newspaper"></i>
+                                <span>Lire l'article complet</span>
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    )}
                 </div>
+            </div>
+
+            <!-- Bouton Retour -->
+            <div class="back-navigation-inline">
+                <a href="/evenements/" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Retour aux événements</span>
+                </a>
             </div>
         </div>
     </section>
@@ -320,15 +336,6 @@ const breadcrumbItems = [
         </section>
     )}
 
-    <!-- Section Retour -->
-    <section class="back-navigation">
-        <div class="container">
-            <a href="/evenements/" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-                <span>Retour aux événements</span>
-            </a>
-        </div>
-    </section>
 </Layout>
 
 <style is:global>
@@ -613,6 +620,29 @@ const breadcrumbItems = [
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
 
+    /* Bouton Libre d'accès */
+    .btn-ticket-free {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        background: rgba(46, 204, 113, 0.1);
+        color: #27AE60;
+        padding: 16px 24px;
+        font-weight: 800;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid #27AE60;
+        border-radius: 4px;
+        width: 100%;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
+    }
+
+    .btn-ticket-free i {
+        font-size: 1.1rem;
+    }
+
     /* Carte Contact */
     .contact-card {
         background: var(--light-gray);
@@ -835,6 +865,56 @@ const breadcrumbItems = [
         background: rgba(244, 208, 63, 0.1);
     }
 
+    /* Lien vers article de blog */
+    .blog-article-link {
+        margin-top: 3rem;
+        padding: 2rem;
+        background: rgba(244, 208, 63, 0.08);
+    }
+
+    .blog-link-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--black);
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-blog-article {
+        display: inline-flex;
+        align-items: center;
+        gap: 1rem;
+        background: var(--black);
+        color: var(--white);
+        padding: 5px 12px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-blog-article:hover {
+        background: var(--primary-yellow);
+        color: var(--black);
+        border-color: var(--primary-yellow);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(244, 208, 63, 0.4);
+    }
+
+    .btn-blog-article .fa-newspaper {
+        font-size: 1.1rem;
+    }
+
+    .btn-blog-article .fa-external-link-alt {
+        font-size: 0.9rem;
+        margin-left: auto;
+    }
+
     /* Galerie Photos */
     .event-gallery-section {
         background: var(--light-gray);
@@ -897,10 +977,11 @@ const breadcrumbItems = [
         color: var(--primary-yellow);
     }
 
-    /* Navigation Retour */
-    .back-navigation {
-        background: var(--white);
-        padding: 60px 0;
+    /* Navigation Retour Inline */
+    .back-navigation-inline {
+        padding-top: 3rem;
+        margin-top: 3rem;
+        border-top: 2px solid var(--light-gray);
         text-align: center;
     }
 

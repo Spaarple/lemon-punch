@@ -111,25 +111,6 @@ try {
                 startIndex + EVENTS_PER_PAGE
             );
 
-            console.log('🔍 Pagination Debug:', {
-                currentPage,
-                totalEvents,
-                totalPages,
-                startIndex,
-                EVENTS_PER_PAGE,
-                paginatedEventsLength: paginatedEvents.length,
-                allEventsOrder: allEventsForDisplay.map(e => ({
-                    title: e.title?.rendered,
-                    date: e.eventDate?.toISOString()?.split('T')[0],
-                    isPast: e.isPast
-                })),
-                currentPageEvent: paginatedEvents[0] ? {
-                    title: paginatedEvents[0].title?.rendered,
-                    date: paginatedEvents[0].eventDate?.toISOString()?.split('T')[0],
-                    isPast: paginatedEvents[0].isPast
-                } : null
-            });
-
             // Garder les variables pour la compatibilité
             totalUpcomingEvents = upcomingEvents.length;
             totalPastEvents = pastEvents.length;
