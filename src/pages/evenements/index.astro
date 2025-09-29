@@ -1,6 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
+export const prerender = false;
+
 // URL de l'API WordPress pour récupérer les événements
 const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
 
@@ -19,9 +21,7 @@ let pastEvents = [];
 let totalUpcomingEvents = 0;
 let totalPastEvents = 0;
 let upcomingTotalPages = 0;
-let pastTotalPages = 0;
 let paginatedUpcomingEvents = [];
-let paginatedPastEvents = [];
 
 // Fonction pour formater la date depuis ACF
 function formatEventDate(event) {
@@ -38,7 +38,7 @@ function formatEventDate(event) {
             const year = eventDate.substring(0, 4);
             const month = eventDate.substring(4, 6);
             const day = eventDate.substring(6, 8);
-            return new Date(year, month - 1, day);
+            return new Date(Number(year), month - 1, day);
         }
         // Autres formats de date
         else {
@@ -111,6 +111,25 @@ try {
                 startIndex + EVENTS_PER_PAGE
             );
 
+            console.log('🔍 Pagination Debug:', {
+                currentPage,
+                totalEvents,
+                totalPages,
+                startIndex,
+                EVENTS_PER_PAGE,
+                paginatedEventsLength: paginatedEvents.length,
+                allEventsOrder: allEventsForDisplay.map(e => ({
+                    title: e.title?.rendered,
+                    date: e.eventDate?.toISOString()?.split('T')[0],
+                    isPast: e.isPast
+                })),
+                currentPageEvent: paginatedEvents[0] ? {
+                    title: paginatedEvents[0].title?.rendered,
+                    date: paginatedEvents[0].eventDate?.toISOString()?.split('T')[0],
+                    isPast: paginatedEvents[0].isPast
+                } : null
+            });
+
             // Garder les variables pour la compatibilité
             totalUpcomingEvents = upcomingEvents.length;
             totalPastEvents = pastEvents.length;
@@ -150,16 +169,6 @@ try {
             <div class="container">
                 <h2 class="section-title">
                     Événements
-                    {(totalUpcomingEvents + totalPastEvents) > 0 && (
-                        <span class="events-count">
-                            ({totalUpcomingEvents + totalPastEvents} événement{(totalUpcomingEvents + totalPastEvents) > 1 ? 's' : ''})
-                            {totalUpcomingEvents > 0 && totalPastEvents > 0 && (
-                                <span class="events-breakdown">
-                                    - {totalUpcomingEvents} à venir, {totalPastEvents} passé{totalPastEvents > 1 ? 's' : ''}
-                                </span>
-                            )}
-                        </span>
-                    )}
                 </h2>
                 <div class="concerts-list">
                     {paginatedUpcomingEvents.map((event) => {
