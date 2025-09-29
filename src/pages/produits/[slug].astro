@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import CardProduct from "../../components/ui/CardProduct.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 
 // 1. getStaticPaths va lister toutes les pages à créer
 export async function getStaticPaths() {
@@ -94,15 +95,7 @@ if (product.categories.length > 0) {
 ---
 
 <Layout title={`${product.name} - LemonPunch Merch`}>
-    <nav class="breadcrumb">
-        <div class="container">
-            <ol class="breadcrumb-list">
-                <li><a href="/">Accueil</a></li>
-                <li><a href="/produits">Produits</a></li>
-                <li class="current">{product.name}</li>
-            </ol>
-        </div>
-    </nav>
+    <Breadcrumb currentPageTitle={product.name} />
 
     <section class="product-hero">
         <div class="container">
@@ -329,48 +322,7 @@ if (product.categories.length > 0) {
 </Layout>
 
 <style is:global>
-        /* Breadcrumb */
-    .breadcrumb {
-        background: var(--light-gray);
-        padding: 1rem 0;
-        margin-top: 80px;
-    }
-
-    .breadcrumb-list {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        list-style: none;
-        margin: 0;
-        padding: 0;
-        font-size: 0.9rem;
-    }
-
-    .breadcrumb-list li::after {
-        content: '>';
-        margin-left: 0.5rem;
-        color: var(--gray);
-    }
-
-    .breadcrumb-list li:last-child::after {
-        display: none;
-    }
-
-    .breadcrumb-list a {
-        color: var(--gray);
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .breadcrumb-list a:hover {
-        color: var(--primary-yellow);
-    }
-
-    .breadcrumb-list .current {
-        color: var(--black);
-        font-weight: 600;
-    }
-
+    
     /* Product Hero */
     .product-hero {
         padding: 3rem 0;
@@ -1042,13 +994,6 @@ if (product.categories.length > 0) {
             padding: 0 10px;
         }
 
-        .breadcrumb {
-            padding: 0.5rem 0;
-        }
-
-        .breadcrumb-list {
-            font-size: 0.8rem;
-        }
 
         .product-hero {
             padding: 1rem 0;
