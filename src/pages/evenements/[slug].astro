@@ -1,0 +1,836 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
+
+export async function getStaticPaths() {
+    const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
+
+    try {
+        console.log('🔍 Fetching events from:', EVENTS_URL);
+        const res = await fetch(EVENTS_URL);
+        console.log('📡 Response status:', res.status);
+
+        if (res.ok) {
+            const events = await res.json();
+            console.log(events)
+            console.log('📊 Number of events found:', events.length);
+            console.log('🎯 Events data preview:', events.slice(0, 1));
+
+            return events.map((event) => {
+                console.log('📋 Processing event:', event.slug, event.title?.rendered);
+                return {
+                    params: { slug: event.slug },
+                    props: { event },
+                };
+            });
+        } else {
+            console.error('❌ API Response not OK:', res.status, res.statusText);
+        }
+    } catch (error) {
+        console.error('💥 Error loading events:', error);
+    }
+
+    return [];
+}
+
+const { event } = Astro.props;
+
+// Debug des données de l'événement
+console.log('🎪 Event data received:', {
+    title: event?.title?.rendered,
+    slug: event?.slug,
+    acf: event?.acf,
+    meta: event?.meta,
+    date: event?.date,
+    content: event?.content?.rendered?.substring(0, 100) + '...'
+});
+
+// Fonction helper pour récupérer les valeurs ACF ou meta
+function getFieldValue(event, fieldName) {
+    return event.acf?.[fieldName] ||
+           event.meta?.[fieldName] ||
+           event.meta?.[`${fieldName}`] ||
+           null;
+}
+
+// Fonction pour formater la date depuis ACF ou meta
+function formatEventDate(event) {
+    const eventDate = getFieldValue(event, 'date_de_levenement') || event.date;
+
+    if (eventDate) {
+        // Le format semble être "2025-10-16 20:30:00" donc on peut directement créer une Date
+        return new Date(eventDate);
+    }
+    return null;
+}
+
+// Fonction pour formater la date en français
+function formatDateFrench(date) {
+    if (!date) return null;
+
+    const months = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} ${month} ${year}`;
+}
+
+const eventDate = formatEventDate(event);
+const formattedDate = formatDateFrench(eventDate);
+const coverImage = event._embedded?.['wp:featuredmedia']?.[0];
+
+// Fonction pour extraire l'heure depuis la date ACF
+function getEventTime(event) {
+    const eventDateTime = getFieldValue(event, 'date_de_levenement');
+    if (eventDateTime && eventDateTime.includes(' ')) {
+        // Format "2025-10-16 20:30:00" -> "20:30"
+        const timePart = eventDateTime.split(' ')[1];
+        return timePart ? timePart.substring(0, 5) : null; // Prendre seulement HH:MM
+    }
+    return null;
+}
+
+// Debug des données formatées
+console.log('📅 Date processing:', {
+    rawACFDate: getFieldValue(event, 'date_de_levenement'),
+    rawWordPressDate: event.date,
+    processedEventDate: eventDate,
+    formattedDate: formattedDate,
+    extractedTime: getEventTime(event)
+});
+
+console.log('🖼️ Image data:', {
+    hasCoverImage: !!coverImage,
+    imageUrl: coverImage?.source_url
+});
+
+console.log('📍 Fields Values:', {
+    nom_du_lieu: getFieldValue(event, 'nom_du_lieu'),
+    date_de_levenement: getFieldValue(event, 'date_de_levenement'),
+    prix: getFieldValue(event, 'prix'),
+    lien_de_la_billeterie: getFieldValue(event, 'lien_de_la_billeterie'),
+    description: getFieldValue(event, 'description'),
+    lien_vers_actu_ou_blog: getFieldValue(event, 'lien_vers_actu_ou_blog')
+});
+
+// Déterminer si l'événement est à venir ou passé
+const isUpcoming = eventDate && eventDate >= new Date();
+
+// Format pour les données structurées de date
+const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : '';
+const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
+                  'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
+const month = eventDate ? monthNames[eventDate.getMonth()] : '';
+
+console.log('🗓️ Final date display:', { day, month, isUpcoming });
+
+// Breadcrumb items
+const breadcrumbItems = [
+    { name: "Événements", url: "/evenements/" },
+    { name: event.title.rendered, url: `/evenements/${event.slug}/` }
+];
+---
+
+<Layout title={`${event.title.rendered} - Événements - LemonPunch`}>
+    <!-- Breadcrumb -->
+    <Breadcrumb items={breadcrumbItems} />
+
+    <!-- Hero Section avec style du site -->
+    <section class="event-hero-section">
+        <div class="hero-overlay"></div>
+        {coverImage && (
+            <div class="hero-background-image">
+                <img src={coverImage.source_url} alt={event.title.rendered} />
+            </div>
+        )}
+
+        <div class="container">
+            <div class="event-hero-content">
+                <!-- Badge de statut -->
+                <div class="event-status-badge">
+                    <span class={`status-label ${isUpcoming ? 'upcoming' : 'past'}`}>
+                        {isUpcoming ? 'ÉVÉNEMENT À VENIR' : 'ÉVÉNEMENT PASSÉ'}
+                    </span>
+                </div>
+
+                <!-- Date en grand format -->
+                {(day && month) ? (
+                    <div class="event-date-display">
+                        <div class="date-block">
+                            <span class="date-day">{day}</span>
+                            <span class="date-month">{month}</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div class="event-date-display">
+                        <div class="date-block">
+                            <span class="date-day">??</span>
+                            <span class="date-month">DATE</span>
+                        </div>
+                    </div>
+                )}
+
+                <!-- Titre principal -->
+                <h1 class="event-main-title">{event?.title?.rendered || 'Événement sans titre'}</h1>
+
+                <!-- Informations principales -->
+                <div class="event-main-info">
+                    {getFieldValue(event, 'nom_du_lieu') && (
+                        <div class="info-main-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>{getFieldValue(event, 'nom_du_lieu')}</span>
+                        </div>
+                    )}
+                    {getEventTime(event) && (
+                        <div class="info-main-item">
+                            <i class="fas fa-clock"></i>
+                            <span>{getEventTime(event)}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section Contenu Principal -->
+    <section class="event-details-section">
+        <div class="container">
+            <div class="event-layout">
+                <!-- Colonne Gauche - Informations -->
+                <div class="event-info-column">
+                    <!-- Carte d'informations pratiques -->
+                    <div class="info-card">
+                        <h2 class="info-card-title">Informations Pratiques</h2>
+
+                        <div class="info-grid">
+                            {formattedDate && (
+                                <div class="info-detail">
+                                    <div class="info-icon">
+                                        <i class="fas fa-calendar-alt"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label">Date</span>
+                                        <span class="info-value">{formattedDate}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {getEventTime(event) && (
+                                <div class="info-detail">
+                                    <div class="info-icon">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label">Heure</span>
+                                        <span class="info-value">{getEventTime(event)}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {getFieldValue(event, 'nom_du_lieu') && (
+                                <div class="info-detail">
+                                    <div class="info-icon">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label">Lieu</span>
+                                        <span class="info-value">{getFieldValue(event, 'nom_du_lieu')}</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            {getFieldValue(event, 'prix') !== null && getFieldValue(event, 'prix') !== undefined && (
+                                <div class="info-detail">
+                                    <div class="info-icon">
+                                        <i class="fas fa-ticket-alt"></i>
+                                    </div>
+                                    <div class="info-content">
+                                        <span class="info-label">Prix</span>
+                                        <span class="info-value">{getFieldValue(event, 'prix') === 0 ? 'Gratuit' : `${getFieldValue(event, 'prix')}€`}</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {getFieldValue(event, 'lien_de_la_billeterie') && isUpcoming && (
+                            <div class="ticket-action">
+                                <a href={getFieldValue(event, 'lien_de_la_billeterie')} target="_blank" class="btn-ticket-primary">
+                                    <i class="fas fa-ticket-alt"></i>
+                                    <span>Acheter des billets</span>
+                                </a>
+                            </div>
+                        )}
+                    </div>
+
+                </div>
+
+                <!-- Colonne Droite - Description -->
+                <div class="event-content-column">
+                    {getFieldValue(event, 'description') && (
+                        <div class="event-description">
+                            <h2 class="section-title">Description de l'événement</h2>
+                            <div class="description-text">{getFieldValue(event, 'description')}</div>
+                        </div>
+                    )}
+
+                    {!getFieldValue(event, 'description') && event.content?.rendered && (
+                        <div class="event-description">
+                            <h2 class="section-title">Description de l'événement</h2>
+                            <div class="description-text" set:html={event.content.rendered} />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Galerie Photos -->
+    {getFieldValue(event, 'galerie_photos') && getFieldValue(event, 'galerie_photos').length > 0 && (
+        <section class="event-gallery-section">
+            <div class="container">
+                <h2 class="section-title">Galerie Photos</h2>
+                <div class="gallery-grid">
+                    {getFieldValue(event, 'galerie_photos').slice(0, 6).map((photo) => (
+                        <div class="gallery-item">
+                            <img src={photo.sizes?.medium || photo.url} alt="Photo de l'événement" />
+                            <div class="gallery-overlay">
+                                <i class="fas fa-search-plus"></i>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- Section Retour -->
+    <section class="back-navigation">
+        <div class="container">
+            <a href="/evenements/" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                <span>Retour aux événements</span>
+            </a>
+        </div>
+    </section>
+</Layout>
+
+<style is:global>
+    /* Hero Section avec style du site */
+    .event-hero-section {
+        position: relative;
+        background: linear-gradient(135deg, var(--black) 0%, #2c2c2c 50%, var(--black) 100%);
+        min-height: 50vh;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 2;
+    }
+
+    .hero-background-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1;
+        opacity: 0.3;
+    }
+
+    .hero-background-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .event-hero-content {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        color: var(--white);
+        padding: 3rem 0;
+    }
+
+    /* Badge de statut */
+    .event-status-badge {
+        margin-bottom: 2rem;
+    }
+
+    .status-label {
+        display: inline-block;
+        padding: 8px 20px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        border-radius: 30px;
+        text-transform: uppercase;
+    }
+
+    .status-label.upcoming {
+        background: var(--gradient-yellow);
+        color: var(--black);
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .status-label.past {
+        background: rgba(127, 140, 141, 0.9);
+        color: var(--white);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Date en grand format */
+    .event-date-display {
+        margin-bottom: 3rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .date-block {
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        min-width: 120px;
+        box-shadow: 0 8px 25px rgba(244, 208, 63, 0.4);
+        transform: rotate(-2deg);
+        transition: all 0.3s ease;
+    }
+
+    .date-block:hover {
+        transform: rotate(0deg) scale(1.05);
+    }
+
+    .date-day {
+        display: block;
+        font-size: 3rem;
+        font-weight: 900;
+        line-height: 1;
+        margin-bottom: 0.2rem;
+    }
+
+    .date-month {
+        display: block;
+        font-size: 1.2rem;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+    }
+
+    /* Titre principal */
+    .event-main-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        line-height: 1.1;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Informations principales */
+    .event-main-info {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .info-main-item {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--primary-yellow);
+    }
+
+    .info-main-item i {
+        font-size: 1.1rem;
+    }
+
+    /* Section Détails */
+    .event-details-section {
+        background: var(--white);
+        background-image: url('../../assets/images/white-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-blend-mode: multiply;
+        padding: 100px 0;
+    }
+
+    .event-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 4rem;
+        align-items: start;
+    }
+
+    /* Colonne Informations */
+    .event-info-column {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .info-card {
+        background: var(--white);
+        padding: 2.5rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .info-card-title {
+        font-size: 1.8rem;
+        font-weight: 900;
+        color: var(--black);
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        padding-bottom: 0.8rem;
+    }
+
+    .info-card-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: var(--primary-yellow);
+        border-radius: 2px;
+    }
+
+    .info-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-detail {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .info-detail:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-icon {
+        width: 40px;
+        height: 40px;
+        background: var(--light-gray);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary-yellow);
+        font-size: 1.1rem;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--gray);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.3rem;
+    }
+
+    .info-value {
+        display: block;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--black);
+    }
+
+    /* Bouton Billetterie */
+    .ticket-action {
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--light-gray);
+    }
+
+    .btn-ticket-primary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        background: var(--gradient-yellow);
+        color: var(--black);
+        padding: 16px 24px;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-radius: 8px;
+        border: 2px solid var(--primary-yellow);
+        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .btn-ticket-primary:hover {
+        background: var(--black);
+        color: var(--primary-yellow);
+        border-color: var(--black);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Carte Contact */
+    .contact-card {
+        background: var(--light-gray);
+        padding: 2rem;
+        border-radius: 12px;
+        border-left: 4px solid var(--primary-yellow);
+    }
+
+    .contact-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--black);
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .contact-content {
+        font-size: 1rem;
+        line-height: 1.6;
+        color: var(--gray);
+    }
+
+    /* Colonne Contenu */
+    .event-content-column {
+        background: var(--white);
+        padding: 3rem;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--black);
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        position: relative;
+        padding-bottom: 0.5rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--primary-yellow);
+        border-radius: 2px;
+    }
+
+    .description-text {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: var(--gray);
+    }
+
+    .description-text p {
+        margin-bottom: 1.5rem;
+    }
+
+    .description-text h3 {
+        color: var(--black);
+        font-weight: 700;
+        margin: 2rem 0 1rem 0;
+        font-size: 1.4rem;
+    }
+
+    /* Galerie Photos */
+    .event-gallery-section {
+        background: var(--light-gray);
+        padding: 100px 0;
+    }
+
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+    }
+
+    .gallery-item {
+        position: relative;
+        aspect-ratio: 1;
+        overflow: hidden;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .gallery-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .gallery-item:hover img {
+        transform: scale(1.1);
+    }
+
+    .gallery-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .gallery-item:hover .gallery-overlay {
+        opacity: 1;
+    }
+
+    .gallery-overlay i {
+        font-size: 2rem;
+        color: var(--primary-yellow);
+    }
+
+    /* Navigation Retour */
+    .back-navigation {
+        background: var(--white);
+        padding: 60px 0;
+        text-align: center;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.8rem;
+        background: transparent;
+        color: var(--black);
+        padding: 14px 28px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--black);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: var(--black);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .event-hero-section {
+            min-height: 60vh;
+        }
+
+        .event-main-title {
+            font-size: 2.8rem;
+        }
+
+        .event-main-info {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .event-layout {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .info-card,
+        .event-content-column {
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 2rem;
+        }
+
+        .date-day {
+            font-size: 2.5rem;
+        }
+
+        .date-month {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .event-hero-section {
+            min-height: 50vh;
+        }
+
+        .event-main-title {
+            font-size: 2.2rem;
+        }
+
+        .info-card,
+        .event-content-column {
+            padding: 1.5rem;
+        }
+
+        .gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .date-day {
+            font-size: 2rem;
+        }
+
+        .date-month {
+            font-size: 0.9rem;
+        }
+    }
+</style>
