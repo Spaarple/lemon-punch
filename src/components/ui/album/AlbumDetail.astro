@@ -56,6 +56,42 @@ function getReleaseType(release) {
 
 const releaseType = getReleaseType(album);
 const coverImage = album._embedded?.['wp:featuredmedia']?.[0];
+
+// Fonction pour formater la release_date
+function formatReleaseDate(album) {
+    const releaseDate = album.acf?.release_date || album.date;
+
+    if (releaseDate && releaseDate.length === 8) {
+        // Format YYYYMMDD
+        const year = releaseDate.substring(0, 4);
+        const month = releaseDate.substring(4, 6);
+        const day = releaseDate.substring(6, 8);
+        return new Date(year, month - 1, day);
+    } else if (releaseDate) {
+        // Format date WordPress
+        return new Date(releaseDate);
+    }
+    return null;
+}
+
+// Fonction pour formater la date en français
+function formatDateFrench(date) {
+    if (!date) return null;
+
+    const months = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} / ${month} / ${year}`;
+}
+
+const releaseDate = formatReleaseDate(album);
+const formattedDate = formatDateFrench(releaseDate);
 ---
 
 <div class={`album-detail ${variant}`}>
@@ -80,8 +116,8 @@ const coverImage = album._embedded?.['wp:featuredmedia']?.[0];
                 {variant === 'full' && (
                     <h3 class="release-title">{album.title.rendered}</h3>
                 )}
-                {album.date && (
-                    <p class="release-date">{new Date(album.date).getFullYear()}</p>
+                {formattedDate && (
+                    <p class="release-date">{formattedDate}</p>
                 )}
             </div>
 

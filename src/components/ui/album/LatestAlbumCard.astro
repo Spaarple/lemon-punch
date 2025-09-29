@@ -32,7 +32,42 @@ const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
 }).filter(Boolean).slice(0, 3); // Limiter à 3 liens pour la page d'accueil
 
 const coverImage = album._embedded?.['wp:featuredmedia']?.[0];
-const releaseDate = album.date ? new Date(album.date).getFullYear() : null;
+
+// Utiliser release_date de ACF ou date WordPress comme fallback
+function formatReleaseDate(album) {
+    const releaseDate = album.acf?.release_date || album.date;
+
+    if (releaseDate && releaseDate.length === 8) {
+        // Format YYYYMMDD
+        const year = releaseDate.substring(0, 4);
+        const month = releaseDate.substring(4, 6);
+        const day = releaseDate.substring(6, 8);
+        return new Date(year, month - 1, day);
+    } else if (releaseDate) {
+        // Format date WordPress
+        return new Date(releaseDate);
+    }
+    return null;
+}
+
+// Fonction pour formater la date en français
+function formatDateFrench(date) {
+    if (!date) return null;
+
+    const months = [
+        'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
+    ];
+
+    const day = date.getDate();
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+
+    return `${day} / ${month} / ${year}`;
+}
+
+const releaseDate = formatReleaseDate(album);
+const formattedDate = formatDateFrench(releaseDate);
 
 // Extraire une description courte
 function getShortDescription(content: string, maxLength: number = 150): string {
@@ -65,8 +100,8 @@ const shortDescription = getShortDescription(album.content?.rendered || '');
                  `NOUVEAU ${album.releaseType.toUpperCase()}`}
             </span>
             <h3 class="album-title">{album.title.rendered}</h3>
-            {releaseDate && (
-                <p class="album-year">{releaseDate}</p>
+            {formattedDate && (
+                <p class="album-date">{formattedDate}</p>
             )}
         </div>
 
@@ -159,7 +194,7 @@ const shortDescription = getShortDescription(album.content?.rendered || '');
         letter-spacing: 1px;
     }
 
-    .album-year {
+    .album-date {
         font-size: 1.1rem;
         color: var(--primary-yellow);
         font-weight: 600;

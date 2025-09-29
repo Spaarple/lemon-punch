@@ -51,8 +51,21 @@ try {
         }));
 
         if (allReleases.length > 0) {
-            // Trier par date de publication (le plus récent en premier)
-            const sortedReleases = allReleases.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // Trier par release_date ACF (le plus récent en premier)
+            const sortedReleases = allReleases.sort((a, b) => {
+                const aReleaseDate = a.acf?.release_date || a.date;
+                const bReleaseDate = b.acf?.release_date || b.date;
+
+                // Convertir les dates au format YYYYMMDD en objets Date
+                const dateA = aReleaseDate.length === 8 ?
+                    new Date(aReleaseDate.substring(0,4), aReleaseDate.substring(4,6)-1, aReleaseDate.substring(6,8)) :
+                    new Date(aReleaseDate);
+                const dateB = bReleaseDate.length === 8 ?
+                    new Date(bReleaseDate.substring(0,4), bReleaseDate.substring(4,6)-1, bReleaseDate.substring(6,8)) :
+                    new Date(bReleaseDate);
+
+                return dateB - dateA;
+            });
 
             // Séparer la dernière sortie (principal) et les autres
             latestRelease = sortedReleases[0];
