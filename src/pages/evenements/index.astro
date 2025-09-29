@@ -4,9 +4,24 @@ import Layout from "../../layouts/Layout.astro";
 // URL de l'API WordPress pour récupérer les événements
 const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
 
+// Pagination configuration
+const EVENTS_PER_PAGE = 5;
+
+// Get current page from URL params
+const url = new URL(Astro.request.url);
+const currentPage = parseInt(url.searchParams.get('page') || '1');
+
 let allEvents = [];
 let upcomingEvents = [];
 let pastEvents = [];
+
+// Variables for pagination
+let totalUpcomingEvents = 0;
+let totalPastEvents = 0;
+let upcomingTotalPages = 0;
+let pastTotalPages = 0;
+let paginatedUpcomingEvents = [];
+let paginatedPastEvents = [];
 
 // Fonction pour formater la date depuis ACF
 function formatEventDate(event) {
@@ -70,15 +85,56 @@ try {
             const now = new Date();
             now.setHours(0, 0, 0, 0); // Début de la journée
 
-            // Séparer les événements à venir et passés
-            upcomingEvents = allEvents
-                .filter(event => event.eventDate && event.eventDate >= now)
-                .sort((a, b) => a.eventDate - b.eventDate); // Plus proche en premier
+            // Marquer tous les événements et les trier par date (plus récents en premier)
+            const allEventsForDisplay = allEvents
+                .map(event => ({
+                    ...event,
+                    isPast: event.eventDate < now
+                }))
+                .sort((a, b) => {
+                    // Trier par date décroissante (plus récents en premier)
+                    return b.eventDate - a.eventDate;
+                });
 
-            pastEvents = allEvents
-                .filter(event => event.eventDate && event.eventDate < now)
-                .sort((a, b) => b.eventDate - a.eventDate) // Plus récent en premier
-                .slice(0, 6); // Limiter à 6 événements passés
+            // Séparer pour les statistiques
+            upcomingEvents = allEventsForDisplay.filter(event => !event.isPast);
+            pastEvents = allEventsForDisplay.filter(event => event.isPast);
+
+            // Calculer la pagination pour tous les événements
+            const totalEvents = allEventsForDisplay.length;
+            const totalPages = Math.ceil(totalEvents / EVENTS_PER_PAGE);
+
+            // Paginer tous les événements
+            const startIndex = (currentPage - 1) * EVENTS_PER_PAGE;
+            const paginatedEvents = allEventsForDisplay.slice(
+                startIndex,
+                startIndex + EVENTS_PER_PAGE
+            );
+
+            console.log('🔍 Pagination Debug:', {
+                currentPage,
+                totalEvents,
+                totalPages,
+                startIndex,
+                EVENTS_PER_PAGE,
+                paginatedEventsLength: paginatedEvents.length,
+                allEventsOrder: allEventsForDisplay.map(e => ({
+                    title: e.title?.rendered,
+                    date: e.eventDate?.toISOString()?.split('T')[0],
+                    isPast: e.isPast
+                })),
+                currentPageEvent: paginatedEvents[0] ? {
+                    title: paginatedEvents[0].title?.rendered,
+                    date: paginatedEvents[0].eventDate?.toISOString()?.split('T')[0],
+                    isPast: paginatedEvents[0].isPast
+                } : null
+            });
+
+            // Garder les variables pour la compatibilité
+            totalUpcomingEvents = upcomingEvents.length;
+            totalPastEvents = pastEvents.length;
+            paginatedUpcomingEvents = paginatedEvents;
+            upcomingTotalPages = totalPages;
         }
     }
 } catch (error) {
@@ -107,13 +163,25 @@ try {
         </div>
     </section>
 
-    <!-- Section Événements à venir -->
-    {upcomingEvents.length > 0 && (
-        <section class="concerts-section upcoming-events">
+    <!-- Section Tous les événements -->
+    {paginatedUpcomingEvents.length > 0 && (
+        <section class="concerts-section all-events">
             <div class="container">
-                <h2 class="section-title">Prochains événements</h2>
+                <h2 class="section-title">
+                    Événements
+                    {(totalUpcomingEvents + totalPastEvents) > 0 && (
+                        <span class="events-count">
+                            ({totalUpcomingEvents + totalPastEvents} événement{(totalUpcomingEvents + totalPastEvents) > 1 ? 's' : ''})
+                            {totalUpcomingEvents > 0 && totalPastEvents > 0 && (
+                                <span class="events-breakdown">
+                                    - {totalUpcomingEvents} à venir, {totalPastEvents} passé{totalPastEvents > 1 ? 's' : ''}
+                                </span>
+                            )}
+                        </span>
+                    )}
+                </h2>
                 <div class="concerts-list">
-                    {upcomingEvents.map((event) => {
+                    {paginatedUpcomingEvents.map((event) => {
                         // Extraire jour et mois de la date
                         const eventDate = event.eventDate;
                         const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : '';
@@ -122,8 +190,8 @@ try {
                         const month = eventDate ? monthNames[eventDate.getMonth()] : '';
 
                         return (
-                            <div class="concert-card event-card">
-                                <div class="concert-date">
+                            <div class={`concert-card event-card ${event.isPast ? 'past' : ''}`}>
+                                <div class={`concert-date ${event.isPast ? 'past-date' : ''}`}>
                                     <span class="day">{day}</span>
                                     <span class="month">{month}</span>
                                 </div>
@@ -142,61 +210,50 @@ try {
                                     )}
                                 </div>
                                 <div class="concert-action">
-                                    <a href={`/evenements/${event.slug}/`} class="btn btn-ticket">
-                                        Détails
+                                    <a href={`/evenements/${event.slug}/`} class={`btn btn-ticket ${event.isPast ? 'past-btn' : ''}`}>
+                                        {event.isPast ? 'Voir le récap' : 'Détails'}
                                     </a>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
-            </div>
-        </section>
-    )}
 
-    <!-- Section Événements passés -->
-    {pastEvents.length > 0 && (
-        <section class="concerts-section past-events">
-            <div class="container">
-                <h2 class="section-title">Événements passés</h2>
-                <div class="concerts-list">
-                    {pastEvents.map((event) => {
-                        // Extraire jour et mois de la date
-                        const eventDate = event.eventDate;
-                        const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : '';
-                        const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
-                                          'JUL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
-                        const month = eventDate ? monthNames[eventDate.getMonth()] : '';
+                <!-- Pagination unifiée -->
+                {upcomingTotalPages > 1 && (
+                    <div class="pagination-container">
+                        <div class="pagination">
+                            {currentPage > 1 && (
+                                <a
+                                    href={`/evenements/?page=${currentPage - 1}`}
+                                    class="pagination-btn pagination-prev"
+                                >
+                                    <i class="fas fa-chevron-left"></i>
+                                    Précédent
+                                </a>
+                            )}
 
-                        return (
-                            <div class="concert-card event-card past">
-                                <div class="concert-date past-date">
-                                    <span class="day">{day}</span>
-                                    <span class="month">{month}</span>
-                                </div>
-                                <div class="concert-info">
-                                    <h3 class="concert-venue">{event.title.rendered}</h3>
-                                    {event.acf?.nom_du_lieu && (
-                                        <p class="concert-city">{event.acf.nom_du_lieu}</p>
-                                    )}
-                                    {event.acf?.date_de_levenement && (
-                                        <p class="concert-time">
-                                            {new Date(event.acf.date_de_levenement).toLocaleTimeString('fr-FR', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </p>
-                                    )}
-                                </div>
-                                <div class="concert-action">
-                                    <a href={`/evenements/${event.slug}/`} class="btn btn-ticket past-btn">
-                                        Voir le récap
-                                    </a>
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            {Array.from({ length: upcomingTotalPages }, (_, i) => i + 1).map(page => (
+                                <a
+                                    href={`/evenements/?page=${page}`}
+                                    class={`pagination-number ${page === currentPage ? 'active' : ''}`}
+                                >
+                                    {page}
+                                </a>
+                            ))}
+
+                            {currentPage < upcomingTotalPages && (
+                                <a
+                                    href={`/evenements/?page=${currentPage + 1}`}
+                                    class="pagination-btn pagination-next"
+                                >
+                                    Suivant
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </section>
     )}
@@ -346,9 +403,24 @@ try {
         animation-delay: 4.5s;
     }
 
-    /* Styles spécifiques pour les événements passés */
-    .past-events {
-        background-color: #f8f8f8;
+    /* Section unifiée tous événements */
+    .all-events {
+        background: var(--white);
+        background-image: url('../../assets/images/white-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-blend-mode: multiply;
+    }
+
+    /* Styles pour les événements passés dans la section unifiée */
+    .concert-card.past {
+        opacity: 0.7;
+        transition: opacity 0.3s ease;
+    }
+
+    .concert-card.past:hover {
+        opacity: 0.9;
     }
 
     .past-date {
@@ -366,6 +438,102 @@ try {
         background: var(--gray) !important;
         color: white !important;
         border-color: var(--gray) !important;
+    }
+
+    /* Titre et sous-titre des événements passés en gris */
+    .concert-card.past .concert-venue {
+        color: var(--gray);
+    }
+
+    .concert-card.past .concert-city,
+    .concert-card.past .concert-time {
+        color: #999;
+    }
+
+    /* Styles pour les compteurs d'événements */
+    .events-count {
+        font-size: 1.2rem;
+        font-weight: 400;
+        color: var(--primary-yellow);
+        margin-left: 1rem;
+    }
+
+    .events-breakdown {
+        font-size: 1rem;
+        color: var(--gray);
+        font-weight: 300;
+    }
+
+    /* Styles pour la pagination */
+    .pagination-container {
+        margin-top: 3rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--white);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .pagination-btn,
+    .pagination-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 10px 15px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        color: var(--black);
+        border: 2px solid transparent;
+    }
+
+    .pagination-btn {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pagination-number {
+        min-width: 40px;
+        justify-content: center;
+    }
+
+    .pagination-btn:hover,
+    .pagination-number:hover {
+        background: var(--primary-yellow);
+        color: var(--black);
+        border-color: var(--primary-yellow);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .pagination-number.active {
+        background: var(--black);
+        color: var(--white);
+        border-color: var(--black);
+    }
+
+    .pagination-number.active:hover {
+        background: var(--black);
+        color: var(--white);
+        border-color: var(--black);
+    }
+
+    .pagination-prev i {
+        margin-right: 0.3rem;
+    }
+
+    .pagination-next i {
+        margin-left: 0.3rem;
     }
 
     /* Section Aucun événement */
@@ -465,6 +633,37 @@ try {
         .events-subtitle {
             font-size: 1.4rem;
         }
+
+        .events-count {
+            font-size: 1rem;
+            margin-left: 0.5rem;
+            display: block;
+            margin-top: 0.5rem;
+        }
+
+        .events-breakdown {
+            font-size: 0.9rem;
+        }
+
+        .pagination {
+            padding: 0.8rem;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pagination-btn,
+        .pagination-number {
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+
+        .pagination-btn {
+            order: -1;
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
     }
 
     @media (max-width: 480px) {
@@ -479,6 +678,32 @@ try {
 
         .events-subtitle {
             font-size: 1.1rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+
+        .pagination {
+            padding: 0.6rem;
+        }
+
+        .pagination-btn,
+        .pagination-number {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+        }
+
+        .pagination-btn span {
+            display: none;
+        }
+
+        .pagination-prev::after {
+            content: 'Préc.';
+        }
+
+        .pagination-next::after {
+            content: 'Suiv.';
         }
     }
 </style>
