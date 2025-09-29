@@ -1,27 +1,13 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 
-export const prerender = false;
-
 // URL de l'API WordPress pour récupérer les événements
 const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
 
-// Pagination configuration
-const EVENTS_PER_PAGE = 5;
-
-// Get current page from URL params
-const url = new URL(Astro.request.url);
-const currentPage = parseInt(url.searchParams.get('page') || '1');
-
 let allEvents = [];
-let upcomingEvents = [];
-let pastEvents = [];
-
-// Variables for pagination
+let totalAllEvents = 0;
 let totalUpcomingEvents = 0;
 let totalPastEvents = 0;
-let upcomingTotalPages = 0;
-let paginatedUpcomingEvents = [];
 
 // Fonction pour formater la date depuis ACF
 function formatEventDate(event) {
@@ -85,56 +71,24 @@ try {
             const now = new Date();
             now.setHours(0, 0, 0, 0); // Début de la journée
 
-            // Marquer tous les événements et les trier par date (plus récents en premier)
-            const allEventsForDisplay = allEvents
+            // Marquer tous les événements et les trier par date
+            allEvents = allEvents
                 .map(event => ({
                     ...event,
                     isPast: event.eventDate < now
                 }))
                 .sort((a, b) => {
-                    // Trier par date décroissante (plus récents en premier)
-                    return b.eventDate - a.eventDate;
+                    // Les événements à venir en premier (par date croissante), puis les passés (par date décroissante)
+                    if (!a.isPast && b.isPast) return -1;
+                    if (a.isPast && !b.isPast) return 1;
+                    if (!a.isPast && !b.isPast) return a.eventDate - b.eventDate; // À venir: plus proches en premier
+                    return b.eventDate - a.eventDate; // Passés: plus récents en premier
                 });
 
-            // Séparer pour les statistiques
-            upcomingEvents = allEventsForDisplay.filter(event => !event.isPast);
-            pastEvents = allEventsForDisplay.filter(event => event.isPast);
-
-            // Calculer la pagination pour tous les événements
-            const totalEvents = allEventsForDisplay.length;
-            const totalPages = Math.ceil(totalEvents / EVENTS_PER_PAGE);
-
-            // Paginer tous les événements
-            const startIndex = (currentPage - 1) * EVENTS_PER_PAGE;
-            const paginatedEvents = allEventsForDisplay.slice(
-                startIndex,
-                startIndex + EVENTS_PER_PAGE
-            );
-
-            console.log('🔍 Pagination Debug:', {
-                currentPage,
-                totalEvents,
-                totalPages,
-                startIndex,
-                EVENTS_PER_PAGE,
-                paginatedEventsLength: paginatedEvents.length,
-                allEventsOrder: allEventsForDisplay.map(e => ({
-                    title: e.title?.rendered,
-                    date: e.eventDate?.toISOString()?.split('T')[0],
-                    isPast: e.isPast
-                })),
-                currentPageEvent: paginatedEvents[0] ? {
-                    title: paginatedEvents[0].title?.rendered,
-                    date: paginatedEvents[0].eventDate?.toISOString()?.split('T')[0],
-                    isPast: paginatedEvents[0].isPast
-                } : null
-            });
-
-            // Garder les variables pour la compatibilité
-            totalUpcomingEvents = upcomingEvents.length;
-            totalPastEvents = pastEvents.length;
-            paginatedUpcomingEvents = paginatedEvents;
-            upcomingTotalPages = totalPages;
+            // Stats pour les onglets
+            totalAllEvents = allEvents.length;
+            totalUpcomingEvents = allEvents.filter(event => !event.isPast).length;
+            totalPastEvents = allEvents.filter(event => event.isPast).length;
         }
     }
 } catch (error) {
@@ -163,87 +117,36 @@ try {
         </div>
     </section>
 
-    <!-- Section Tous les événements -->
-    {paginatedUpcomingEvents.length > 0 && (
-        <section class="concerts-section all-events">
+    <!-- Section Événements -->
+    {allEvents.length > 0 && (
+        <section class="concerts-section filtered-events">
             <div class="container">
-                <h2 class="section-title">
-                    Événements
-                </h2>
-                <div class="concerts-list">
-                    {paginatedUpcomingEvents.map((event) => {
-                        // Extraire jour et mois de la date
-                        const eventDate = event.eventDate;
-                        const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : '';
-                        const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
-                                          'JUL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
-                        const month = eventDate ? monthNames[eventDate.getMonth()] : '';
-
-                        return (
-                            <div class={`concert-card event-card ${event.isPast ? 'past' : ''}`}>
-                                <div class={`concert-date ${event.isPast ? 'past-date' : ''}`}>
-                                    <span class="day">{day}</span>
-                                    <span class="month">{month}</span>
-                                </div>
-                                <div class="concert-info">
-                                    <h3 class="concert-venue">{event.title.rendered}</h3>
-                                    {event.acf?.nom_du_lieu && (
-                                        <p class="concert-city">{event.acf.nom_du_lieu}</p>
-                                    )}
-                                    {event.acf?.date_de_levenement && (
-                                        <p class="concert-time">
-                                            {new Date(event.acf.date_de_levenement).toLocaleTimeString('fr-FR', {
-                                                hour: '2-digit',
-                                                minute: '2-digit'
-                                            })}
-                                        </p>
-                                    )}
-                                </div>
-                                <div class="concert-action">
-                                    <a href={`/evenements/${event.slug}/`} class={`btn btn-ticket ${event.isPast ? 'past-btn' : ''}`}>
-                                        {event.isPast ? 'Voir le récap' : 'Détails'}
-                                    </a>
-                                </div>
-                            </div>
-                        );
-                    })}
+                <div class="section-header">
+                    <h2 class="section-title" id="events-title">
+                        Tous les événements
+                    </h2>
+                    <div class="filters-container">
+                        <button class="filter-tab active" data-filter="all">
+                            Tous
+                        </button>
+                        <button class="filter-tab" data-filter="upcoming">
+                            À venir
+                        </button>
+                        <button class="filter-tab" data-filter="past">
+                            Passés
+                        </button>
+                    </div>
+                </div>
+                <div class="concerts-list" id="events-list">
+                    <!-- Les événements seront injectés ici par JavaScript -->
                 </div>
 
-                <!-- Pagination unifiée -->
-                {upcomingTotalPages > 1 && (
-                    <div class="pagination-container">
-                        <div class="pagination">
-                            {currentPage > 1 && (
-                                <a
-                                    href={`/evenements/?page=${currentPage - 1}`}
-                                    class="pagination-btn pagination-prev"
-                                >
-                                    <i class="fas fa-chevron-left"></i>
-                                    Précédent
-                                </a>
-                            )}
-
-                            {Array.from({ length: upcomingTotalPages }, (_, i) => i + 1).map(page => (
-                                <a
-                                    href={`/evenements/?page=${page}`}
-                                    class={`pagination-number ${page === currentPage ? 'active' : ''}`}
-                                >
-                                    {page}
-                                </a>
-                            ))}
-
-                            {currentPage < upcomingTotalPages && (
-                                <a
-                                    href={`/evenements/?page=${currentPage + 1}`}
-                                    class="pagination-btn pagination-next"
-                                >
-                                    Suivant
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            )}
-                        </div>
+                <!-- Pagination -->
+                <div class="pagination-container" id="pagination-container" style="display: none;">
+                    <div class="pagination" id="pagination">
+                        <!-- La pagination sera injectée ici par JavaScript -->
                     </div>
-                )}
+                </div>
             </div>
         </section>
     )}
@@ -261,6 +164,205 @@ try {
         </section>
     )}
 </Layout>
+
+<script define:vars={{ allEvents }}>
+    // Configuration
+    const EVENTS_PER_PAGE = 5;
+
+    // État de l'application
+    let currentFilter = 'all';
+    let currentPage = 1;
+    let filteredEvents = [];
+    let totalPages = 0;
+
+    // Références DOM
+    const eventsTitle = document.getElementById('events-title');
+    const eventsList = document.getElementById('events-list');
+    const paginationContainer = document.getElementById('pagination-container');
+    const pagination = document.getElementById('pagination');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+
+    // Fonction pour formater la date d'affichage
+    function formatDisplayDate(eventDate) {
+        if (!eventDate) return { day: '??', month: 'DATE' };
+
+        const date = new Date(eventDate);
+        const day = date.getDate().toString().padStart(2, '0');
+        const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
+                           'JUL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
+        const month = monthNames[date.getMonth()];
+
+        return { day, month };
+    }
+
+    // Fonction pour formater l'heure
+    function formatTime(dateTime) {
+        if (!dateTime) return null;
+        const date = new Date(dateTime);
+        return date.toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Fonction pour filtrer les événements
+    function filterEvents(filter) {
+        switch (filter) {
+            case 'upcoming':
+                filteredEvents = allEvents.filter(event => !event.isPast);
+                break;
+            case 'past':
+                filteredEvents = allEvents.filter(event => event.isPast);
+                break;
+            case 'all':
+            default:
+                filteredEvents = [...allEvents];
+                break;
+        }
+    }
+
+    // Fonction pour mettre à jour le titre
+    function updateTitle(filter) {
+        const titles = {
+            'all': 'Tous les événements',
+            'upcoming': 'Événements à venir',
+            'past': 'Événements passés'
+        };
+        eventsTitle.textContent = titles[filter] || titles['all'];
+    }
+
+    // Fonction pour rendre un événement
+    function renderEvent(event) {
+        const { day, month } = formatDisplayDate(event.eventDate);
+        const time = formatTime(event.acf?.date_de_levenement);
+
+        return `
+            <div class="concert-card event-card ${event.isPast ? 'past' : ''}">
+                <div class="concert-date ${event.isPast ? 'past-date' : ''}">
+                    <span class="day">${day}</span>
+                    <span class="month">${month}</span>
+                </div>
+                <div class="concert-info">
+                    <h3 class="concert-venue">${event.title.rendered}</h3>
+                    ${event.acf?.nom_du_lieu ? `<p class="concert-city">${event.acf.nom_du_lieu}</p>` : ''}
+                    ${time ? `<p class="concert-time">${time}</p>` : ''}
+                </div>
+                <div class="concert-action">
+                    <a href="/evenements/${event.slug}/" class="btn btn-ticket ${event.isPast ? 'past-btn' : ''}">
+                        ${event.isPast ? 'Voir le récap' : 'Détails'}
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
+    // Fonction pour rendre les événements
+    function renderEvents() {
+        const startIndex = (currentPage - 1) * EVENTS_PER_PAGE;
+        const endIndex = startIndex + EVENTS_PER_PAGE;
+        const paginatedEvents = filteredEvents.slice(startIndex, endIndex);
+
+        if (paginatedEvents.length === 0) {
+            eventsList.innerHTML = `
+                <div class="no-events-message">
+                    <p>Aucun événement trouvé pour ce filtre.</p>
+                </div>
+            `;
+            return;
+        }
+
+        eventsList.innerHTML = paginatedEvents.map(renderEvent).join('');
+    }
+
+    // Fonction pour rendre la pagination
+    function renderPagination() {
+        totalPages = Math.ceil(filteredEvents.length / EVENTS_PER_PAGE);
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        let paginationHTML = '';
+
+        // Bouton précédent
+        if (currentPage > 1) {
+            paginationHTML += `
+                <button class="pagination-btn pagination-prev" data-page="${currentPage - 1}">
+                    <i class="fas fa-chevron-left"></i>
+                    Précédent
+                </button>
+            `;
+        }
+
+        // Numéros de page
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+                <button class="pagination-number ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                    ${i}
+                </button>
+            `;
+        }
+
+        // Bouton suivant
+        if (currentPage < totalPages) {
+            paginationHTML += `
+                <button class="pagination-btn pagination-next" data-page="${currentPage + 1}">
+                    Suivant
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+        }
+
+        pagination.innerHTML = paginationHTML;
+
+        // Ajouter les écouteurs d'événements
+        pagination.querySelectorAll('[data-page]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                currentPage = parseInt(e.target.closest('[data-page]').dataset.page);
+                renderEvents();
+                renderPagination();
+
+                // Scroller vers le haut de la section
+                document.querySelector('.filtered-events').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+    }
+
+    // Fonction principale pour mettre à jour l'affichage
+    function updateDisplay() {
+        filterEvents(currentFilter);
+        updateTitle(currentFilter);
+        currentPage = 1; // Reset à la page 1 lors du changement de filtre
+        renderEvents();
+        renderPagination();
+    }
+
+    // Gestionnaires d'événements pour les filtres
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Mettre à jour les états actifs
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Changer le filtre
+            currentFilter = tab.dataset.filter;
+            updateDisplay();
+        });
+    });
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDisplay();
+    });
+</script>
 
 <style is:global>
     /* Section Header Événements */
@@ -393,8 +495,92 @@ try {
         animation-delay: 4.5s;
     }
 
-    /* Section unifiée tous événements */
-    .all-events {
+    /* Section Header avec titre et filtres */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        gap: 2rem;
+        min-height: 60px; /* Assurer une hauteur minimum pour l'alignement */
+    }
+
+    .filters-container {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+        align-items: center; /* Centrer les filtres verticalement */
+    }
+
+    /* Alignement vertical parfait du titre */
+    .section-header .section-title {
+        margin: 0; /* Supprimer les marges par défaut */
+        line-height: 1.2; /* Hauteur de ligne contrôlée */
+        display: flex;
+        align-items: center; /* Centrer le texte du titre verticalement */
+    }
+
+    .filter-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 12px 24px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--light-gray);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        color: var(--black);
+        background: var(--white);
+        cursor: pointer;
+    }
+
+    .filter-tab:hover {
+        border-color: var(--primary-yellow);
+        background: var(--primary-yellow);
+        color: var(--black);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .filter-tab.active {
+        border-color: var(--black);
+        background: var(--black);
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-tab.active:hover {
+        border-color: var(--black);
+        background: var(--black);
+        color: var(--white);
+    }
+
+    .filter-count {
+        font-size: 0.9rem;
+        font-weight: 600;
+        opacity: 0.8;
+    }
+
+    /* Message aucun événement */
+    .no-events-message {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray);
+    }
+
+    .no-events-message p {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    /* Section événements filtrés */
+    .filtered-events {
         background: var(--white);
         background-image: url('../../assets/images/white-bg-with-noise.jpg');
         background-size: cover;
@@ -406,7 +592,7 @@ try {
     /* Styles pour les événements passés dans la section unifiée */
     .concert-card.past {
         opacity: 0.7;
-        transition: opacity 0.3s ease;
+        transition: all 0.3s ease;
     }
 
     .concert-card.past:hover {
@@ -485,6 +671,8 @@ try {
         transition: all 0.3s ease;
         color: var(--black);
         border: 2px solid transparent;
+        background: var(--white);
+        cursor: pointer;
     }
 
     .pagination-btn {
@@ -624,6 +812,27 @@ try {
             font-size: 1.4rem;
         }
 
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+        }
+
+        .filters-container {
+            gap: 0.3rem;
+            align-self: stretch;
+            justify-content: center;
+        }
+
+        .filter-tab {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+        }
+
+        .filter-count {
+            font-size: 0.8rem;
+        }
+
         .events-count {
             font-size: 1rem;
             margin-left: 0.5rem;
@@ -668,6 +877,27 @@ try {
 
         .events-subtitle {
             font-size: 1.1rem;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: center;
+            gap: 1.2rem;
+            text-align: center;
+        }
+
+        .filters-container {
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            min-width: 140px;
+            justify-content: center;
         }
 
         .section-title {

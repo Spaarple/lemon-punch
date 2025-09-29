@@ -34,7 +34,7 @@ import Favicon from '../assets/images/lmp-logo-yellow.png';
 		navMenu.classList.toggle('active');
 
 		// Animation du hamburger menu
-		const bars = navToggle.querySelectorAll('.bar');
+		const bars = navToggle.querySelectorAll('.bar') as HTMLElement;
 		bars.forEach((bar, index) => {
 			if (navMenu.classList.contains('active')) {
 				if (index === 0) bar.style.transform = 'rotate(45deg) translate(5px, 5px)';
@@ -76,7 +76,7 @@ import Favicon from '../assets/images/lmp-logo-yellow.png';
 
 	// Header navigation scroll effect
 	window.addEventListener('scroll', () => {
-		const headerNav = document.querySelector('.header-nav');
+		const headerNav = document.querySelector('.header-nav') as HTMLElement;
 		if (window.scrollY > 50) {
 			headerNav.style.background = 'rgba(238, 238, 238, 0.55)';
 			headerNav.style.backdropFilter = 'blur(15px)';
