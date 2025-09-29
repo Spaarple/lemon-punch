@@ -1,6 +1,8 @@
 ---
 // src/components/Footer.astro
 import Logo from '../assets/images/lmp-logo-white.png';
+
+const annualDate= new Date().getFullYear();
 ---
 
 <!-- Footer -->
@@ -24,7 +26,7 @@ import Logo from '../assets/images/lmp-logo-white.png';
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2024 LemonPunch. Tous droits réservés.</p>
+            <p>&copy; {annualDate} LemonPunch. Tous droits réservés.</p>
         </div>
     </div>
 </footer>
