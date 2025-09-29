@@ -1,0 +1,223 @@
+---
+export interface Props {
+    items?: Array<{
+        label: string;
+        href?: string;
+    }>;
+    autoGenerate?: boolean;
+    separator?: string;
+    showHome?: boolean;
+    currentPageTitle?: string;
+}
+
+const {
+    items = [],
+    autoGenerate = true,
+    separator = '/',
+    showHome = true,
+    currentPageTitle
+} = Astro.props;
+
+// Fonction pour générer automatiquement les breadcrumbs basés sur l'URL
+function generateBreadcrumbs(url: URL, currentTitle?: string) {
+    const pathSegments = url.pathname.split('/').filter(segment => segment !== '');
+    const breadcrumbs = [];
+
+    // Toujours inclure l'accueil si demandé
+    if (showHome) {
+        breadcrumbs.push({ label: 'Accueil', href: '/' });
+    }
+
+    // Mapper les segments d'URL vers des labels plus lisibles
+    const segmentMap: Record<string, string> = {
+        'produits': 'Produits',
+        'albums': 'Albums',
+        'concerts': 'Concerts',
+        'videos': 'Vidéos',
+        'contact': 'Contact',
+        'panier': 'Panier',
+        'commande': 'Commande',
+        'mon-compte': 'Mon Compte',
+        'recherche': 'Recherche'
+    };
+
+    // Construire le chemin progressivement
+    let currentPath = '';
+    pathSegments.forEach((segment, index) => {
+        currentPath += `/${segment}`;
+
+        // Ne pas créer de lien pour le dernier segment (page actuelle)
+        const isLast = index === pathSegments.length - 1;
+        const label = segmentMap[segment] || segment.charAt(0).toUpperCase() + segment.slice(1);
+
+        breadcrumbs.push({
+            label: isLast && currentTitle ? currentTitle : label,
+            href: isLast ? undefined : currentPath
+        });
+    });
+
+    return breadcrumbs;
+}
+
+// Utiliser les items fournis ou générer automatiquement
+const breadcrumbItems = items.length > 0 ? items : (autoGenerate ? generateBreadcrumbs(Astro.url, currentPageTitle) : []);
+
+// Ne rien afficher si pas de breadcrumbs
+if (breadcrumbItems.length === 0) {
+    return null;
+}
+---
+
+<nav class="breadcrumb" aria-label="Fil d'Ariane">
+    <div class="container">
+        <ol class="breadcrumb-list">
+            {breadcrumbItems.map((item, index) => (
+                <li class="breadcrumb-item">
+                    {item.href ? (
+                        <a href={item.href} class="breadcrumb-link">
+                            {item.label}
+                        </a>
+                    ) : (
+                        <span class="breadcrumb-current" aria-current="page">
+                            {item.label}
+                        </span>
+                    )}
+                    {index < breadcrumbItems.length - 1 && (
+                        <span class="breadcrumb-separator" aria-hidden="true">
+                            {separator}
+                        </span>
+                    )}
+                </li>
+            ))}
+        </ol>
+    </div>
+</nav>
+
+<style>
+    .breadcrumb {
+        background: var(--light-gray);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 1rem 0;
+        margin-top: 80px; /* Espace pour la navigation fixe */
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .breadcrumb-list {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .breadcrumb-link {
+        color: var(--gray);
+        text-decoration: none;
+        transition: color 0.3s ease;
+        font-weight: 500;
+    }
+
+    .breadcrumb-link:hover {
+        color: var(--primary-yellow);
+        text-decoration: underline;
+    }
+
+    .breadcrumb-current {
+        color: var(--black);
+        font-weight: 600;
+    }
+
+    .breadcrumb-separator {
+        margin: 0 0.8rem;
+        color: var(--gray);
+        font-weight: 300;
+        user-select: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .breadcrumb {
+            padding: 0.8rem 0;
+            margin-top: 70px;
+        }
+
+        .container {
+            padding: 0 15px;
+        }
+
+        .breadcrumb-list {
+            font-size: 0.8rem;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .breadcrumb {
+            padding: 0.6rem 0;
+            margin-top: 60px;
+        }
+
+        .container {
+            padding: 0 10px;
+        }
+
+        .breadcrumb-list {
+            font-size: 0.75rem;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 0.4rem;
+        }
+
+        /* Tronquer les longs labels sur très petits écrans */
+        .breadcrumb-link,
+        .breadcrumb-current {
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    }
+
+    /* Variantes de style */
+    .breadcrumb.minimal {
+        background: transparent;
+        border-bottom: none;
+        padding: 0.5rem 0;
+    }
+
+    .breadcrumb.dark {
+        background: var(--black);
+    }
+
+    .breadcrumb.dark .breadcrumb-link {
+        color: var(--light-gray);
+    }
+
+    .breadcrumb.dark .breadcrumb-link:hover {
+        color: var(--primary-yellow);
+    }
+
+    .breadcrumb.dark .breadcrumb-current {
+        color: var(--white);
+    }
+
+    .breadcrumb.dark .breadcrumb-separator {
+        color: var(--gray);
+    }
+</style>
