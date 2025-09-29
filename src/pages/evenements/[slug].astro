@@ -286,7 +286,7 @@ const breadcrumbItems = [
                     {getFieldValue(event, 'description') && (
                         <div class="event-description">
                             <h2 class="section-title">Description de l'événement</h2>
-                            <div class="description-text">{getFieldValue(event, 'description')}</div>
+                            <div class="description-text" set:html={getFieldValue(event, 'description')} />
                         </div>
                     )}
 
@@ -501,7 +501,6 @@ const breadcrumbItems = [
     .info-card {
         background: var(--white);
         padding: 2.5rem;
-        border-radius: 12px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
         border: 1px solid rgba(0, 0, 0, 0.05);
     }
@@ -600,7 +599,6 @@ const breadcrumbItems = [
         font-size: 1rem;
         text-transform: uppercase;
         letter-spacing: 1px;
-        border-radius: 8px;
         border: 2px solid var(--primary-yellow);
         transition: all 0.3s ease;
         width: 100%;
@@ -642,7 +640,6 @@ const breadcrumbItems = [
     .event-content-column {
         background: var(--white);
         padding: 3rem;
-        border-radius: 12px;
         box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     }
 
@@ -679,11 +676,163 @@ const breadcrumbItems = [
         margin-bottom: 1.5rem;
     }
 
-    .description-text h3 {
+    .description-text h1,
+    .description-text h2,
+    .description-text h3,
+    .description-text h4,
+    .description-text h5,
+    .description-text h6 {
         color: var(--black);
         font-weight: 700;
         margin: 2rem 0 1rem 0;
+    }
+
+    .description-text h1 {
+        font-size: 2rem;
+    }
+
+    .description-text h2 {
+        font-size: 1.8rem;
+    }
+
+    .description-text h3 {
         font-size: 1.4rem;
+    }
+
+    .description-text h4 {
+        font-size: 1.2rem;
+    }
+
+    .description-text h5,
+    .description-text h6 {
+        font-size: 1.1rem;
+    }
+
+    /* Texte en gras */
+    .description-text strong,
+    .description-text b {
+        font-weight: 700;
+        color: var(--black);
+    }
+
+    /* Texte en italique */
+    .description-text em,
+    .description-text i {
+        font-style: italic;
+        color: var(--primary-yellow);
+    }
+
+    /* Listes */
+    .description-text ul,
+    .description-text ol {
+        margin: 1.5rem 0;
+        padding-left: 2rem;
+    }
+
+    .description-text ul li,
+    .description-text ol li {
+        margin-bottom: 0.8rem;
+        line-height: 1.6;
+    }
+
+    .description-text ul {
+        list-style-type: none;
+    }
+
+    .description-text ul li::before {
+        content: '•';
+        color: var(--primary-yellow);
+        font-weight: bold;
+        position: absolute;
+        margin-left: -1.5rem;
+        font-size: 1.2rem;
+    }
+
+    .description-text ol {
+        list-style-type: decimal;
+        list-style-position: outside;
+    }
+
+    .description-text ol li {
+        padding-left: 0.5rem;
+    }
+
+    /* Liens */
+    .description-text a {
+        color: var(--primary-yellow);
+        text-decoration: underline;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+    .description-text a:hover {
+        color: var(--black);
+        text-decoration: none;
+    }
+
+    /* Citations */
+    .description-text blockquote {
+        border-left: 4px solid var(--primary-yellow);
+        padding-left: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+        color: var(--gray);
+        background: rgba(244, 208, 63, 0.05);
+        padding: 1.5rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    /* Code inline */
+    .description-text code {
+        background: var(--light-gray);
+        padding: 0.2rem 0.4rem;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: var(--black);
+    }
+
+    /* Images dans la description */
+    .description-text img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Tableaux */
+    .description-text table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 2rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .description-text th,
+    .description-text td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--light-gray);
+    }
+
+    .description-text th {
+        background: var(--black);
+        color: var(--white);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+
+    .description-text tr:nth-child(even) {
+        background: rgba(244, 208, 63, 0.05);
+    }
+
+    .description-text tr:hover {
+        background: rgba(244, 208, 63, 0.1);
     }
 
     /* Galerie Photos */
@@ -768,7 +917,6 @@ const breadcrumbItems = [
         text-transform: uppercase;
         letter-spacing: 1px;
         border: 2px solid var(--black);
-        border-radius: 8px;
         transition: all 0.3s ease;
     }
 
