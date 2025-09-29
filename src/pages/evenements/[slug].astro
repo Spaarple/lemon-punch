@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
+import CalendarButtons from "../../components/ui/event/CalendarButtons.astro";
 
 export async function getStaticPaths() {
     const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
@@ -265,6 +266,17 @@ const breadcrumbItems = [
                                 </a>
                             </div>
                         )}
+
+                        <!-- Boutons de calendrier -->
+                        {isUpcoming && eventDate && (
+                            <CalendarButtons
+                                title={event.title.rendered}
+                                location={getFieldValue(event, 'nom_du_lieu')}
+                                startDate={eventDate}
+                                description={getFieldValue(event, 'description') || event.content?.rendered?.replace(/<[^>]*>/g, '')}
+                                url={`https://lemonpunch.spaarple.fr/evenements/${event.slug}/`}
+                            />
+                        )}
                     </div>
 
                 </div>
@@ -402,11 +414,10 @@ const breadcrumbItems = [
         background: var(--primary-yellow);
         color: var(--black);
         padding: 2rem;
-        border-radius: 12px;
         text-align: center;
         min-width: 120px;
         box-shadow: 0 8px 25px rgba(244, 208, 63, 0.4);
-        transform: rotate(-2deg);
+        transform: rotate(-8deg);
         transition: all 0.3s ease;
     }
 

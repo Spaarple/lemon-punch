@@ -10,17 +10,25 @@ let pastEvents = [];
 
 // Fonction pour formater la date depuis ACF
 function formatEventDate(event) {
-    const eventDate = event.acf?.date_evenement || event.date;
+    // Utiliser le bon nom de champ ACF
+    const eventDate = event.acf?.date_de_levenement || event.date;
 
-    if (eventDate && eventDate.length === 8) {
-        // Format YYYYMMDD
-        const year = eventDate.substring(0, 4);
-        const month = eventDate.substring(4, 6);
-        const day = eventDate.substring(6, 8);
-        return new Date(year, month - 1, day);
-    } else if (eventDate) {
-        // Format date WordPress
-        return new Date(eventDate);
+    if (eventDate && typeof eventDate === 'string') {
+        // Si c'est au format datetime "2025-10-16 20:30:00"
+        if (eventDate.includes('-') && eventDate.includes(':')) {
+            return new Date(eventDate);
+        }
+        // Si c'est au format YYYYMMDD
+        else if (eventDate.length === 8 && !eventDate.includes('-')) {
+            const year = eventDate.substring(0, 4);
+            const month = eventDate.substring(4, 6);
+            const day = eventDate.substring(6, 8);
+            return new Date(year, month - 1, day);
+        }
+        // Autres formats de date
+        else {
+            return new Date(eventDate);
+        }
     }
     return null;
 }
@@ -121,11 +129,16 @@ try {
                                 </div>
                                 <div class="concert-info">
                                     <h3 class="concert-venue">{event.title.rendered}</h3>
-                                    {event.acf?.lieu && (
-                                        <p class="concert-city">{event.acf.lieu}</p>
+                                    {event.acf?.nom_du_lieu && (
+                                        <p class="concert-city">{event.acf.nom_du_lieu}</p>
                                     )}
-                                    {event.acf?.heure && (
-                                        <p class="concert-time">{event.acf.heure}</p>
+                                    {event.acf?.date_de_levenement && (
+                                        <p class="concert-time">
+                                            {new Date(event.acf.date_de_levenement).toLocaleTimeString('fr-FR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </p>
                                     )}
                                 </div>
                                 <div class="concert-action">
@@ -163,11 +176,16 @@ try {
                                 </div>
                                 <div class="concert-info">
                                     <h3 class="concert-venue">{event.title.rendered}</h3>
-                                    {event.acf?.lieu && (
-                                        <p class="concert-city">{event.acf.lieu}</p>
+                                    {event.acf?.nom_du_lieu && (
+                                        <p class="concert-city">{event.acf.nom_du_lieu}</p>
                                     )}
-                                    {event.acf?.heure && (
-                                        <p class="concert-time">{event.acf.heure}</p>
+                                    {event.acf?.date_de_levenement && (
+                                        <p class="concert-time">
+                                            {new Date(event.acf.date_de_levenement).toLocaleTimeString('fr-FR', {
+                                                hour: '2-digit',
+                                                minute: '2-digit'
+                                            })}
+                                        </p>
                                     )}
                                 </div>
                                 <div class="concert-action">

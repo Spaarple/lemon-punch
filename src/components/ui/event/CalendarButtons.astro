@@ -1,0 +1,256 @@
+---
+export interface Props {
+    title: string;
+    location?: string;
+    startDate: Date;
+    endDate?: Date;
+    description?: string;
+    url?: string;
+}
+
+const { title, location, startDate, endDate, description, url } = Astro.props;
+
+// Format des dates pour les calendriers
+function formatDateForCalendar(date: Date): string {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+// Calcul de la date de fin (si non fournie, ajouter 2h par défaut)
+const finalEndDate = endDate || new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+
+const startDateFormatted = formatDateForCalendar(startDate);
+const endDateFormatted = formatDateForCalendar(finalEndDate);
+
+// Encodage des paramètres pour les URLs
+const encodedTitle = encodeURIComponent(title);
+const encodedLocation = encodeURIComponent(location || '');
+const encodedDescription = encodeURIComponent(description || '');
+const encodedUrl = encodeURIComponent(url || '');
+
+// URLs pour les différents calendriers
+const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodedTitle}&dates=${startDateFormatted}/${endDateFormatted}&location=${encodedLocation}&details=${encodedDescription}`;
+
+const outlookUrl = `https://outlook.live.com/calendar/0/deeplink/compose?subject=${encodedTitle}&startdt=${startDateFormatted}&enddt=${endDateFormatted}&location=${encodedLocation}&body=${encodedDescription}`;
+
+// Format ICS pour Apple Calendar et autres
+const icsContent = `BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//LemonPunch//Event//FR
+BEGIN:VEVENT
+UID:${Date.now()}@lemonpunch.com
+DTSTAMP:${formatDateForCalendar(new Date())}
+DTSTART:${startDateFormatted}
+DTEND:${endDateFormatted}
+SUMMARY:${title}
+DESCRIPTION:${description || ''}
+LOCATION:${location || ''}
+URL:${url || ''}
+END:VEVENT
+END:VCALENDAR`;
+
+const icsDataUrl = `data:text/calendar;charset=utf8,${encodeURIComponent(icsContent)}`;
+---
+
+<div class="calendar-section">
+    <div class="calendar-dropdown">
+        <button class="calendar-btn" type="button">
+            <span>Ajouter au calendrier</span>
+            <i class="fas fa-chevron-down dropdown-arrow"></i>
+        </button>
+
+        <div class="calendar-menu">
+            <a
+                href={googleCalendarUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="calendar-option"
+            >
+                <i class="fab fa-google"></i>
+                <span>Google Calendar</span>
+            </a>
+
+            <a
+                href={outlookUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="calendar-option"
+            >
+                <i class="fab fa-microsoft"></i>
+                <span>Outlook</span>
+            </a>
+
+            <a
+                href={icsDataUrl}
+                download={`${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`}
+                class="calendar-option"
+            >
+                <i class="fab fa-apple"></i>
+                <span>Apple Calendar</span>
+            </a>
+
+            <a
+                href={icsDataUrl}
+                download={`${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`}
+                class="calendar-option"
+            >
+                <i class="fas fa-download"></i>
+                <span>Autre calendrier</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropdown = document.querySelector('.calendar-dropdown');
+        const toggle = dropdown?.querySelector('.calendar-btn');
+        const menu = dropdown?.querySelector('.calendar-menu');
+
+        if (toggle && menu) {
+            toggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdown.classList.toggle('active');
+            });
+
+            // Fermer le menu en cliquant ailleurs
+            document.addEventListener('click', function(e) {
+                if (!dropdown.contains(e.target)) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        }
+    });
+</script>
+
+<style>
+    .calendar-section {
+        padding-top: 1.5rem;
+        border-top: 2px solid var(--light-gray);
+        margin-top: 1.5rem;
+    }
+
+    .calendar-dropdown {
+        position: relative;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Style identique au bouton "Retour aux événements" */
+    .calendar-btn {
+        display: inline-flex;
+        align-items: center;
+        background: transparent;
+        color: var(--black);
+        padding: 14px 28px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--black);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .calendar-btn:hover {
+        background: var(--black);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .calendar-dropdown.active .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .calendar-menu {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        background: var(--white);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateX(-50%) translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 100;
+        overflow: hidden;
+        min-width: 200px;
+        margin-top: 8px;
+    }
+
+    .calendar-dropdown.active .calendar-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .calendar-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: var(--black);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: var(--white);
+    }
+
+    .calendar-option:last-child {
+        border-bottom: none;
+    }
+
+    .calendar-option:hover {
+        background: rgba(0, 0, 0, 0.05);
+        transform: translateX(3px);
+    }
+
+    .calendar-option i {
+        width: 18px;
+        text-align: center;
+        font-size: 1rem;
+    }
+
+    .calendar-option .fa-microsoft, .fa-google, .fa-apple {
+        color: var(--primary-yellow);
+    }
+
+    .calendar-option .fa-download {
+        color: var(--black);
+
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .calendar-btn {
+            padding: 12px 24px;
+            font-size: 0.9rem;
+        }
+
+        .calendar-option {
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .calendar-btn {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+        }
+
+        .calendar-menu {
+            min-width: 180px;
+        }
+    }
+</style>
