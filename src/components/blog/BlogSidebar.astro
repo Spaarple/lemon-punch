@@ -1,0 +1,362 @@
+---
+export interface Props {
+    post: {
+        title: { rendered: string };
+        date: string;
+        categories?: number[];
+    };
+    postCategories: Array<{
+        id: number;
+        name: string;
+        slug: string;
+    }>;
+    formattedDate?: string;
+    currentUrl: string;
+}
+
+const { post, postCategories, formattedDate, currentUrl } = Astro.props;
+---
+
+<!-- Sidebar -->
+<aside class="article-sidebar">
+    <!-- Table des matières -->
+    <div class="sidebar-card" id="toc-container" style="display: none;">
+        <h3 class="sidebar-title">Table des matières</h3>
+        <nav class="table-of-contents" id="table-of-contents">
+            <!-- Généré automatiquement par JavaScript -->
+        </nav>
+    </div>
+
+    <!-- Informations sur l'article -->
+    <div class="sidebar-card">
+        <h3 class="sidebar-title">Informations</h3>
+        <div class="sidebar-info">
+            {formattedDate && (
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Publié le {formattedDate}</span>
+                </div>
+            )}
+            {postCategories.length > 0 && (
+                <div class="info-item">
+                    <i class="fas fa-tags"></i>
+                    <div class="categories-list">
+                        {postCategories.map(cat => (
+                            <span class="sidebar-category" key={cat.id}>
+                                {cat.name}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    </div>
+
+    <!-- Partage -->
+    <div class="sidebar-card">
+        <h3 class="sidebar-title">Partager</h3>
+        <div class="share-buttons">
+            <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="share-btn"
+                title="Partager sur Facebook"
+            >
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title.rendered)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="share-btn"
+                title="Partager sur X"
+            >
+                <i class="fab fa-x-twitter"></i>
+            </a>
+            <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="share-btn"
+                title="Partager sur LinkedIn"
+            >
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<style>
+    /* Sidebar */
+    .article-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        position: sticky;
+        top: 100px;
+        align-self: flex-start;
+    }
+
+    .sidebar-card {
+        background: var(--white);
+        padding: 2rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-title {
+        font-size: 1.3rem;
+        font-weight: 800;
+        color: var(--black);
+        margin-bottom: 1.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 2px solid var(--primary-yellow);
+        padding-bottom: 0.5rem;
+    }
+
+    /* Informations sidebar */
+    .sidebar-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.8rem;
+        font-size: 1rem;
+        font-weight: 600;
+        letter-spacing: 0.1rem;
+        color: var(--black);
+    }
+
+    .info-item i {
+        color: var(--primary-yellow);
+        width: 18px;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+
+    .categories-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    .sidebar-category {
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 2px 8px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    /* Boutons de partage - Style header navigation */
+    .share-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .share-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--black);
+        color: var(--white);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        font-size: 1.2rem;
+    }
+
+    .share-btn:hover {
+        transform: translateY(-3px) scale(1.1);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .share-btn:nth-child(1):hover {
+        background: #1877f2; /* Facebook blue */
+    }
+
+    .share-btn:nth-child(2):hover {
+        background: #000000; /* X black */
+    }
+
+    .share-btn:nth-child(3):hover {
+        background: #0077b5; /* LinkedIn blue */
+    }
+
+    .share-btn i {
+        width: auto;
+        text-align: center;
+    }
+
+    /* Table des matières - Style cohérent avec le site */
+    .table-of-contents {
+        max-height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .table-of-contents ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .table-of-contents li {
+        margin: 0;
+        padding: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .table-of-contents li:last-child {
+        border-bottom: none;
+    }
+
+    .table-of-contents a {
+        display: block;
+        padding: 0.8rem 0;
+        color: var(--black);
+        text-decoration: none;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        position: relative;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table-of-contents a:hover {
+        color: var(--primary-yellow);
+        transform: translateX(3px);
+    }
+
+    .table-of-contents a.active {
+        color: var(--primary-yellow);
+        font-weight: 700;
+    }
+
+    .table-of-contents a::after {
+        //content: '›';
+        position: absolute;
+        right: 0;
+        color: var(--light-gray);
+        font-size: 1.2rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        transform: translateX(-5px);
+    }
+
+    .table-of-contents a:hover::after,
+    .table-of-contents a.active::after {
+        opacity: 1;
+        transform: translateX(0);
+        color: var(--primary-yellow);
+    }
+
+    /* Niveaux de titre - hiérarchie simple */
+    .table-of-contents .toc-h1 {
+        font-size: 1rem;
+        font-weight: 800;
+    }
+
+    .table-of-contents .toc-h2 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        padding-left: 1rem;
+    }
+
+    .table-of-contents .toc-h3 {
+        font-size: 0.85rem;
+        font-weight: 600;
+        padding-left: 2rem;
+        opacity: 0.9;
+    }
+
+    .table-of-contents .toc-h4 {
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding-left: 3rem;
+        opacity: 0.8;
+    }
+
+    .table-of-contents .toc-h5,
+    .table-of-contents .toc-h6 {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding-left: 4rem;
+        opacity: 0.7;
+    }
+
+    /* Scrollbar simple */
+    .table-of-contents::-webkit-scrollbar {
+        width: 2px;
+    }
+
+    .table-of-contents::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .table-of-contents::-webkit-scrollbar-thumb {
+        background: var(--light-gray);
+    }
+
+    .table-of-contents::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-yellow);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .share-buttons {
+            gap: 0.8rem;
+        }
+
+        .share-btn {
+            width: 35px;
+            height: 35px;
+            font-size: 1rem;
+        }
+
+        /* Table des matières responsive */
+        .table-of-contents {
+            max-height: 300px;
+        }
+
+        .table-of-contents a {
+            padding: 0.7rem 0;
+            font-size: 0.8rem;
+        }
+
+        .table-of-contents .toc-h2 {
+            padding-left: 0.5rem;
+        }
+
+        .table-of-contents .toc-h3 {
+            padding-left: 1rem;
+        }
+
+        .table-of-contents .toc-h4 {
+            padding-left: 1.5rem;
+        }
+
+        .table-of-contents .toc-h5,
+        .table-of-contents .toc-h6 {
+            padding-left: 2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sidebar-card {
+            padding: 1.5rem;
+        }
+    }
+</style>

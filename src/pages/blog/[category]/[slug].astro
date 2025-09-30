@@ -1,5 +1,6 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+import BlogSidebar from "../../../components/blog/BlogSidebar.astro";
 
 export async function getStaticPaths() {
     // Récupérer les articles et catégories
@@ -73,7 +74,6 @@ const postCategories = post.categories?.map(catId =>
             )}
             <div class="header-overlay"></div>
         </div>
-
         <div class="header-content">
             <div class="container">
                 <!-- Breadcrumbs -->
@@ -136,74 +136,12 @@ const postCategories = post.categories?.map(catId =>
                 </div>
 
                 <!-- Sidebar -->
-                <aside class="article-sidebar">
-                    <!-- Table des matières -->
-                    <div class="sidebar-card" id="toc-container" style="display: none;">
-                        <h3 class="sidebar-title">Table des matières</h3>
-                        <nav class="table-of-contents" id="table-of-contents">
-                            <!-- Généré automatiquement par JavaScript -->
-                        </nav>
-                    </div>
-
-                    <!-- Informations sur l'article -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-title">Informations</h3>
-                        <div class="sidebar-info">
-                            {formattedDate && (
-                                <div class="info-item">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span>Publié le {formattedDate}</span>
-                                </div>
-                            )}
-                            {postCategories.length > 0 && (
-                                <div class="info-item">
-                                    <i class="fas fa-tags"></i>
-                                    <div class="categories-list">
-                                        {postCategories.map(cat => (
-                                            <span class="sidebar-category" key={cat.id}>
-                                                {cat.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <!-- Partage -->
-                    <div class="sidebar-card">
-                        <h3 class="sidebar-title">Partager</h3>
-                        <div class="share-buttons">
-                            <a
-                                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(Astro.url.href)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="share-btn"
-                                title="Partager sur Facebook"
-                            >
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a
-                                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(Astro.url.href)}&text=${encodeURIComponent(post.title.rendered)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="share-btn"
-                                title="Partager sur X"
-                            >
-                                <i class="fab fa-x-twitter"></i>
-                            </a>
-                            <a
-                                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(Astro.url.href)}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="share-btn"
-                                title="Partager sur LinkedIn"
-                            >
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                        </div>
-                    </div>
-                </aside>
+                <BlogSidebar
+                    post={post}
+                    postCategories={postCategories}
+                    formattedDate={formattedDate}
+                    currentUrl={Astro.url.href}
+                />
             </div>
         </div>
     </section>
