@@ -20,22 +20,35 @@ const allProducts = await response.json();
 const productsToDisplay = limit ? allProducts.slice(0, limit) : allProducts;
 ---
 
+<CardProduct />
+
 <section class="shop-section" id="shop">
     <div class="container">
         <h2 class="section-title">Shop</h2>
         <div class="shop-grid">
             {/* On boucle sur la bonne liste de produits (limitée ou complète) */}
-            {productsToDisplay.map(product => (
-                    <CardProduct
-                            id={product.id}
-                            slug={product.slug}
-                            name={product.name}
-                            price={product.price}
-                            imageSrc={product.images[0]?.src}
-                            imageAlt={product.images[0]?.alt || `Image pour ${product.name}`}
-                            category={product.categories[0]?.name}
-                    />
-            ))}
+            {productsToDisplay.map(product => {
+                // Fonction pour extraire et limiter la description
+                const extractDescription = (html) => {
+                    if (!html) return '';
+                    const text = html.replace(/<[^>]*>/g, '').trim();
+                    return text.length > 150 ? text.substring(0, 150) + '...' : text;
+                };
+
+                const productData = {
+                    id: product.id,
+                    slug: product.slug,
+                    name: product.name,
+                    price: product.price,
+                    imageSrc: product.images[0]?.src,
+                    imageAlt: product.images[0]?.alt || `Image pour ${product.name}`,
+                    category: product.categories[0]?.name,
+                    description: extractDescription(product.short_description || product.description)
+                };
+                return (
+                    <product-card data-product={JSON.stringify(productData)}></product-card>
+                );
+            })}
         </div>
         <div class="shop-more">
             <a href="/produits/" class="btn btn-shop-more">Accéder au merch</a>

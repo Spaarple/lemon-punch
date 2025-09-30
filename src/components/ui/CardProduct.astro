@@ -1,33 +1,264 @@
 ---
-// src/components/ui/CardProduct.astro
-
-// On définit les informations que ce composant a besoin de recevoir
-interface Props {
-    id: number;
-    slug: string;
-    imageSrc: string;
-    imageAlt: string;
-    name: string;
-    price: number;
-    category?: string;
-}
-const { id, slug, imageSrc, imageAlt, name, price, category } = Astro.props;
+// Ce composant est autonome pour les cartes de produits
+// Il utilise un Custom Element sans Shadow DOM pour garder les styles globaux
 ---
 
-<div class="product-card">
-    <div class="product-image">
-        <img src={imageSrc} alt={imageAlt} class="product-img">
-        <div class="product-overlay">
-            <a href={`https://lemonpunch.spaarple.fr/panier/?add-to-cart=${id}`} >
-                Voir le produit
-            </a>
-        </div>
-    </div>
-    <div class="product-info">
-        <a href={`/produits/${slug}/`}>
-            {category && category !== "Non classé" && <span class="product-category">{category}</span>}
-            <h3 class="product-name">{name}</h3>
-            <p class="product-price">{price}€</p>
-        </a>
-    </div>
-</div>
+<script is:inline>
+    // Définir le Custom Element immédiatement
+    if (typeof window !== 'undefined' && !customElements.get('product-card')) {
+        class ProductCard extends HTMLElement {
+            connectedCallback() {
+                try {
+                    // Récupérer les données des attributs
+                    const productAttr = this.getAttribute('data-product') || '{}';
+                    const decodedProduct = productAttr
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'");
+                    const data = JSON.parse(decodedProduct);
+
+                    const productUrl = `/produits/${data.slug}/`;
+                    const cartUrl = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${data.id}`;
+                    const defaultImage = '/placeholder-product.jpg';
+
+                    // Construire le HTML de la carte
+                    this.innerHTML = `
+                        <article class="product-card">
+                            <div class="product-image">
+                                <img src="${data.imageSrc || defaultImage}"
+                                     alt="${data.imageAlt || data.name}"
+                                     onerror="this.src='${defaultImage}'">
+                                <div class="product-overlay">
+                                    <a href="${cartUrl}" class="product-link">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="product-content">
+                                <div class="product-meta">
+                                    <span class="product-price">${data.price}€</span>
+                                    ${data.category && data.category !== 'Non classé' ? `<span class="product-category">${data.category}</span>` : ''}
+                                </div>
+                                <h3 class="product-title">
+                                    <a href="${productUrl}">${data.name}</a>
+                                </h3>
+                                ${data.description ? `<p class="product-description">${data.description}</p>` : ''}
+                                <a href="${productUrl}" class="product-read-more">
+                                    Voir le produit
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </article>
+                    `;
+                } catch (error) {
+                    console.error('Erreur lors du rendu de product-card:', error);
+                    this.innerHTML = '<p>Erreur de chargement du produit</p>';
+                }
+            }
+        }
+
+        customElements.define('product-card', ProductCard);
+    }
+</script>
+
+<style is:global>
+    /* Styles pour les cartes de produits */
+    .product-card {
+        background: var(--white);
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-image {
+        position: relative;
+        height: 250px;
+        overflow: hidden;
+    }
+
+    .product-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .product-card:hover .product-image img {
+        transform: scale(1.1);
+    }
+
+    .product-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .product-card:hover .product-overlay {
+        opacity: 1;
+    }
+
+    .product-link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        background: var(--primary-yellow);
+        color: var(--black);
+        border-radius: 50%;
+        text-decoration: none;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .product-link:hover {
+        background: var(--white);
+        transform: scale(1.1);
+    }
+
+    .product-content {
+        padding: 2rem;
+    }
+
+    .product-meta {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .product-price {
+        font-size: 1.2rem;
+        color: var(--gray);
+        font-weight: 500;
+    }
+
+    .product-category {
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 4px 8px;
+        border-radius: 2px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .product-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--black);
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+
+    .product-title a {
+        color: var(--black);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .product-title a:hover {
+        color: var(--primary-yellow);
+    }
+
+    .product-description {
+        font-size: 1rem;
+        color: var(--gray);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-read-more {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--black);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .product-read-more:hover {
+        color: var(--primary-yellow);
+        transform: translateX(5px);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .product-image {
+            height: 220px;
+        }
+
+        .product-content {
+            padding: 1.5rem;
+        }
+
+        .product-title {
+            font-size: 1.3rem;
+        }
+
+        .product-description {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .product-image {
+            height: 200px;
+        }
+
+        .product-content {
+            padding: 1.25rem;
+        }
+
+        .product-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .product-category {
+            align-self: flex-start;
+        }
+
+        .product-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .product-description {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .product-read-more {
+            font-size: 0.85rem;
+        }
+    }
+</style>
