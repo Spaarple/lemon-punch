@@ -151,6 +151,7 @@ try {
         </section>
     )}
 
+    <!-- Importer les styles du composant ArticleCard -->
     <ArticleCard />
 </Layout>
 
@@ -194,24 +195,44 @@ try {
         }
     }
 
-    // Fonction pour rendre un article avec le Web Component
+    // Fonction pour rendre un article
     function renderArticle(post) {
+        const coverImage = post._embedded?.['wp:featuredmedia']?.[0];
+        const defaultImage = '/placeholder-article.jpg';
+
         // Récupérer la première catégorie pour construire l'URL
         const firstCategory = post.categories?.length ? allCategories.find(cat => cat.id === post.categories[0]) : null;
         const categorySlug = firstCategory?.slug || 'uncategorized';
         const categoryName = firstCategory?.name || '';
-
-        // Créer le composant article-card
-        const postData = JSON.stringify(post)
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+        const articleUrl = `/blog/${categorySlug}/${post.slug}/`;
 
         return `
-            <article-card
-                data-post="${postData}"
-                data-category-slug="${categorySlug}"
-                data-category-name="${categoryName}">
-            </article-card>
+            <article class="article-card">
+                <div class="article-image">
+                    <img src="${coverImage?.source_url || defaultImage}"
+                         alt="${post.title?.rendered || ''}"
+                         onerror="this.src='${defaultImage}'">
+                    <div class="article-overlay">
+                        <a href="${articleUrl}" class="article-link">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="article-content">
+                    <div class="article-meta">
+                        <span class="article-date">${post.formattedDate || 'Date inconnue'}</span>
+                        ${categoryName ? `<span class="article-category">${categoryName}</span>` : ''}
+                    </div>
+                    <h3 class="article-title">
+                        <a href="${articleUrl}">${post.title?.rendered || ''}</a>
+                    </h3>
+                    ${post.excerpt ? `<p class="article-excerpt">${post.excerpt}</p>` : ''}
+                    <a href="${articleUrl}" class="article-read-more">
+                        Lire la suite
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </article>
         `;
     }
 

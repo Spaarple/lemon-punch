@@ -3,56 +3,61 @@
 // Il utilise un Custom Element sans Shadow DOM pour garder les styles globaux
 ---
 
-<script>
-    class ArticleCard extends HTMLElement {
-        connectedCallback() {
-            // Récupérer les données des attributs
-            const postAttr = this.getAttribute('data-post') || '{}';
-            const decodedPost = postAttr
-                .replace(/&quot;/g, '"')
-                .replace(/&#39;/g, "'");
-            const data = JSON.parse(decodedPost);
-            const categorySlug = this.getAttribute('data-category-slug') || 'uncategorized';
-            const categoryName = this.getAttribute('data-category-name') || '';
+<script is:inline>
+    // Définir le Custom Element immédiatement
+    if (typeof window !== 'undefined' && !customElements.get('article-card')) {
+        class ArticleCard extends HTMLElement {
+            connectedCallback() {
+                try {
+                    // Récupérer les données des attributs
+                    const postAttr = this.getAttribute('data-post') || '{}';
+                    const decodedPost = postAttr
+                        .replace(/&quot;/g, '"')
+                        .replace(/&#39;/g, "'");
+                    const data = JSON.parse(decodedPost);
+                    const categorySlug = this.getAttribute('data-category-slug') || 'uncategorized';
+                    const categoryName = this.getAttribute('data-category-name') || '';
 
-            const coverImage = data._embedded?.['wp:featuredmedia']?.[0];
-            const defaultImage = '/placeholder-article.jpg';
-            const articleUrl = `/blog/${categorySlug}/${data.slug}/`;
+                    const coverImage = data._embedded?.['wp:featuredmedia']?.[0];
+                    const defaultImage = '/placeholder-article.jpg';
+                    const articleUrl = `/blog/${categorySlug}/${data.slug}/`;
 
-            // Construire le HTML de la carte
-            this.innerHTML = `
-                <article class="article-card">
-                    <div class="article-image">
-                        <img src="${coverImage?.source_url || defaultImage}"
-                             alt="${data.title?.rendered || ''}"
-                             onerror="this.src='${defaultImage}'">
-                        <div class="article-overlay">
-                            <a href="${articleUrl}" class="article-link">
-                                <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="article-content">
-                        <div class="article-meta">
-                            <span class="article-date">${data.formattedDate || 'Date inconnue'}</span>
-                            ${categoryName ? `<span class="article-category">${categoryName}</span>` : ''}
-                        </div>
-                        <h3 class="article-title">
-                            <a href="${articleUrl}">${data.title?.rendered || ''}</a>
-                        </h3>
-                        ${data.excerpt ? `<p class="article-excerpt">${data.excerpt}</p>` : ''}
-                        <a href="${articleUrl}" class="article-read-more">
-                            Lire la suite
-                            <i class="fas fa-chevron-right"></i>
-                        </a>
-                    </div>
-                </article>
-            `;
+                    // Construire le HTML de la carte
+                    this.innerHTML = `
+                        <article class="article-card">
+                            <div class="article-image">
+                                <img src="${coverImage?.source_url || defaultImage}"
+                                     alt="${data.title?.rendered || ''}"
+                                     onerror="this.src='${defaultImage}'">
+                                <div class="article-overlay">
+                                    <a href="${articleUrl}" class="article-link">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <div class="article-content">
+                                <div class="article-meta">
+                                    <span class="article-date">${data.formattedDate || 'Date inconnue'}</span>
+                                    ${categoryName ? `<span class="article-category">${categoryName}</span>` : ''}
+                                </div>
+                                <h3 class="article-title">
+                                    <a href="${articleUrl}">${data.title?.rendered || ''}</a>
+                                </h3>
+                                ${data.excerpt ? `<p class="article-excerpt">${data.excerpt}</p>` : ''}
+                                <a href="${articleUrl}" class="article-read-more">
+                                    Lire la suite
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </div>
+                        </article>
+                    `;
+                } catch (error) {
+                    console.error('Erreur lors du rendu de article-card:', error);
+                    this.innerHTML = '<p>Erreur de chargement de l\'article</p>';
+                }
+            }
         }
-    }
 
-    // Enregistrer le composant custom element
-    if (!customElements.get('article-card')) {
         customElements.define('article-card', ArticleCard);
     }
 </script>
