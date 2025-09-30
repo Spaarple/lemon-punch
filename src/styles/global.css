@@ -303,6 +303,51 @@ a {
     position: relative;
 }
 
+.latest-release-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3rem;
+}
+
+.albums-more {
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.btn-albums-more {
+    display: inline-block;
+    background: transparent;
+    color: var(--black);
+    padding: 12px 30px;
+    text-decoration: none;
+    border: 2px solid var(--black);
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+}
+
+.btn-albums-more:hover {
+    background: var(--black);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.no-music-message {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--gray);
+}
+
+.no-music-message p {
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin: 0;
+}
+
 
 /* Latest Release Card avec cadre simple */
 .latest-release {
