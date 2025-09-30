@@ -852,6 +852,50 @@ const postCategories = post.categories?.map(catId =>
         color: var(--black);
     }
 
+    /* ========== BOUTONS WORDPRESS NATIFS ========== */
+    .wp-block-button__link,
+    .wp-element-button {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 0.8rem !important;
+        background: transparent !important;
+        color: var(--black) !important;
+        padding: 14px 28px !important;
+        text-decoration: none !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        border: 2px solid var(--black) !important;
+        border-radius: 4px !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        box-shadow: none !important;
+    }
+
+    .wp-block-button__link:hover,
+    .wp-element-button:hover {
+        background: var(--black) !important;
+        color: var(--white) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Conteneur des boutons WordPress centré */
+    .wp-block-button,
+    .wp-block-buttons {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 1rem 0 !important;
+        width: 100% !important;
+    }
+
+    .wp-block-buttons {
+        flex-wrap: wrap !important;
+        gap: 1rem !important;
+    }
+
     /* Actions de l'article */
     .article-actions {
         margin-top: 4rem;
