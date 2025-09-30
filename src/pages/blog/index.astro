@@ -156,7 +156,7 @@ try {
 
 <script define:vars={{ allPosts, allCategories }}>
     // Configuration
-    const ARTICLES_PER_PAGE = 10;
+    const ARTICLES_PER_PAGE = 9;
 
     // État de l'application
     let currentFilter = 'all';
@@ -641,6 +641,7 @@ try {
         display: flex;
         gap: 1rem;
         align-items: center;
+        justify-content: space-between;
         margin-bottom: 1rem;
         flex-wrap: wrap;
     }
@@ -877,35 +878,50 @@ try {
     }
 
     /* Responsive */
+    @media (max-width: 1200px) {
+        .articles-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
     @media (max-width: 768px) {
         .blog-header {
             height: 50vh;
             min-height: 400px;
+            margin-top: 60px;
         }
 
         .blog-title {
-            font-size: 4rem;
+            font-size: 3.5rem;
         }
 
         .blog-subtitle {
-            font-size: 1.4rem;
+            font-size: 1.3rem;
+            padding: 0 1rem;
+        }
+
+        .articles-section {
+            padding: 60px 0;
         }
 
         .section-header {
             flex-direction: column;
             align-items: flex-start;
             gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .filters-container {
-            gap: 0.3rem;
+            gap: 0.5rem;
             align-self: stretch;
-            justify-content: center;
+            justify-content: flex-start;
         }
 
         .filter-tab {
             padding: 10px 16px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            flex: 0 1 auto;
         }
 
         .section-header .section-title {
@@ -913,13 +929,30 @@ try {
         }
 
         .articles-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .article-image {
+            height: 220px;
+        }
+
+        .article-content {
+            padding: 1.5rem;
+        }
+
+        .article-title {
+            font-size: 1.3rem;
+        }
+
+        .article-excerpt {
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
         }
 
         .pagination {
             padding: 0.8rem;
-            gap: 0.3rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
             justify-content: center;
         }
@@ -927,67 +960,122 @@ try {
         .pagination-btn,
         .pagination-number {
             padding: 8px 12px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
         }
 
         .pagination-btn {
-            order: -1;
-            width: 100%;
+            flex: 1 1 100%;
             justify-content: center;
-            margin-bottom: 0.5rem;
+        }
+
+        .pagination-number {
+            min-width: 36px;
         }
     }
 
     @media (max-width: 480px) {
         .blog-header {
-            height: 45vh;
-            min-height: 350px;
+            height: 40vh;
+            min-height: 300px;
+            margin-top: 60px;
         }
 
         .blog-title {
-            font-size: 2.8rem;
+            font-size: 2.5rem;
+            padding: 0 1rem;
         }
 
         .blog-subtitle {
-            font-size: 1.1rem;
+            font-size: 1rem;
+            padding: 0 1.5rem;
+        }
+
+        .articles-section {
+            padding: 40px 0;
         }
 
         .section-header {
             flex-direction: column;
-            align-items: center;
-            gap: 1.2rem;
-            text-align: center;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .filters-container {
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
+            flex-direction: row;
+            gap: 0.4rem;
             width: 100%;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filters-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .filters-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
+        }
+
+        .filters-container::-webkit-scrollbar-thumb {
+            background: var(--primary-yellow);
+            border-radius: 2px;
         }
 
         .filter-tab {
-            padding: 8px 16px;
-            font-size: 0.8rem;
-            min-width: 140px;
-            justify-content: center;
+            padding: 8px 14px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .section-header .section-title {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
         }
 
         .articles-grid {
             grid-template-columns: 1fr;
-            gap: 1rem;
+            gap: 1.5rem;
         }
 
-        .article-card {
-            margin: 0 1rem;
+        .article-image {
+            height: 200px;
+        }
+
+        .article-content {
+            padding: 1.25rem;
+        }
+
+        .article-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .article-category {
+            align-self: flex-start;
+        }
+
+        .article-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .article-excerpt {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+
+        .article-read-more {
+            font-size: 0.85rem;
         }
 
         .pagination {
             padding: 0.6rem;
+            gap: 0.3rem;
         }
 
         .pagination-btn,
@@ -996,16 +1084,16 @@ try {
             font-size: 0.75rem;
         }
 
-        .pagination-btn span {
-            display: none;
+        .pagination-number {
+            min-width: 32px;
         }
 
-        .pagination-prev::after {
-            content: 'Préc.';
+        .pagination-btn {
+            flex: 1 1 100%;
         }
 
-        .pagination-next::after {
-            content: 'Suiv.';
+        .floating-note {
+            font-size: 1.5rem;
         }
     }
 </style>
