@@ -1,0 +1,30 @@
+---
+interface Props {
+    day: string;
+    month: string;
+    title: string;
+    venue?: string;
+    time?: string;
+    isPast?: boolean;
+    slug: string;
+}
+
+const { day, month, title, venue, time, isPast = false, slug } = Astro.props;
+---
+
+<div class={`concert-card event-card ${isPast ? 'past' : ''}`}>
+    <div class={`concert-date ${isPast ? 'past-date' : ''}`}>
+        <span class="day">{day}</span>
+        <span class="month">{month}</span>
+    </div>
+    <div class="concert-info">
+        <h3 class="concert-venue">{title}</h3>
+        {venue && <p class="concert-city">{venue}</p>}
+        {time && <p class="concert-time">{time}</p>}
+    </div>
+    <div class="concert-action">
+        <a href={`/evenements/${slug}/`} class={`btn btn-ticket ${isPast ? 'past-btn' : ''}`}>
+            {isPast ? 'Voir le récap' : 'Détails'}
+        </a>
+    </div>
+</div>
