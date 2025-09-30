@@ -61,12 +61,18 @@ const categories = await categoriesResponse.json();
 
                 <!-- Contrôles de tri -->
                 <div class="sort-controls">
-                    <select id="sort-products" class="sort-select">
-                        <option value="menu_order">Par défaut</option>
-                        <option value="price">Prix croissant</option>
-                        <option value="price-desc">Prix décroissant</option>
-                        <option value="title">Nom A-Z</option>
-                    </select>
+                    <div class="sort-dropdown">
+                        <button class="sort-btn" type="button" id="sort-btn">
+                            <span id="sort-label">Par défaut</span>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        <div class="sort-menu">
+                            <button class="sort-option active" data-value="menu_order">Par défaut</button>
+                            <button class="sort-option" data-value="price">Prix croissant</button>
+                            <button class="sort-option" data-value="price-desc">Prix décroissant</button>
+                            <button class="sort-option" data-value="title">Nom A-Z</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="products-grid" id="products-list">
@@ -114,7 +120,10 @@ const categories = await categoriesResponse.json();
     const paginationContainer = document.getElementById('pagination-container');
     const pagination = document.getElementById('pagination');
     const filterTabs = document.querySelectorAll('.filter-tab');
-    const sortSelect = document.getElementById('sort-products');
+    const sortDropdown = document.querySelector('.sort-dropdown');
+    const sortBtn = document.getElementById('sort-btn');
+    const sortLabel = document.getElementById('sort-label');
+    const sortOptions = document.querySelectorAll('.sort-option');
 
     // Fonction pour filtrer les produits
     function filterProducts(filter) {
@@ -290,10 +299,42 @@ const categories = await categoriesResponse.json();
         });
     });
 
-    // Gestionnaire pour le tri
-    sortSelect.addEventListener('change', (e) => {
-        currentSort = e.target.value;
-        updateDisplay();
+    // Gestionnaire pour le dropdown de tri
+    if (sortBtn && sortDropdown) {
+        sortBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sortDropdown.classList.toggle('active');
+        });
+
+        // Fermer le menu en cliquant ailleurs
+        document.addEventListener('click', (e) => {
+            if (!sortDropdown.contains(e.target)) {
+                sortDropdown.classList.remove('active');
+            }
+        });
+    }
+
+    // Gestionnaire pour les options de tri
+    sortOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Retirer la classe active de toutes les options
+            sortOptions.forEach(opt => opt.classList.remove('active'));
+
+            // Ajouter la classe active à l'option sélectionnée
+            option.classList.add('active');
+
+            // Mettre à jour le label
+            sortLabel.textContent = option.textContent;
+
+            // Mettre à jour le tri
+            currentSort = option.dataset.value;
+            updateDisplay();
+
+            // Fermer le dropdown
+            sortDropdown.classList.remove('active');
+        });
     });
 
     // Initialisation
@@ -521,29 +562,95 @@ const categories = await categoriesResponse.json();
         margin-bottom: 2rem;
     }
 
-    .sort-select {
+    .sort-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .sort-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: transparent;
+        color: var(--black);
+        padding: 14px 28px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .sort-btn:hover {
+        background: var(--black);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .sort-dropdown.active .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .sort-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
         background: var(--white);
-        border: 2px solid var(--light-gray);
-        padding: 12px 20px;
-        border-radius: 4px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 100;
+        overflow: hidden;
+        min-width: 200px;
+        margin-top: 8px;
+    }
+
+    .sort-dropdown.active .sort-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .sort-option {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        color: var(--black);
+        text-decoration: none;
         font-weight: 600;
         font-size: 0.9rem;
-        color: var(--black);
-        cursor: pointer;
         transition: all 0.3s ease;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
+        border: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: var(--white);
+        cursor: pointer;
     }
 
-    .sort-select:hover {
-        border-color: var(--primary-yellow);
-        box-shadow: 0 2px 10px rgba(244, 208, 63, 0.2);
+    .sort-option:last-child {
+        border-bottom: none;
     }
 
-    .sort-select:focus {
-        outline: none;
-        border-color: var(--black);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    .sort-option:hover {
+        background: rgba(0, 0, 0, 0.05);
+        transform: translateX(3px);
+    }
+
+    .sort-option.active {
+        background: var(--primary-yellow);
+        color: var(--black);
+        font-weight: 700;
     }
 
     /* Grille de produits */
@@ -785,8 +892,20 @@ const categories = await categoriesResponse.json();
             width: 100%;
         }
 
-        .sort-select {
+        .sort-dropdown {
             width: 100%;
+        }
+
+        .sort-btn {
+            width: 100%;
+            justify-content: space-between;
+            padding: 12px 24px;
+        }
+
+        .sort-menu {
+            width: 100%;
+            right: auto;
+            left: 0;
         }
 
         .products-grid {
@@ -877,6 +996,16 @@ const categories = await categoriesResponse.json();
 
         .section-header .section-title {
             font-size: 1.6rem;
+        }
+
+        .sort-btn {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+        }
+
+        .sort-option {
+            padding: 10px 14px;
+            font-size: 0.85rem;
         }
 
         .products-grid {
