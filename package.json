@@ -9,6 +9,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.13.10"
+    "astro": "^5.13.10",
+    "astro-leaflet": "^1.8.1",
+    "leaflet": "^1.9.4"
+  },
+  "devDependencies": {
+    "@types/leaflet": "^1.9.20"
   }
 }

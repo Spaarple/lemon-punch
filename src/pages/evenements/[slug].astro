@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import CalendarButtons from "../../components/ui/event/CalendarButtons.astro";
+import Map from "../../components/ui/Map.astro";
 
 export async function getStaticPaths() {
     const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
@@ -89,11 +90,14 @@ const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
                   'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
 const month = eventDate ? monthNames[eventDate.getMonth()] : '';
 
+const lieu = getFieldValue(event, 'lieu_sur_carte');
+
 // Breadcrumb items
 const breadcrumbItems = [
     { name: "Événements", url: "/evenements/" },
     { name: event.title.rendered, url: `/evenements/${event.slug}/` }
 ];
+
 ---
 
 <Layout title={`${event.title.rendered} - Événements - LemonPunch`}>
@@ -269,7 +273,6 @@ const breadcrumbItems = [
                             />
                         )}
                     </div>
-
                 </div>
 
                 <!-- Colonne Droite - Description -->
@@ -306,6 +309,16 @@ const breadcrumbItems = [
                     )}
                 </div>
             </div>
+
+            <!-- Carte du lieu -->
+            {lieu && (
+                <div class="event-map-section">
+                    <h2 class="section-title">Localisation</h2>
+                    <div class="map-container">
+                        <Map address={lieu} />
+                    </div>
+                </div>
+            )}
 
             <!-- Bouton Retour -->
             <div class="back-navigation-inline">
@@ -975,6 +988,21 @@ const breadcrumbItems = [
     .gallery-overlay i {
         font-size: 2rem;
         color: var(--primary-yellow);
+    }
+
+    /* Section Carte */
+    .event-map-section {
+        margin-top: 4rem;
+        padding-top: 4rem;
+        border-top: 2px solid var(--light-gray);
+    }
+
+    .map-container {
+        margin-top: 2rem;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
     }
 
     /* Navigation Retour Inline */
