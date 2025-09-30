@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import ArticleCard from "../../components/blog/ArticleCard.astro";
 
 // URL de l'API WordPress pour récupérer les articles et catégories
 const POSTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/posts?_embed&per_page=100";
@@ -7,7 +8,6 @@ const CATEGORIES_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/categories?
 
 let allPosts = [];
 let allCategories = [];
-let totalAllPosts = 0;
 
 // Fonction pour formater la date depuis WordPress
 function formatPostDate(post) {
@@ -64,8 +64,6 @@ try {
 
         // Trier par date décroissante (plus récents en premier)
         allPosts.sort((a, b) => b.postDate - a.postDate);
-
-        totalAllPosts = allPosts.length;
     }
 
     // Récupérer les catégories
@@ -152,6 +150,8 @@ try {
             </div>
         </section>
     )}
+
+    <ArticleCard />
 </Layout>
 
 <script define:vars={{ allPosts, allCategories }}>
@@ -194,47 +194,24 @@ try {
         }
     }
 
-    // Fonction pour rendre un article
+    // Fonction pour rendre un article avec le Web Component
     function renderArticle(post) {
-        const coverImage = post._embedded?.['wp:featuredmedia']?.[0];
-        const defaultImage = '/placeholder-article.jpg'; // Image par défaut
-
         // Récupérer la première catégorie pour construire l'URL
         const firstCategory = post.categories?.length ? allCategories.find(cat => cat.id === post.categories[0]) : null;
         const categorySlug = firstCategory?.slug || 'uncategorized';
-        const articleUrl = `/blog/${categorySlug}/${post.slug}/`;
+        const categoryName = firstCategory?.name || '';
+
+        // Créer le composant article-card
+        const postData = JSON.stringify(post)
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
 
         return `
-            <article class="article-card">
-                <div class="article-image">
-                    <img src="${coverImage?.source_url || defaultImage}"
-                         alt="${post.title.rendered}"
-                         onerror="this.src='${defaultImage}'">
-                    <div class="article-overlay">
-                        <a href="${articleUrl}" class="article-link">
-                            <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                </div>
-                <div class="article-content">
-                    <div class="article-meta">
-                        <span class="article-date">${post.formattedDate || 'Date inconnue'}</span>
-                        ${post.categories?.length ? `
-                            <span class="article-category">
-                                ${firstCategory?.name || ''}
-                            </span>
-                        ` : ''}
-                    </div>
-                    <h3 class="article-title">
-                        <a href="${articleUrl}">${post.title.rendered}</a>
-                    </h3>
-                    ${post.excerpt ? `<p class="article-excerpt">${post.excerpt}</p>` : ''}
-                    <a href="${articleUrl}" class="article-read-more">
-                        Lire la suite
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-            </article>
+            <article-card
+                data-post="${postData}"
+                data-category-slug="${categorySlug}"
+                data-category-name="${categoryName}">
+            </article-card>
         `;
     }
 
@@ -566,144 +543,9 @@ try {
         margin-bottom: 3rem;
     }
 
-    .article-card {
-        background: var(--white);
-        overflow: hidden;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    }
-
-    .article-image {
-        position: relative;
-        height: 250px;
-        overflow: hidden;
-    }
-
-    .article-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-    }
-
-    .article-card:hover .article-image img {
-        transform: scale(1.1);
-    }
-
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-
-    .article-card:hover .article-overlay {
-        opacity: 1;
-    }
-
-    .article-link {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 60px;
-        height: 60px;
-        background: var(--primary-yellow);
-        color: var(--black);
-        border-radius: 50%;
-        text-decoration: none;
-        font-size: 1.2rem;
-        transition: all 0.3s ease;
-    }
-
-    .article-link:hover {
-        background: var(--white);
-        transform: scale(1.1);
-    }
-
-    .article-content {
-        padding: 2rem;
-    }
-
-    .article-meta {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .article-date {
-        font-size: 0.9rem;
-        color: var(--gray);
-        font-weight: 500;
-    }
-
-    .article-category {
-        background: var(--primary-yellow);
-        color: var(--black);
-        padding: 4px 8px;
-        border-radius: 2px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--black);
-        margin-bottom: 1rem;
-        line-height: 1.3;
-    }
-
-    .article-title a {
-        color: var(--black);
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .article-title a:hover {
-        color: var(--primary-yellow);
-    }
-
-    .article-excerpt {
-        font-size: 1rem;
-        color: var(--gray);
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
-
-    .article-read-more {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: var(--black);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        transition: all 0.3s ease;
-    }
-
-    .article-read-more:hover {
-        color: var(--primary-yellow);
-        transform: translateX(5px);
+    /* Les styles des cartes sont dans le composant ArticleCard */
+    article-card {
+        display: block;
     }
 
     /* Message aucun article */
@@ -933,23 +775,6 @@ try {
             gap: 2rem;
         }
 
-        .article-image {
-            height: 220px;
-        }
-
-        .article-content {
-            padding: 1.5rem;
-        }
-
-        .article-title {
-            font-size: 1.3rem;
-        }
-
-        .article-excerpt {
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
         .pagination {
             padding: 0.8rem;
             gap: 0.5rem;
@@ -1038,39 +863,6 @@ try {
         .articles-grid {
             grid-template-columns: 1fr;
             gap: 1.5rem;
-        }
-
-        .article-image {
-            height: 200px;
-        }
-
-        .article-content {
-            padding: 1.25rem;
-        }
-
-        .article-meta {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-        }
-
-        .article-category {
-            align-self: flex-start;
-        }
-
-        .article-title {
-            font-size: 1.2rem;
-            margin-bottom: 0.8rem;
-        }
-
-        .article-excerpt {
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 1rem;
-        }
-
-        .article-read-more {
-            font-size: 0.85rem;
         }
 
         .pagination {
