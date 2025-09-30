@@ -1,60 +1,98 @@
 ---
+import CardEvent from "../CardEvent.astro";
 
+// URL de l'API WordPress pour récupérer les événements à venir
+const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
+
+let upcomingEvents = [];
+
+// Fonction pour formater la date depuis ACF
+function formatEventDate(event) {
+    const eventDate = event.acf?.date_de_levenement || event.date;
+
+    if (eventDate && typeof eventDate === 'string') {
+        if (eventDate.includes('-') && eventDate.includes(':')) {
+            return new Date(eventDate);
+        }
+        else if (eventDate.length === 8 && !eventDate.includes('-')) {
+            const year = eventDate.substring(0, 4);
+            const month = eventDate.substring(4, 6);
+            const day = eventDate.substring(6, 8);
+            return new Date(Number(year), month - 1, day);
+        }
+        else {
+            return new Date(eventDate);
+        }
+    }
+    return null;
+}
+
+try {
+    const res = await fetch(EVENTS_URL);
+    if (res.ok) {
+        const data = await res.json();
+
+        // Filtrer et valider les événements
+        const allEvents = data.filter(event =>
+            event &&
+            event.title &&
+            event.title.rendered &&
+            event.slug
+        ).map(event => ({
+            ...event,
+            eventDate: formatEventDate(event)
+        }));
+
+        if (allEvents.length > 0) {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+
+            // Ne garder que les événements à venir et les trier par date
+            upcomingEvents = allEvents
+                .filter(event => event.eventDate && event.eventDate >= now)
+                .sort((a, b) => a.eventDate - b.eventDate)
+                .slice(0, 3); // Limiter à 3 événements
+        }
+    }
+} catch (error) {
+    console.error('Erreur lors du chargement des événements:', error);
+}
 ---
 
 <section class="concerts-section" id="concerts">
     <div class="container">
         <h2 class="section-title">Nos Concerts</h2>
         <div class="concerts-list">
-            <div class="concert-card">
-                <div class="concert-date">
-                    <span class="day">15</span>
-                    <span class="month">DÉC</span>
-                </div>
-                <div class="concert-info">
-                    <h3 class="concert-venue">Le Bataclan</h3>
-                    <p class="concert-city">Paris, France</p>
-                    <p class="concert-time">20h00</p>
-                </div>
-                <div class="concert-action">
-                    <a href="#" class="btn btn-ticket">Billets</a>
-                </div>
-            </div>
+            {upcomingEvents.length > 0 ? (
+                upcomingEvents.map(event => {
+                    const dateObj = event.eventDate;
+                    const day = dateObj.getDate().toString().padStart(2, '0');
+                    const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
+                    const month = monthNames[dateObj.getMonth()];
+                    const time = event.acf?.date_de_levenement ? new Date(event.acf.date_de_levenement).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : null;
 
-            <div class="concert-card">
-                <div class="concert-date">
-                    <span class="day">22</span>
-                    <span class="month">DÉC</span>
+                    return (
+                        <CardEvent
+                            day={day}
+                            month={month}
+                            title={event.title.rendered}
+                            venue={event.acf?.nom_du_lieu}
+                            time={time}
+                            isPast={false}
+                            slug={event.slug}
+                        />
+                    );
+                })
+            ) : (
+                <div class="no-events-message">
+                    <p>Aucun concert à venir pour le moment.</p>
                 </div>
-                <div class="concert-info">
-                    <h3 class="concert-venue">Le Transbordeur</h3>
-                    <p class="concert-city">Lyon, France</p>
-                    <p class="concert-time">21h00</p>
-                </div>
-                <div class="concert-action">
-                    <a href="#" class="btn btn-ticket">Billets</a>
-                </div>
-            </div>
-
-            <div class="concert-card">
-                <div class="concert-date">
-                    <span class="day">05</span>
-                    <span class="month">JAN</span>
-                </div>
-                <div class="concert-info">
-                    <h3 class="concert-venue">Le Bikini</h3>
-                    <p class="concert-city">Toulouse, France</p>
-                    <p class="concert-time">20h30</p>
-                </div>
-                <div class="concert-action">
-                    <a href="#" class="btn btn-ticket">Billets</a>
-                </div>
-            </div>
+            )}
         </div>
 
         <!-- Bouton voir plus de concerts -->
         <div class="concerts-more">
-            <a href="#" class="btn btn-concerts-more">Voir plus de concerts</a>
+            <a href="/evenements" class="btn btn-concerts-more">Voir plus de concerts</a>
         </div>
     </div>
 </section>

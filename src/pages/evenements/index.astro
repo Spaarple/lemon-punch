@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import CardEvent from "../../components/CardEvent.astro";
 
 // URL de l'API WordPress pour récupérer les événements
 const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
@@ -138,7 +139,25 @@ try {
                     </div>
                 </div>
                 <div class="concerts-list" id="events-list">
-                    <!-- Les événements seront injectés ici par JavaScript -->
+                    {allEvents.slice(0, 5).map(event => {
+                        const dateObj = event.eventDate ? new Date(event.eventDate) : null;
+                        const day = dateObj ? dateObj.getDate().toString().padStart(2, '0') : '??';
+                        const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN', 'JUL', 'AOÛT', 'SEP', 'OCT', 'NOV', 'DÉC'];
+                        const month = dateObj ? monthNames[dateObj.getMonth()] : 'DATE';
+                        const time = event.acf?.date_de_levenement ? new Date(event.acf.date_de_levenement).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : null;
+
+                        return (
+                            <CardEvent
+                                day={day}
+                                month={month}
+                                title={event.title.rendered}
+                                venue={event.acf?.nom_du_lieu}
+                                time={time}
+                                isPast={event.isPast}
+                                slug={event.slug}
+                            />
+                        );
+                    })}
                 </div>
 
                 <!-- Pagination -->
