@@ -41,6 +41,9 @@
                                 </div>
                             </div>
                             <div class="product-content">
+                                <h3 class="product-title">
+                                    <a href="${productUrl}">${data.name}</a>
+                                </h3>
                                 <div class="product-meta">
                                     ${data.onSale ? `
                                         <div class="product-price-container">
@@ -52,9 +55,7 @@
                                     `}
                                     ${data.category && data.category !== 'Non classé' ? `<span class="product-category">${data.category}</span>` : ''}
                                 </div>
-                                <h3 class="product-title">
-                                    <a href="${productUrl}">${data.name}</a>
-                                </h3>
+                                
                                 ${data.description ? `<p class="product-description">${data.description}</p>` : ''}
                                 <a href="${productUrl}" class="product-read-more">
                                     Voir le produit
@@ -206,7 +207,7 @@
 
     .product-title {
         font-size: 1.5rem;
-        font-weight: 700;
+        font-weight: 600;
         color: var(--black);
         margin-bottom: 1rem;
         line-height: 1.3;
@@ -241,7 +242,7 @@
         color: var(--black);
         text-decoration: none;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 1.1rem;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
