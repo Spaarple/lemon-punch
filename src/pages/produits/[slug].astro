@@ -83,18 +83,22 @@ if (product.type === 'variable') {
 
 // Récupérer les produits similaires (même catégorie)
 let relatedProducts = [];
-if (product.categories.length > 0) {
+if (product.categories && product.categories.length > 0) {
     const categoryId = product.categories[0].id;
     try {
         const relatedRes = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&category=${categoryId}&exclude=${product.id}&per_page=4`);
         relatedProducts = await relatedRes.json();
+        console.log('Produits similaires récupérés:', relatedProducts.length);
     } catch (error) {
         console.error('Erreur lors du chargement des produits similaires:', error);
     }
+} else {
+    console.log('Aucune catégorie trouvée pour ce produit');
 }
 ---
 
 <Layout title={`${product.name} - LemonPunch Merch`}>
+    <CardProduct />
     <Breadcrumb currentPageTitle={product.name} />
 
     <section class="product-hero">
@@ -304,17 +308,31 @@ if (product.categories.length > 0) {
                 <div class="container">
                     <h2 class="section-title">Produits similaires</h2>
                     <div class="related-grid">
-                        {relatedProducts.map(relatedProduct => (
-                            <CardProduct
-                                id={relatedProduct.id}
-                                slug={relatedProduct.slug}
-                                name={relatedProduct.name}
-                                price={relatedProduct.price}
-                                imageSrc={relatedProduct.images[0]?.src}
-                                imageAlt={relatedProduct.images[0]?.alt || `Image pour ${relatedProduct.name}`}
-                                category={relatedProduct.categories[0]?.name}
-                            />
-                        ))}
+                        {relatedProducts.map(relatedProduct => {
+                            // Fonction pour extraire et limiter la description
+                            const extractDescription = (html) => {
+                                if (!html) return '';
+                                const text = html.replace(/<[^>]*>/g, '').trim();
+                                return text.length > 150 ? text.substring(0, 150) + '...' : text;
+                            };
+
+                            const productData = {
+                                id: relatedProduct.id,
+                                slug: relatedProduct.slug,
+                                name: relatedProduct.name,
+                                price: parseFloat(relatedProduct.price),
+                                onSale: relatedProduct.on_sale,
+                                salePrice: parseFloat(relatedProduct.sale_price),
+                                regularPrice: parseFloat(relatedProduct.regular_price),
+                                imageSrc: relatedProduct.images[0]?.src,
+                                imageAlt: relatedProduct.images[0]?.alt || `Image pour ${relatedProduct.name}`,
+                                category: relatedProduct.categories[0]?.name,
+                                description: extractDescription(relatedProduct.short_description || relatedProduct.description)
+                            };
+                            return (
+                                <product-card data-product={JSON.stringify(productData)}></product-card>
+                            );
+                        })}
                     </div>
                 </div>
             </section>
@@ -402,15 +420,16 @@ if (product.categories.length > 0) {
 
     .sale-badge {
         position: absolute;
-        top: 1rem;
-        right: 1rem;
+        top: 15px;
+        right: 15px;
         background: var(--primary-yellow);
         color: var(--black);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
+        padding: 8px 12px;
+        border-radius: 4px;
         font-weight: 700;
-        font-size: 0.9rem;
+        font-size: 1.2rem;
         z-index: 2;
+        box-shadow: 0 2px 10px rgba(231, 76, 60, 0.3);
     }
 
     .thumbnail-gallery {
@@ -477,8 +496,11 @@ if (product.categories.length > 0) {
 
     .product-meta {
         display: flex;
-        gap: 0.5rem;
+        gap: 1rem;
+        align-items: center;
+        justify-content: space-between;
         margin-bottom: 1rem;
+        flex-wrap: wrap;
     }
 
     .category-tag {
@@ -492,7 +514,7 @@ if (product.categories.length > 0) {
         letter-spacing: 1px;
     }
 
-    .product-title {
+    .product-hero .product-title {
         font-size: 2.5rem;
         font-weight: 900;
         color: var(--black);
@@ -501,7 +523,9 @@ if (product.categories.length > 0) {
     }
 
     .product-price {
-        margin-bottom: 2rem;
+        font-size: 2rem;
+        color: var(--primary-yellow);
+        font-weight: 700;
     }
 
     .current-price,
@@ -900,15 +924,14 @@ if (product.categories.length > 0) {
 
     .related-grid {
         display: grid;
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
         gap: 2rem;
         max-width: 1200px;
         margin: 0 auto;
     }
 
-    .related-products .product-card {
-        max-width: 100%;
-        height: auto;
+    .related-products product-card {
+        display: block;
     }
     /* Responsive */
     @media (max-width: 768px) {
@@ -925,7 +948,7 @@ if (product.categories.length > 0) {
             height: 300px;
         }
 
-        .product-title {
+        .product-hero .product-title {
             font-size: 2rem;
         }
 
@@ -1028,7 +1051,7 @@ if (product.categories.length > 0) {
             padding: 0.4rem 0.8rem;
         }
 
-        .product-title {
+        .product-hero .product-title {
             font-size: 1.6rem;
             line-height: 1.3;
             text-align: center;
@@ -1156,7 +1179,7 @@ if (product.categories.length > 0) {
 
     /* Très petits écrans (320px et moins) */
     @media (max-width: 320px) {
-        .product-title {
+        .product-hero .product-title {
             font-size: 1.4rem;
         }
 
