@@ -48,20 +48,11 @@ function sortSizes(sizes) {
     return sizes.sort((a, b) => {
         const aUpper = a.toUpperCase();
         const bUpper = b.toUpperCase();
-
         const aIndex = sizeOrder.indexOf(aUpper);
         const bIndex = sizeOrder.indexOf(bUpper);
-
-        // Si les deux tailles sont dans l'ordre prédéfini
-        if (aIndex !== -1 && bIndex !== -1) {
-            return aIndex - bIndex;
-        }
-
-        // Si seulement une taille est dans l'ordre prédéfini
+        if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
         if (aIndex !== -1) return -1;
         if (bIndex !== -1) return 1;
-
-        // Si aucune taille n'est dans l'ordre prédéfini, tri alphabétique
         return aUpper.localeCompare(bUpper);
     });
 }
@@ -106,58 +97,55 @@ if (product.categories && product.categories.length > 0) {
                     data-variations={JSON.stringify(productVariations)}
             >
                 <div class="product-gallery">
-                    {/* Si il y a plusieurs images, afficher la galerie complète */}
                     {product.images && product.images.length > 1 ? (
-                        <div class="image-gallery">
-                            <div class="main-image">
+                            <div class="image-gallery">
+                                <div class="main-image">
+                                    <img
+                                            src={product.images[0].src}
+                                            alt={product.images[0].alt || product.name}
+                                            class="main-product-image"
+                                            id="mainImage"
+                                    />
+                                    {product.on_sale && (
+                                            <div class="sale-badge">-{Math.round(((product.regular_price - product.sale_price) / product.regular_price) * 100)}%</div>
+                                    )}
+                                    <div class="gallery-counter">
+                                        <span id="currentImageIndex">1</span> / {product.images.length}
+                                    </div>
+                                </div>
+                                <div class="thumbnail-gallery">
+                                    {product.images.map((image, index) => (
+                                            <img
+                                                    src={image.src}
+                                                    alt={image.alt || `${product.name} - Image ${index + 1}`}
+                                                    class="thumbnail"
+                                                    data-main-src={image.src}
+                                                    data-index={index}
+                                            />
+                                    ))}
+                                </div>
+                            </div>
+                    ) : product.images && product.images.length === 1 ? (
+                            <div class="single-image">
                                 <img
-                                    src={product.images[0].src}
-                                    alt={product.images[0].alt || product.name}
-                                    class="main-product-image"
-                                    id="mainImage"
+                                        src={product.images[0].src}
+                                        alt={product.images[0].alt || product.name}
+                                        class="main-product-image"
+                                        id="mainImage"
                                 />
                                 {product.on_sale && (
-                                    <div class="sale-badge">-{Math.round(((product.regular_price - product.sale_price) / product.regular_price) * 100)}%</div>
+                                        <div class="sale-badge">-{Math.round(((product.regular_price - product.sale_price) / product.regular_price) * 100)}%</div>
                                 )}
-                                <div class="gallery-counter">
-                                    <span id="currentImageIndex">1</span> / {product.images.length}
-                                </div>
                             </div>
-                            <div class="thumbnail-gallery">
-                                {product.images.map((image, index) => (
-                                    <img
-                                        src={image.src}
-                                        alt={image.alt || `${product.name} - Image ${index + 1}`}
-                                        class="thumbnail"
-                                        data-main-src={image.src}
-                                        data-index={index}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    ) : product.images && product.images.length === 1 ? (
-                        /* Si il y a une seule image, afficher seulement l'image principale */
-                        <div class="single-image">
-                            <img
-                                src={product.images[0].src}
-                                alt={product.images[0].alt || product.name}
-                                class="main-product-image"
-                                id="mainImage"
-                            />
-                            {product.on_sale && (
-                                <div class="sale-badge">-{Math.round(((product.regular_price - product.sale_price) / product.regular_price) * 100)}%</div>
-                            )}
-                        </div>
                     ) : (
-                        /* Si il n'y a pas d'images, afficher le placeholder */
-                        <div class="no-image">
-                            <div class="main-product-image placeholder" id="mainImage">
-                                <div class="placeholder-content">
-                                    <i class="fas fa-image"></i>
-                                    <span>Aucune image disponible</span>
+                            <div class="no-image">
+                                <div class="main-product-image placeholder" id="mainImage">
+                                    <div class="placeholder-content">
+                                        <i class="fas fa-image"></i>
+                                        <span>Aucune image disponible</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
                     )}
                 </div>
 
@@ -306,7 +294,6 @@ if (product.categories && product.categories.length > 0) {
                     <h2 class="section-title">Produits similaires</h2>
                     <div class="related-grid">
                         {relatedProducts.map(relatedProduct => {
-                            // Fonction pour extraire et limiter la description
                             const extractDescription = (html) => {
                                 if (!html) return '';
                                 const text = html.replace(/<[^>]*>/g, '').trim();
@@ -327,7 +314,7 @@ if (product.categories && product.categories.length > 0) {
                                 description: extractDescription(relatedProduct.short_description || relatedProduct.description)
                             };
                             return (
-                                <product-card data-product={JSON.stringify(productData)}></product-card>
+                                    <product-card data-product={JSON.stringify(productData)}></product-card>
                             );
                         })}
                     </div>
@@ -337,7 +324,234 @@ if (product.categories && product.categories.length > 0) {
 </Layout>
 
 <style is:global>
-    
+    /* ... Votre CSS reste inchangé ... */
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- Initialisation ---
+        let selectedVariations = {};
+        const dataContainer = document.getElementById('product-data-container');
+        if (!dataContainer) return;
+
+        const productVariationsData = JSON.parse(dataContainer.dataset.variations || '[]');
+        const priceElement = document.querySelector('.product-price .variable-price, .product-price .current-price, .product-price .sale-price');
+        const mainImage = document.getElementById('mainImage');
+        const originalImageSrc = mainImage ? mainImage.src : '';
+        const allOptionButtons = document.querySelectorAll('.color-option, .size-option');
+        const addToCartBtn = document.querySelector('.btn-add-to-cart');
+
+        // --- Fonctions principales ---
+        function handleSelection(element) {
+            const attribute = element.dataset.attribute;
+            const value = element.dataset.value;
+            const group = element.closest('.variation-group');
+            const groupOptions = group.querySelectorAll('button');
+
+            // Gère le toggle de la sélection ou le changement
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                delete selectedVariations[attribute];
+            } else {
+                groupOptions.forEach(btn => btn.classList.remove('selected'));
+                element.classList.add('selected');
+                selectedVariations[attribute] = value;
+            }
+
+            updateUI();
+            hideSelectionMessage();
+        }
+
+        function updateUI() {
+            updateAvailableOptions(); // Mettre à jour la disponibilité d'abord
+
+            const requiredCount = document.querySelectorAll('.variation-group').length;
+            const selectedCount = Object.keys(selectedVariations).length;
+
+            if (selectedCount < requiredCount) {
+                // Si pas toutes les options sont sélectionnées, on ne cherche pas de match
+                addToCartBtn.disabled = true;
+                return;
+            }
+
+            const matchedVariation = findMatchedVariation();
+
+            if (matchedVariation) {
+                if (priceElement) {
+                    priceElement.innerHTML = matchedVariation.price_html || `${matchedVariation.price}€`;
+                }
+                if (matchedVariation.image && matchedVariation.image.src && mainImage) {
+                    mainImage.src = matchedVariation.image.src;
+                }
+                addToCartBtn.disabled = false;
+            } else {
+                if (priceElement) priceElement.textContent = 'Indisponible';
+                if (mainImage) mainImage.src = originalImageSrc;
+                addToCartBtn.disabled = true;
+            }
+        }
+
+        // Met à jour la disponibilité visuelle des options
+        function updateAvailableOptions() {
+            allOptionButtons.forEach(button => {
+                const attribute = button.dataset.attribute;
+                const value = button.dataset.value;
+                const testSelection = { ...selectedVariations, [attribute]: value };
+
+                // On ne teste que les options qui ne sont pas dans le groupe déjà sélectionné
+                const isCurrentlySelectedGroup = selectedVariations.hasOwnProperty(attribute);
+
+                const isPossible = productVariationsData.some(variation => {
+                    // On vérifie si la variation correspond à la sélection de test
+                    return Object.keys(testSelection).every(key => {
+                        const attrInVar = variation.attributes.find(a => a.name === key);
+                        if (!attrInVar) return false;
+
+                        // ✨ FIX #1: Comparer les NOMS "slugifiés" avec les SLUGS de l'API
+                        const selectedValueSlug = testSelection[key].toLowerCase().trim().replace(/\s+/g, '-');
+                        return attrInVar.option.toLowerCase() === selectedValueSlug;
+                    });
+                });
+
+                button.disabled = !isPossible;
+                // Optionnel : style pour les boutons désactivés
+                button.style.opacity = isPossible ? '1' : '0.4';
+                button.style.cursor = isPossible ? 'pointer' : 'not-allowed';
+                if (!isPossible && button.classList.contains('selected')) {
+                    button.classList.remove('selected');
+                    delete selectedVariations[attribute];
+                }
+            });
+        }
+
+        // Trouve la variation exacte qui correspond à la sélection complète de l'utilisateur
+        function findMatchedVariation() {
+            if (!productVariationsData || productVariationsData.length === 0) return null;
+
+            return productVariationsData.find(variation => {
+                if (variation.attributes.length !== Object.keys(selectedVariations).length) return false;
+
+                return variation.attributes.every(attr => {
+                    const selectedValue = selectedVariations[attr.name];
+                    if (!selectedValue) return false;
+
+                    // ✨ FIX #2: La même logique de comparaison robuste est appliquée ici
+                    const selectedValueSlug = selectedValue.toLowerCase().trim().replace(/\s+/g, '-');
+                    const optionSlugFromApi = attr.option.toLowerCase();
+                    return selectedValueSlug === optionSlugFromApi;
+                });
+            });
+        }
+
+        // --- Ajout au panier ---
+        addToCartBtn?.addEventListener('click', function() {
+            const hasVariations = productVariationsData.length > 0;
+            const productId = this.dataset.productId;
+            const quantity = document.getElementById('quantity').value;
+
+            if (!hasVariations) {
+                window.location.href = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}`;
+                return;
+            }
+
+            if (!validateSelections()) {
+                showSelectionMessage();
+                return;
+            }
+
+            const matchedVariation = findMatchedVariation();
+
+            if (!matchedVariation) {
+                alert("Cette combinaison d'options n'est pas disponible. Veuillez essayer une autre sélection.");
+                return;
+            }
+
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Ajout en cours...';
+            this.disabled = true;
+
+            // ✨ FIX #3: Construction de l'URL avec les slugs de la variation trouvée
+            let addToCartUrl = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}&variation_id=${matchedVariation.id}`;
+
+            matchedVariation.attributes.forEach(attr => {
+                const attributeSlug = attr.name.toLowerCase().replace(/\s+/g, '-');
+                const optionSlug = attr.option; // Le slug est déjà correct ici
+                addToCartUrl += `&attribute_pa_${attributeSlug}=${optionSlug}`;
+            });
+
+            // Redirection vers le panier
+            window.location.href = addToCartUrl;
+        });
+
+        // --- Fonctions utilitaires ---
+        function validateSelections() {
+            const requiredCount = document.querySelectorAll('.variation-group').length;
+            return Object.keys(selectedVariations).length === requiredCount;
+        }
+
+        function showSelectionMessage() {
+            const message = document.getElementById('selectionMessage');
+            if (!message) return;
+            message.classList.add('show');
+            setTimeout(() => message.classList.remove('show'), 4000);
+        }
+
+        function hideSelectionMessage() {
+            const message = document.getElementById('selectionMessage');
+            if (message) message.classList.remove('show');
+        }
+
+        // --- Écouteurs d'événements ---
+        document.querySelectorAll('.color-option, .size-option').forEach(option => {
+            option.addEventListener('click', () => handleSelection(option));
+        });
+        document.querySelectorAll('.variation-select').forEach(select => {
+            select.addEventListener('change', () => handleSelection(select.options[select.selectedIndex]));
+        });
+
+        // Initialisation au chargement de la page
+        if (productVariationsData.length > 0) {
+            updateAvailableOptions();
+            addToCartBtn.disabled = true; // Désactiver par défaut pour les produits variables
+        }
+
+        // --- Galerie, Quantité, Onglets (inchangé) ---
+        const thumbnails = document.querySelectorAll('.thumbnail');
+        const galleryCounter = document.getElementById('currentImageIndex');
+        thumbnails.forEach(thumb => {
+            thumb.addEventListener('click', function() {
+                const mainSrc = this.dataset.mainSrc;
+                const imageIndex = parseInt(this.dataset.index) + 1;
+                if (mainImage) mainImage.src = mainSrc;
+                thumbnails.forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                if (galleryCounter) galleryCounter.textContent = imageIndex;
+            });
+        });
+        if (thumbnails.length > 0) thumbnails[0].classList.add('active');
+
+        const decreaseBtn = document.getElementById('decreaseQty');
+        const increaseBtn = document.getElementById('increaseQty');
+        const quantityInput = document.getElementById('quantity');
+        decreaseBtn?.addEventListener('click', () => { if (parseInt(quantityInput.value) > 1) quantityInput.value--; });
+        increaseBtn?.addEventListener('click', () => { quantityInput.value = (parseInt(quantityInput.value) || 0) + 1; });
+
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabPanels = document.querySelectorAll('.tab-panel');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabPanels.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                const targetPanel = document.getElementById(tabId);
+                if (targetPanel) targetPanel.classList.add('active');
+            });
+        });
+    });
+</script>
+
+<style is:global>
+
     /* Product Hero */
     .product-hero {
         padding: 3rem 0;
@@ -1201,209 +1415,3 @@ if (product.categories && product.categories.length > 0) {
         }
     }
 </style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // --- Initialisation ---
-        let selectedVariations = {};
-        const dataContainer = document.getElementById('product-data-container');
-        const productVariationsData = JSON.parse(dataContainer.dataset.variations || '[]');
-        const priceElement = document.querySelector('.product-price .variable-price, .product-price .current-price, .product-price .sale-price');
-        const mainImage = document.getElementById('mainImage');
-        const originalImageSrc = mainImage.src;
-        const allOptionButtons = document.querySelectorAll('.color-option, .size-option');
-        const addToCartBtn = document.querySelector('.btn-add-to-cart');
-
-        // --- Fonctions principales ---
-
-        // Met à jour la sélection de l'utilisateur et déclenche la mise à jour de l'interface
-        function handleSelection(element) {
-            const attribute = element.dataset.attribute;
-            const value = element.dataset.value;
-            const groupOptions = element.parentElement.querySelectorAll('button');
-
-            // Gère l'état 'selected'
-            groupOptions.forEach(btn => btn.classList.remove('selected'));
-            element.classList.add('selected');
-
-            selectedVariations[attribute] = value;
-
-            updateUI();
-            hideSelectionMessage();
-        }
-
-        // Met à jour l'interface (prix, image, disponibilité) en fonction des sélections
-        function updateUI() {
-            const requiredCount = document.querySelectorAll('.variation-group').length;
-            const selectedCount = Object.keys(selectedVariations).length;
-
-            // Ne fait rien tant que toutes les options ne sont pas sélectionnées
-            if (selectedCount < requiredCount) {
-                updateAvailableOptions();
-                return;
-            }
-
-            const matchedVariation = findMatchedVariation();
-
-            if (matchedVariation) {
-                // Mettre à jour le prix
-                if (priceElement) {
-                    priceElement.innerHTML = matchedVariation.price_html || `${matchedVariation.price}€`;
-                }
-                // Mettre à jour l'image
-                if (matchedVariation.image && matchedVariation.image.src) {
-                    mainImage.src = matchedVariation.image.src;
-                }
-                // Activer le bouton d'ajout au panier
-                addToCartBtn.disabled = false;
-            } else {
-                // Réinitialiser si aucune variation ne correspond
-                if (priceElement) priceElement.textContent = 'Indisponible';
-                mainImage.src = originalImageSrc;
-                addToCartBtn.disabled = true;
-            }
-        }
-
-        // Met à jour la disponibilité visuelle des options
-        function updateAvailableOptions() {
-            allOptionButtons.forEach(button => {
-                const attribute = button.dataset.attribute;
-                const value = button.dataset.value;
-
-                // Crée une copie des sélections actuelles pour tester la validité
-                const testSelection = { ...selectedVariations, [attribute]: value };
-
-                // Vérifie si au moins une variation existe avec cette combinaison
-                const isPossible = productVariationsData.some(variation => {
-                    return Object.keys(testSelection).every(key => {
-                        const attrInVar = variation.attributes.find(a => a.name === key);
-                        return !attrInVar || attrInVar.option.toLowerCase() === testSelection[key].toLowerCase();
-                    });
-                });
-
-                button.style.opacity = isPossible ? '1' : '0.3';
-                button.style.cursor = isPossible ? 'pointer' : 'not-allowed';
-            });
-        }
-
-        // Trouve la variation exacte qui correspond à la sélection complète de l'utilisateur
-        function findMatchedVariation() {
-            if (!productVariationsData || productVariationsData.length === 0) return null;
-
-            return productVariationsData.find(variation => {
-                if (variation.attributes.length !== Object.keys(selectedVariations).length) return false;
-                return variation.attributes.every(attr => {
-                    const selectedValue = selectedVariations[attr.name];
-                    return selectedValue && selectedValue.toLowerCase() === attr.option.toLowerCase();
-                });
-            });
-        }
-
-        // --- Ajout au panier ---
-        addToCartBtn?.addEventListener('click', function() {
-            const hasVariations = productVariationsData.length > 0;
-            const productId = this.dataset.productId;
-            const quantity = document.getElementById('quantity').value;
-
-            // Pour les produits simples
-            if (!hasVariations) {
-                window.location.href = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}`;
-                return;
-            }
-
-            // Valider les sélections pour les produits variables
-            if (!validateSelections()) {
-                showSelectionMessage();
-                return;
-            }
-
-            const matchedVariation = findMatchedVariation();
-
-            if (!matchedVariation) {
-                alert("Cette combinaison d'options n'est pas disponible.");
-                return;
-            }
-
-            this.innerHTML = '<i class="fas fa-shopping-cart"></i> Ajout en cours...';
-            this.disabled = true;
-
-            let addToCartUrl = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}&variation_id=${matchedVariation.id}`;
-
-            Object.keys(selectedVariations).forEach(attrName => {
-                const attrSlug = attrName.toLowerCase().replace(/\s+/g, '-');
-                addToCartUrl += `&attribute_pa_${attrSlug}=${selectedVariations[attrName]}`;
-            });
-
-            setTimeout(() => { window.location.href = addToCartUrl; }, 500);
-        });
-
-        // --- Fonctions utilitaires (Validation, Messages) ---
-        function validateSelections() {
-            const requiredCount = document.querySelectorAll('.variation-group').length;
-            return Object.keys(selectedVariations).length === requiredCount;
-        }
-        function hideSelectionMessage() { document.getElementById('selectionMessage').classList.remove('show'); }
-        function showSelectionMessage() {
-            const message = document.getElementById('selectionMessage');
-            message.classList.add('show');
-            setTimeout(() => message.classList.remove('show'), 4000);
-        }
-
-        // --- Écouteurs d'événements ---
-        document.querySelectorAll('.color-option, .size-option').forEach(option => {
-            option.addEventListener('click', () => handleSelection(option));
-        });
-        document.querySelectorAll('.variation-select').forEach(select => {
-            select.addEventListener('change', () => handleSelection(select));
-        });
-
-        // Initialiser la disponibilité des options au chargement
-        updateAvailableOptions();
-
-        // Le reste de votre script (onglets, galerie, quantité) reste inchangé...
-        const thumbnails = document.querySelectorAll('.thumbnail');
-        const galleryCounter = document.getElementById('currentImageIndex');
-
-        thumbnails.forEach(thumb => {
-            thumb.addEventListener('click', function() {
-                const mainSrc = this.dataset.mainSrc;
-                const imageIndex = parseInt(this.dataset.index) + 1;
-
-                // Mettre à jour l'image principale
-                if (mainImage.tagName === 'IMG') {
-                    mainImage.src = mainSrc;
-                }
-
-                // Mettre à jour les classes actives
-                thumbnails.forEach(t => t.classList.remove('active'));
-                this.classList.add('active');
-
-                // Mettre à jour le compteur de galerie
-                if (galleryCounter) {
-                    galleryCounter.textContent = imageIndex;
-                }
-            });
-        });
-
-        // Activer la première miniature si elle existe
-        if (thumbnails.length > 0) {
-            thumbnails[0].classList.add('active');
-        }
-        const decreaseBtn = document.getElementById('decreaseQty');
-        const increaseBtn = document.getElementById('increaseQty');
-        const quantityInput = document.getElementById('quantity');
-        decreaseBtn?.addEventListener('click', () => { if (parseInt(quantityInput.value) > 1) quantityInput.value--; });
-        increaseBtn?.addEventListener('click', () => { quantityInput.value = parseInt(quantityInput.value) + 1; });
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabPanels = document.querySelectorAll('.tab-panel');
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tabId = this.dataset.tab;
-                tabBtns.forEach(b => b.classList.remove('active'));
-                tabPanels.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(tabId).classList.add('active');
-            });
-        });
-    });
-</script>
