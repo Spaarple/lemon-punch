@@ -5,7 +5,7 @@ import CalendarButtons from "../../components/ui/event/CalendarButtons.astro";
 import Map from "../../components/ui/Map.astro";
 
 export async function getStaticPaths() {
-    const EVENTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/evenements?_embed&per_page=100";
+    const EVENTS_URL = `${import.meta.env.BASE_URL_WORDPRESS}evenements?_embed&per_page=100`;
 
     try {
         const res = await fetch(EVENTS_URL);

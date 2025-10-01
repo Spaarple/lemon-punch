@@ -3,8 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import ArticleCard from "../../components/blog/ArticleCard.astro";
 
 // URL de l'API WordPress pour récupérer les articles et catégories
-const POSTS_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/posts?_embed&per_page=100";
-const CATEGORIES_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/categories?per_page=100";
+const POSTS_URL = `${import.meta.env.BASE_URL_WORDPRESS}posts?_embed&per_page=100`;
+const CATEGORIES_URL = `${import.meta.env.BASE_URL_WORDPRESS}categories?per_page=100`;
 
 let allPosts = [];
 let allCategories = [];

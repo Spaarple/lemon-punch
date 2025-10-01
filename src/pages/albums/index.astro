@@ -4,7 +4,7 @@ import DiscographyHeader from "../../components/ui/album/DiscographyHeader.astro
 import AlbumCard from "../../components/ui/album/AlbumCard.astro";
 
 // Récupérer toutes les sorties musicales depuis WordPress (Albums, EPs, Singles)
-const MUSIC_URL = "https://lemonpunch.spaarple.fr/wp-json/wp/v2/album?_embed&per_page=100";
+const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed&per_page=100`;
 
 let allReleases = [];
 let latestRelease = null;

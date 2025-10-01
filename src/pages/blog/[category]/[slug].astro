@@ -5,8 +5,8 @@ import BlogSidebar from "../../../components/blog/BlogSidebar.astro";
 export async function getStaticPaths() {
     // Récupérer les articles et catégories
     const [postsRes, categoriesRes] = await Promise.all([
-        fetch("https://lemonpunch.spaarple.fr/wp-json/wp/v2/posts?_embed&per_page=100"),
-        fetch("https://lemonpunch.spaarple.fr/wp-json/wp/v2/categories?per_page=100")
+        fetch(`${import.meta.env.BASE_URL_WORDPRESS}posts?_embed&per_page=100`),
+        fetch(`${import.meta.env.BASE_URL_WORDPRESS}categories?per_page=100`)
     ]);
 
     const posts = await postsRes.json();
