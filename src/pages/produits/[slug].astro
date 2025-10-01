@@ -88,12 +88,9 @@ if (product.categories && product.categories.length > 0) {
     try {
         const relatedRes = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&category=${categoryId}&exclude=${product.id}&per_page=3`);
         relatedProducts = await relatedRes.json();
-        console.log('Produits similaires récupérés:', relatedProducts.length);
     } catch (error) {
         console.error('Erreur lors du chargement des produits similaires:', error);
     }
-} else {
-    console.log('Aucune catégorie trouvée pour ce produit');
 }
 ---
 
@@ -1217,8 +1214,6 @@ if (product.categories && product.categories.length > 0) {
         const allOptionButtons = document.querySelectorAll('.color-option, .size-option');
         const addToCartBtn = document.querySelector('.btn-add-to-cart');
 
-        console.log('Données des variations chargées:', productVariationsData);
-
         // --- Fonctions principales ---
 
         // Met à jour la sélection de l'utilisateur et déclenche la mise à jour de l'interface
@@ -1232,7 +1227,6 @@ if (product.categories && product.categories.length > 0) {
             element.classList.add('selected');
 
             selectedVariations[attribute] = value;
-            console.log('Sélections actuelles:', selectedVariations);
 
             updateUI();
             hideSelectionMessage();
@@ -1340,7 +1334,6 @@ if (product.categories && product.categories.length > 0) {
                 addToCartUrl += `&attribute_pa_${attrSlug}=${selectedVariations[attrName]}`;
             });
 
-            console.log("Redirection vers:", addToCartUrl);
             setTimeout(() => { window.location.href = addToCartUrl; }, 500);
         });
 
