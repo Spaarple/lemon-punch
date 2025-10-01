@@ -86,7 +86,7 @@ let relatedProducts = [];
 if (product.categories && product.categories.length > 0) {
     const categoryId = product.categories[0].id;
     try {
-        const relatedRes = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&category=${categoryId}&exclude=${product.id}&per_page=4`);
+        const relatedRes = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&category=${categoryId}&exclude=${product.id}&per_page=3`);
         relatedProducts = await relatedRes.json();
         console.log('Produits similaires récupérés:', relatedProducts.length);
     } catch (error) {
