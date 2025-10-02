@@ -1,0 +1,251 @@
+---
+export interface Props {
+    post: {
+        title: { rendered: string };
+        date: string;
+        categories?: number[];
+    };
+    postCategories: Array<{
+        id: number;
+        name: string;
+        slug: string;
+    }>;
+    formattedDate?: string;
+    currentUrl: string;
+}
+
+const { post, postCategories, formattedDate, currentUrl } = Astro.props;
+---
+
+<!-- Sidebar -->
+<aside class="article-sidebar">
+    <!-- Table des matières -->
+    <div class="sidebar-card" id="toc-container" style="display: none;">
+        <h3 class="sidebar-title">Table des matières</h3>
+        <nav class="table-of-contents" id="table-of-contents">
+            <!-- Généré automatiquement par JavaScript -->
+        </nav>
+    </div>
+
+    <!-- Informations sur l'article -->
+    <div class="sidebar-card">
+        <h3 class="sidebar-title">Informations</h3>
+        <div class="sidebar-info">
+            {formattedDate && (
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Publié le {formattedDate}</span>
+                </div>
+            )}
+            {postCategories.length > 0 && (
+                <div class="info-item">
+                    <i class="fas fa-tags"></i>
+                    <div class="categories-list">
+                        {postCategories.map(cat => (
+                            <span class="sidebar-category" key={cat.id}>
+                                {cat.name}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    </div>
+
+    <!-- Partage -->
+    <div class="sidebar-card">
+        <h3 class="sidebar-title">Partager</h3>
+        <div class="share-buttons">
+            <a
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="share-btn"
+                title="Partager sur Facebook"
+            >
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a
+                href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(currentUrl)}&text=${encodeURIComponent(post.title.rendered)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="share-btn"
+                title="Partager sur X"
+            >
+                <i class="fab fa-x-twitter"></i>
+            </a>
+            <a
+                href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(currentUrl)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="share-btn"
+                title="Partager sur LinkedIn"
+            >
+                <i class="fab fa-linkedin-in"></i>
+            </a>
+        </div>
+    </div>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // ========== TABLE DES MATIÈRES ==========
+        generateTableOfContents();
+
+        function generateTableOfContents() {
+            const tocContainer = document.getElementById('toc-container');
+            const tocList = document.getElementById('table-of-contents');
+            const articleContent = document.querySelector('.article-content');
+
+            if (!tocContainer || !tocList || !articleContent) return;
+
+            // Trouver tous les titres (h1, h2, h3, h4, h5, h6)
+            const headings = articleContent.querySelectorAll('h1, h2, h3, h4, h5, h6');
+
+            if (headings.length === 0) return;
+
+            // Créer la liste de navigation
+            let tocHTML = '<ul>';
+            let currentLevel = 0;
+
+            headings.forEach((heading, index) => {
+                // Créer un ID unique pour le titre s'il n'en a pas
+                if (!heading.id) {
+                    const text = heading.textContent.trim();
+                    const slug = text
+                        .toLowerCase()
+                        .replace(/[^a-z0-9\s-]/g, '')
+                        .replace(/\s+/g, '-')
+                        .replace(/-+/g, '-')
+                        .replace(/^-|-$/g, '');
+                    heading.id = slug || `heading-${index}`;
+                }
+
+                // Déterminer le niveau du titre
+                const level = parseInt(heading.tagName.charAt(1));
+                const text = heading.textContent.trim();
+
+                // Gérer la hiérarchie des listes imbriquées (correction)
+                if (level > currentLevel) {
+                    // Ouvrir de nouvelles listes pour des niveaux plus profonds
+                    for (let i = currentLevel; i < level - 1; i++) {
+                        if (i === 0) continue; // Skip le premier niveau
+                        tocHTML += '<ul>';
+                    }
+                } else if (level < currentLevel) {
+                    // Fermer les listes pour remonter des niveaux
+                    for (let i = level; i < currentLevel; i++) {
+                        tocHTML += '</ul>';
+                    }
+                }
+
+                // Ajouter l'élément de liste
+                tocHTML += `
+                    <li>
+                        <a href="#${heading.id}" class="toc-h${level}" data-heading-id="${heading.id}">
+                            ${text}
+                        </a>
+                    </li>
+                `;
+
+                currentLevel = level;
+            });
+
+            // Fermer toutes les listes ouvertes
+            for (let i = 1; i < currentLevel; i++) {
+                tocHTML += '</ul>';
+            }
+            tocHTML += '</ul>';
+
+            // Injecter le HTML
+            tocList.innerHTML = tocHTML;
+
+            // Afficher la table des matières
+            tocContainer.style.display = 'block';
+
+            // Ajouter les événements de clic
+            const tocLinks = tocList.querySelectorAll('a');
+            tocLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href').slice(1);
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        // Calculer la position avec offset précis pour le header fixe
+                        const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+                        const offsetPosition = elementPosition - 100; // Offset ajusté pour le header
+
+                        // Scroll fluide vers l'élément
+                        window.scrollTo({
+                            top: offsetPosition,
+                            behavior: 'smooth'
+                        });
+
+                        // Mettre à jour les liens actifs après le scroll
+                        setTimeout(() => {
+                            updateActiveTocLink(targetId);
+                        }, 300);
+                    }
+                });
+            });
+
+            // Suivi du scroll pour mettre à jour le link actif
+            let ticking = false;
+            window.addEventListener('scroll', function() {
+                if (!ticking) {
+                    requestAnimationFrame(updateTocOnScroll);
+                    ticking = true;
+                }
+            });
+
+            function updateTocOnScroll() {
+                const headingsArray = Array.from(headings);
+                let currentHeading = null;
+
+                // Trouver le titre actuellement visible
+                for (let i = headingsArray.length - 1; i >= 0; i--) {
+                    const heading = headingsArray[i];
+                    const rect = heading.getBoundingClientRect();
+
+                    // Si le titre est au-dessus du viewport avec une marge de 120px
+                    if (rect.top <= 120) {
+                        currentHeading = heading;
+                        break;
+                    }
+                }
+
+                // Si aucun titre n'est trouvé, prendre le premier
+                if (!currentHeading && headingsArray.length > 0) {
+                    const firstHeading = headingsArray[0];
+                    const firstRect = firstHeading.getBoundingClientRect();
+                    if (firstRect.top > 120) {
+                        // On est avant le premier titre, ne pas activer de lien
+                    } else {
+                        currentHeading = firstHeading;
+                    }
+                }
+
+                if (currentHeading) {
+                    updateActiveTocLink(currentHeading.id);
+                } else {
+                    // Désactiver tous les liens si on est avant le premier titre
+                    tocLinks.forEach(link => link.classList.remove('active'));
+                }
+
+                ticking = false;
+            }
+
+            function updateActiveTocLink(activeId) {
+                // Retirer tous les états actifs
+                tocLinks.forEach(link => link.classList.remove('active'));
+
+                // Ajouter l'état actif au lien correspondant
+                const activeLink = tocList.querySelector(`a[data-heading-id="${activeId}"]`);
+                if (activeLink) {
+                    activeLink.classList.add('active');
+                }
+            }
+        }
+    });
+</script>

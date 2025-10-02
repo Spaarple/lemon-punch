@@ -1,0 +1,165 @@
+---
+import StreamingLinks from '../ui/album/StreamingLinks.astro';
+import TrackList from '../ui/album/TrackList.astro';
+import AudioPlayer from '../ui/album/AudioPlayer.astro';
+import LogoFondJaune from '../../assets/images/lmp-logo-bg-yellow.jpg';
+
+// URL de l'API WordPress pour récupérer les albums
+const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed&per_page=100`;
+
+let latestAlbum = null;
+let tracklist = [];
+let streamingLinks = [];
+let releaseType = '';
+
+// Fonction pour déterminer le type de sortie
+function getReleaseType(trackCount) {
+    if (trackCount < 2) return 'SINGLE';
+    return 'ALBUM';
+}
+
+try {
+    const res = await fetch(MUSIC_URL);
+    if (res.ok) {
+        const data = await res.json();
+
+        const allReleases = data.filter(release =>
+            release &&
+            release.title &&
+            release.title.rendered &&
+            release.date &&
+            release.slug
+        );
+
+        if (allReleases.length > 0) {
+            // Trier par release_date (le plus récent en premier)
+            const sortedReleases = allReleases.sort((a, b) => {
+                const aReleaseDate = a.acf?.release_date || a.date;
+                const bReleaseDate = b.acf?.release_date || b.date;
+
+                const dateA = aReleaseDate.length === 8 ?
+                    new Date(aReleaseDate.substring(0,4), aReleaseDate.substring(4,6)-1, aReleaseDate.substring(6,8)) :
+                    new Date(aReleaseDate);
+                const dateB = bReleaseDate.length === 8 ?
+                    new Date(bReleaseDate.substring(0,4), bReleaseDate.substring(4,6)-1, bReleaseDate.substring(6,8)) :
+                    new Date(bReleaseDate);
+
+                return dateB - dateA;
+            });
+
+            latestAlbum = sortedReleases[0];
+
+            // Extraction des pistes
+            const maxTracks = 20;
+            tracklist = Array.from({ length: maxTracks }, (_, i) => {
+                return latestAlbum.acf['liste_des_piste_' + (i + 1)];
+            }).filter(Boolean);
+
+            // Extraction des liens de streaming
+            const maxLinks = 10;
+            streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
+                const platform = latestAlbum.acf['plateforme_' + (i + 1)];
+                const url = latestAlbum.acf['url_' + (i + 1)];
+                if (platform && url) {
+                    return { platform, url };
+                }
+                return null;
+            }).filter(Boolean);
+
+            // Déterminer le type de cette sortie
+            releaseType = latestAlbum.acf?.type_de_sortie || getReleaseType(tracklist.length);
+        }
+    }
+} catch (error) {
+    console.error('Erreur lors du chargement des albums:', error);
+}
+---
+
+<!-- Music Section -->
+<section class="music-section" id="music">
+    <div class="container">
+        <h2 class="section-title">Music</h2>
+
+        {latestAlbum ? (
+            <div class="latest-release">
+                <div class="latest-release-art">
+                    {latestAlbum._embedded && latestAlbum._embedded['wp:featuredmedia'] ? (
+                        <img
+                            src={latestAlbum._embedded['wp:featuredmedia'][0].source_url}
+                            alt={`Pochette de ${latestAlbum.title.rendered}`}
+                            class="release-image"
+                        />
+                    ) : (
+                        <div class="release-image placeholder">
+                            <span>Pas d'image</span>
+                        </div>
+                    )}
+                    <div class="play-overlay">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="latest-release-info">
+                    <span class="release-badge">{releaseType}</span>
+                    <h3 class="release-title">{latestAlbum.title.rendered}</h3>
+
+                    {latestAlbum.content.rendered && (
+                        <div class="release-description" set:html={latestAlbum.content.rendered} />
+                    )}
+
+                    {latestAlbum.acf.extrait_de_lalbum && latestAlbum.acf.extrait_de_lalbum.url && (
+                        <AudioPlayer
+                            audioUrl={latestAlbum.acf.extrait_de_lalbum.url}
+                            title="Écouter un extrait"
+                            variant="expanded"
+                        />
+                    )}
+
+                    {tracklist.length > 0 && (
+                        <TrackList
+                            tracks={tracklist}
+                            title="Liste des pistes"
+                            numbered={true}
+                            variant="expanded"
+                        />
+                    )}
+
+                    {streamingLinks.length > 0 && (
+                        <div class="release-links">
+                            <StreamingLinks
+                                links={streamingLinks}
+                                variant="horizontal"
+                                size="medium"
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+        ) : (
+            <div class="no-music-message">
+                <p>Aucun album disponible pour le moment.</p>
+            </div>
+        )}
+
+        <!-- Videos Subsection -->
+        <div class="videos-subsection">
+            <h3 class="subsection-title">Nos Clips</h3>
+            <div class="video-grid">
+                <a href="#" class="video-card">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <div class="video-overlay"><i class="fas fa-play"></i></div>
+                    <p class="video-title">Clip Officiel</p>
+                </a>
+                <a href="#" class="video-card">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <div class="video-overlay"><i class="fas fa-play"></i></div>
+                    <p class="video-title">Live Session</p>
+                </a>
+                <a href="#" class="video-card">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <div class="video-overlay"><i class="fas fa-play"></i></div>
+                    <p class="video-title">Visualizer</p>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>

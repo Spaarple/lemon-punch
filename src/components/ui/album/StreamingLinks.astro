@@ -1,0 +1,235 @@
+---
+export interface Props {
+    links: Array<{
+        platform: string;
+        url: string;
+    }>;
+    variant?: 'horizontal' | 'vertical';
+    size?: 'small' | 'medium' | 'large';
+}
+
+const { links, variant = 'horizontal', size = 'medium' } = Astro.props;
+
+function getPlatformConfig(platform: string) {
+    const platformLower = platform.toLowerCase();
+
+    if (platformLower.includes('spotify')) {
+        return { icon: 'fab fa-spotify', class: 'btn-spotify', color: '#1DB954' };
+    } else if (platformLower.includes('apple')) {
+        return { icon: 'fab fa-apple', class: 'btn-apple', color: '#000000' };
+    } else if (platformLower.includes('youtube')) {
+        return { icon: 'fab fa-youtube', class: 'btn-youtube', color: '#FF0000' };
+    } else if (platformLower.includes('deezer')) {
+        return { icon: 'fa-brands fa-deezer', class: 'btn-deezer', color: '#A238FF' };
+    } else if (platformLower.includes('soundcloud')) {
+        return { icon: 'fab fa-soundcloud', class: 'btn-soundcloud', color: '#FF5500' };
+    } else if (platformLower.includes('bandcamp')) {
+        return { icon: 'fab fa-bandcamp', class: 'btn-bandcamp', color: '#629AA0' };
+    } else {
+        return { icon: 'fas fa-music', class: 'btn-generic', color: '#666666' };
+    }
+}
+---
+
+{links.length > 0 && (
+    <div class={`streaming-links ${variant} ${size}`}>
+        {links.map(link => {
+            const config = getPlatformConfig(link.platform);
+            return (
+                <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class={`streaming-link ${config.class}`}
+                >
+                    <i class={config.icon}></i>
+                    <span>{link.platform}</span>
+                </a>
+            );
+        })}
+    </div>
+)}
+
+<style>
+    .streaming-links {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .streaming-links.horizontal {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .streaming-links.vertical {
+        flex-direction: column;
+    }
+
+    .streaming-links.small {
+        gap: 0.5rem;
+    }
+
+    .streaming-links.medium {
+        gap: 1rem;
+    }
+
+    .streaming-links.large {
+        gap: 1.5rem;
+    }
+
+    .streaming-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border-radius: 4px;
+        min-width: 120px;
+        justify-content: center;
+        text-transform: capitalize;
+    }
+
+    .small .streaming-link {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        min-width: 100px;
+    }
+
+    .large .streaming-link {
+        padding: 12px 20px;
+        font-size: 1rem;
+        min-width: 140px;
+    }
+
+    .streaming-link i {
+        font-size: 1.1em;
+    }
+
+    /* Platform specific styles */
+    .btn-spotify {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+    }
+
+    .btn-spotify:hover {
+        background: #1DB954;
+        border-color: #1DB954;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
+    }
+
+    .btn-apple {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+    }
+
+    .btn-apple:hover {
+        background: #000000;
+        border-color: #000000;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-youtube {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+    }
+
+    .btn-youtube:hover {
+        background: #FF0000;
+        border-color: #FF0000;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+    }
+
+    .btn-deezer {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+    }
+
+    .btn-deezer:hover {
+        background: #A238FF;
+        border-color: #A238FF;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(162, 56, 255, 0.4);
+    }
+
+    .btn-soundcloud {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+    }
+
+    .btn-soundcloud:hover {
+        background: #FF5500;
+        border-color: #FF5500;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 85, 0, 0.4);
+    }
+
+    .btn-bandcamp {
+        background: var(--black);
+        color: var(--white);
+        border: 2px solid var(--black);
+    }
+
+    .btn-bandcamp:hover {
+        background: #629AA0;
+        border-color: #629AA0;
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(98, 154, 160, 0.4);
+    }
+
+    .btn-generic {
+        background: var(--gray);
+        color: var(--white);
+        border: 2px solid var(--gray);
+    }
+
+    .btn-generic:hover {
+        background: var(--dark-gray);
+        border-color: var(--dark-gray);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .streaming-links.horizontal {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .streaming-link {
+            width: 100%;
+            max-width: 200px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .streaming-link {
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            min-width: auto;
+            width: 100%;
+        }
+
+        .streaming-link i {
+            font-size: 1rem;
+        }
+    }
+</style>

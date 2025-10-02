@@ -1,0 +1,294 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
+import StreamingLinks from "../../components/ui/album/StreamingLinks.astro";
+import TrackList from "../../components/ui/album/TrackList.astro";
+import AudioPlayer from "../../components/ui/album/AudioPlayer.astro";
+
+// ===== PARTIE 1 : GÉNÉRER TOUTES LES PAGES D'ALBUMS =====
+export async function getStaticPaths() {
+    const ALBUMS_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed`;
+
+    const res = await fetch(ALBUMS_URL);
+    const albums = await res.json();
+
+    return albums.map((album) => ({
+        params: { slug: album.slug },
+        props: { album },
+    }));
+}
+
+// ===== PARTIE 2 : RÉCUPÉRER LES DONNÉES POUR CETTE PAGE SPÉCIFIQUE =====
+const { album } = Astro.props;
+
+// On va créer des tableaux propres pour nos champs numérotés
+const maxTracks = 20;
+const maxLinks = 10;
+
+// Extraction des pistes
+const tracklist = Array.from({ length: maxTracks }, (_, i) => {
+    return album.acf['liste_des_piste_' + (i + 1)];
+}).filter(Boolean);
+
+// Extraction des liens de streaming
+const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
+    const platform = album.acf['plateforme_' + (i + 1)];
+    const url = album.acf['url_' + (i + 1)];
+    if (platform && url) {
+        return { platform, url };
+    }
+    return null;
+}).filter(Boolean);
+
+// Fonction pour déterminer le type de sortie basé sur le nombre de pistes
+function getReleaseType(trackCount) {
+    if (trackCount < 2) return 'SINGLE';
+    return 'ALBUM';
+}
+
+// Déterminer le type de cette sortie
+const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length);
+---
+
+<Layout title={album.title.rendered}>
+    <Breadcrumb currentPageTitle={album.title.rendered} />
+    <section class="music-section album-page">
+        <div class="container">
+            <h2 class="section-title">{album.title.rendered}</h2>
+
+            <!-- Album Release Card -->
+            <div class="latest-release">
+                <div class="latest-release-art">
+                    {album._embedded && album._embedded['wp:featuredmedia'] ? (
+                        <img
+                            src={album._embedded['wp:featuredmedia'][0].source_url}
+                            alt={`Pochette de ${album.title.rendered}`}
+                            class="release-image"
+                        />
+                    ) : (
+                        <div class="release-image placeholder">
+                            <span>Pas d'image</span>
+                        </div>
+                    )}
+                    <div class="play-overlay">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+                <div class="latest-release-info">
+                    <span class="release-badge">{releaseType}</span>
+
+                    {album.content.rendered && (
+                        <div class="release-description" set:html={album.content.rendered} />
+                    )}
+
+                    {album.acf.extrait_de_lalbum && album.acf.extrait_de_lalbum.url && (
+                        <AudioPlayer
+                            audioUrl={album.acf.extrait_de_lalbum.url}
+                            title="Écouter un extrait"
+                            variant="expanded"
+                        />
+                    )}
+
+                    {tracklist.length > 0 && (
+                        <TrackList
+                            tracks={tracklist}
+                            title="Liste des pistes"
+                            numbered={true}
+                            variant="expanded"
+                        />
+                    )}
+
+                    {streamingLinks.length > 0 && (
+                        <div class="release-links">
+                            <StreamingLinks
+                                links={streamingLinks}
+                                variant="horizontal"
+                                size="medium"
+                            />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    </section>
+</Layout>
+
+<style is:global>
+    /* On applique exactement les mêmes styles que le composant Music original */
+    .album-page {
+    }
+
+    .album-page .section-title {
+        color: var(--black);
+        margin-bottom: 3rem;
+    }
+
+    .album-page .section-title::after {
+        background: var(--primary-yellow);
+    }
+
+    /* Utiliser les mêmes styles que .latest-release du fichier global.css */
+    .album-page .latest-release {
+        display: flex;
+        gap: 3rem;
+        align-items: center;
+        background: transparent;
+        padding: 3rem;
+        margin-bottom: 4rem;
+        border-bottom: none;
+        position: relative;
+    }
+
+    /* Prolongement des bordures comme dans le design original */
+    .album-page .latest-release::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: -8px;
+        right: -8px;
+        bottom: -100px;
+        pointer-events: none;
+        z-index: -1;
+    }
+
+    .album-page .latest-release-art {
+        position: relative;
+        flex-shrink: 0;
+    }
+
+    .album-page .release-image {
+        width: 350px;
+        height: 350px;
+        object-fit: cover;
+        border-radius: 0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        transition: transform 0.3s ease;
+    }
+
+    .album-page .release-image.placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--light-gray);
+        color: var(--gray);
+        border: 2px dashed var(--gray);
+        font-weight: 600;
+    }
+
+    .album-page .latest-release-art:hover .release-image {
+        transform: scale(1.05);
+    }
+
+    .album-page .play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        border-radius: 0;
+        cursor: pointer;
+    }
+
+    .album-page .latest-release-art:hover .play-overlay {
+        opacity: 1;
+    }
+
+    .album-page .play-overlay i {
+        font-size: 4rem;
+        color: var(--primary-yellow);
+    }
+
+    .album-page .latest-release-info {
+        flex: 1;
+    }
+
+    .album-page .release-badge {
+        display: inline-block;
+        background: var(--primary-yellow);
+        color: var(--black);
+        padding: 8px 15px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border-radius: 0;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .album-page .release-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin: 0 0 1rem 0;
+        color: var(--black);
+        line-height: 1.2;
+    }
+
+    .album-page .release-description {
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        color: var(--gray);
+    }
+
+    .album-page .release-description p {
+        margin-bottom: 1rem;
+    }
+
+    .album-page .release-links {
+        margin-top: 2rem;
+    }
+
+    /* Responsive comme dans le design original */
+    @media (max-width: 768px) {
+        .album-page {
+            padding: 60px 0;
+        }
+
+        .album-page .latest-release {
+            flex-direction: column;
+            text-align: center;
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .album-page .release-image,
+        .album-page .release-image.placeholder {
+            width: 280px;
+            height: 280px;
+        }
+
+        .album-page .release-title {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .album-page {
+            padding: 40px 0;
+        }
+
+        .album-page .latest-release {
+            padding: 1.5rem;
+        }
+
+        .album-page .release-image,
+        .album-page .release-image.placeholder {
+            width: 250px;
+            height: 250px;
+        }
+
+        .album-page .release-title {
+            font-size: 1.8rem;
+        }
+
+        .album-page .release-description {
+            font-size: 1rem;
+        }
+    }
+</style>

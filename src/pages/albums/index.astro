@@ -1,0 +1,869 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
+import DiscographyHeader from "../../components/ui/album/DiscographyHeader.astro";
+import AlbumCard from "../../components/ui/album/AlbumCard.astro";
+
+// Récupérer toutes les sorties musicales depuis WordPress (Albums, EPs, Singles)
+const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed&per_page=100`;
+
+let allReleases = [];
+let latestRelease = null;
+let otherReleases = [];
+
+// Fonction pour déterminer le type de sortie basé sur le nombre de pistes ou un champ personnalisé
+function getReleaseType(release) {
+    // Si vous avez un champ ACF pour le type, utilisez-le en priorité
+    if (release.acf && release.acf.type_de_sortie) {
+        return release.acf.type_de_sortie;
+    }
+
+    // Sinon, essayons de deviner basé sur le nombre de pistes
+    let trackCount = 0;
+    if (release.acf) {
+        // Compter les pistes (liste_des_piste_1, liste_des_piste_2, etc.)
+        for (let i = 1; i <= 20; i++) {
+            if (release.acf[`liste_des_piste_${i}`]) {
+                trackCount++;
+            }
+        }
+    }
+
+    // Classification basée sur le nombre de pistes
+    if (trackCount <= 2) return 'Single';
+    return 'Album';
+}
+
+try {
+    const res = await fetch(MUSIC_URL);
+    if (res.ok) {
+        const data = await res.json();
+
+        // Filtrer et valider les sorties musicales
+        allReleases = data.filter(release =>
+            release &&
+            release.title &&
+            release.title.rendered &&
+            release.date &&
+            release.slug
+        ).map(release => ({
+            ...release,
+            releaseType: getReleaseType(release)
+        }));
+
+        if (allReleases.length > 0) {
+            // Trier par release_date ACF (le plus récent en premier)
+            const sortedReleases = allReleases.sort((a, b) => {
+                const aReleaseDate = a.acf?.release_date || a.date;
+                const bReleaseDate = b.acf?.release_date || b.date;
+
+                // Convertir les dates au format YYYYMMDD en objets Date
+                const dateA = aReleaseDate.length === 8 ?
+                    new Date(aReleaseDate.substring(0,4), aReleaseDate.substring(4,6)-1, aReleaseDate.substring(6,8)) :
+                    new Date(aReleaseDate);
+                const dateB = bReleaseDate.length === 8 ?
+                    new Date(bReleaseDate.substring(0,4), bReleaseDate.substring(4,6)-1, bReleaseDate.substring(6,8)) :
+                    new Date(bReleaseDate);
+
+                return dateB - dateA;
+            });
+
+            // Séparer la dernière sortie (principal) et les autres
+            latestRelease = sortedReleases[0];
+            otherReleases = sortedReleases.slice(1);
+        }
+    }
+} catch (error) {
+    console.error('Erreur lors du chargement des sorties musicales:', error);
+}
+---
+
+<Layout title="Albums - LemonPunch">
+    <Breadcrumb currentPageTitle="Albums" />
+    <!-- Section Header Discographie -->
+    <DiscographyHeader/>
+
+    <!-- Section Music avec Effet Parallaxe -->
+    <section class="music-section-parallax">
+        <div class="container">
+            <!-- Sortie Principale (Album/Single) -->
+            {latestRelease && (
+                <div class="main-album">
+                    <AlbumCard album={latestRelease} variant="main" />
+                </div>
+            )}
+
+            <!-- Grille 3 Autres Sorties -->
+            {otherReleases.length > 0 && (
+                <div class="older-albums">
+                    <div class="older-albums-grid">
+                        {otherReleases.slice(0, 3).map((release) => (
+                            <AlbumCard album={release} variant="older" />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            <!-- Listen On Section -->
+            <div class="listen-on">
+                <p class="listen-on-title">Rejoignez-nous sur les plateformes d'écoute</p>
+                <div class="streaming-links">
+                    <a href="#" class="streaming-link youtube">
+                        <i class="fab fa-youtube"></i>
+                        YouTube
+                    </a>
+                    <a href="#" class="streaming-link spotify">
+                        <i class="fab fa-spotify"></i>
+                        Spotify
+                    </a>
+                    <a href="#" class="streaming-link deezer">
+                        <i class="fa-brands fa-deezer"></i>
+                        Deezer
+                    </a>
+                    <a href="#" class="streaming-link apple-music">
+                        <i class="fab fa-apple"></i>
+                        Apple Music
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Message si aucune sortie musicale -->
+    {!latestRelease && allReleases.length === 0 && (
+        <section class="no-albums">
+            <div class="container">
+                <div class="no-albums-content">
+                    <i class="fas fa-music"></i>
+                    <h2>Aucune sortie musicale disponible</h2>
+                    <p>La discographie sera bientôt disponible !</p>
+                </div>
+            </div>
+        </section>
+    )}
+</Layout>
+
+<style is:global>
+    /* Section Header Discographie */
+    .discography-header {
+        background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 50%, var(--black) 100%);
+        position: relative;
+        height: 60vh;
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-top: 80px;
+        overflow: hidden;
+    }
+
+    .header-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('../../assets/images/black-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-attachment: fixed;
+        opacity: 0.3;
+        z-index: 1;
+    }
+
+    .header-background::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.4) 70%);
+        z-index: 2;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 3;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .title-container {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .discography-title {
+        font-size: 6rem;
+        font-weight: 900;
+        color: var(--white);
+        margin-bottom: 1rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        line-height: 1;
+        position: relative;
+        animation: slideInFromLeft 1s ease;
+    }
+
+    .title-accent {
+        color: var(--primary-yellow);
+        position: relative;
+    }
+
+    .title-underline {
+        width: 120px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-yellow), #f39c12);
+        margin: 0 auto;
+        border-radius: 2px;
+        animation: slideInFromRight 1s ease 0.3s both;
+    }
+
+    .discography-subtitle {
+        font-size: 1.8rem;
+        color: #cccccc;
+        font-weight: 300;
+        letter-spacing: 1px;
+        margin-bottom: 3rem;
+        animation: fadeInUp 1s ease 0.6s both;
+        font-style: italic;
+    }
+
+    .music-stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        flex-wrap: wrap;
+        animation: fadeInUp 1s ease 0.9s both;
+    }
+
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+        color: var(--white);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-5px);
+        color: var(--primary-yellow);
+    }
+
+    .stat-item i {
+        font-size: 2.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover i {
+        transform: rotate(10deg) scale(1.1);
+    }
+
+    .stat-item span {
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* Éléments flottants */
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .floating-note {
+        position: absolute;
+        color: var(--primary-yellow);
+        font-size: 2rem;
+        opacity: 0.3;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .note-1 {
+        top: 20%;
+        left: 15%;
+        animation-delay: 0s;
+    }
+
+    .note-2 {
+        top: 30%;
+        right: 20%;
+        animation-delay: 1.5s;
+    }
+
+    .note-3 {
+        bottom: 25%;
+        left: 25%;
+        animation-delay: 3s;
+    }
+
+    .note-4 {
+        bottom: 35%;
+        right: 15%;
+        animation-delay: 4.5s;
+    }
+
+    /* Animations */
+    @keyframes slideInFromLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideInFromRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes expandWidth {
+        from {
+            width: 0%;
+        }
+        to {
+            width: 100%;
+        }
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+            opacity: 0.3;
+        }
+        25% {
+            transform: translateY(-20px) rotate(5deg);
+            opacity: 0.5;
+        }
+        50% {
+            transform: translateY(-30px) rotate(-5deg);
+            opacity: 0.7;
+        }
+        75% {
+            transform: translateY(-10px) rotate(3deg);
+            opacity: 0.5;
+        }
+    }
+
+    /* Section Music avec Effet Parallaxe */
+    .music-section-parallax {
+        background: var(--white);
+        background-image: url('../../assets/images/white-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-blend-mode: multiply;
+        background-attachment: fixed;
+        padding: 80px 0;
+        text-align: center;
+        position: relative;
+        z-index: 10;
+        box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.1);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+        position: relative;
+    }
+
+    /* Titre MUSIC */
+    .music-title {
+        font-size: 4rem;
+        font-weight: 900;
+        color: var(--black);
+        margin-bottom: 4rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        position: relative;
+        animation: slideInFromBottom 1s ease;
+    }
+
+    .music-title::after {
+        content: '';
+        position: absolute;
+        bottom: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: var(--primary-yellow);
+    }
+
+    @keyframes slideInFromBottom {
+        from {
+            opacity: 0;
+            transform: translateY(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Album Principal */
+    .main-album {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-bottom: 6rem;
+    }
+
+    /* Albums Anciens - Grille Horizontale */
+    .older-albums {
+        margin-bottom: 6rem;
+    }
+
+    .older-albums-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 3rem;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* Listen On Section */
+    .listen-on {
+        text-align: center;
+    }
+
+    .listen-on-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--black);
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .streaming-links {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        margin: 0 auto;
+    }
+
+    .streaming-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        justify-content: center;
+        min-width: 120px;
+    }
+
+    .streaming-link.apple-music {
+        background: var(--black);
+        color: var(--white);
+    }
+
+    .streaming-link.apple-music:hover {
+        background: #000000;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .streaming-link.youtube {
+        background: #FF0000;
+        color: var(--white);
+    }
+
+    .streaming-link.youtube:hover {
+        background: #cc0000;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
+    }
+
+    .streaming-link.spotify {
+        background: #1DB954;
+        color: var(--white);
+    }
+
+    .streaming-link.spotify:hover {
+        background: #1ed760;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(29, 185, 84, 0.4);
+    }
+
+    .streaming-link.deezer {
+        background: #A238FF;
+        color: var(--white);
+    }
+
+    .streaming-link.deezer:hover {
+        background: #8a2be2;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(162, 56, 255, 0.4);
+    }
+
+    .streaming-link i {
+        font-size: 1.2rem;
+    }
+
+    /* No Albums Section */
+    .no-albums {
+        background: var(--white);
+        background-image: url('../../assets/images/white-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-blend-mode: multiply;
+        padding: 100px 0;
+    }
+
+    .no-albums-content {
+        text-align: center;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .no-albums-content i {
+        font-size: 4rem;
+        color: var(--primary-yellow);
+        margin-bottom: 2rem;
+    }
+
+    .no-albums-content h2 {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--black);
+        margin-bottom: 1rem;
+    }
+
+    .no-albums-content p {
+        font-size: 1.2rem;
+        color: var(--gray);
+    }
+
+    /* Release Type Badge Styling */
+    .release-type-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 6px 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid;
+        z-index: 3;
+        backdrop-filter: blur(10px);
+    }
+
+    .main-badge {
+        font-size: 1rem;
+        padding: 8px 16px;
+        top: 20px;
+        left: 20px;
+    }
+
+    .older-badge {
+        font-size: 0.7rem;
+        padding: 4px 10px;
+        top: 10px;
+        left: 10px;
+    }
+
+    /* Album Badge - Primary Yellow */
+    .release-type-badge.album {
+        background: rgba(244, 208, 63, 0.9);
+        color: var(--black);
+        border-color: var(--primary-yellow);
+    }
+
+    /* EP Badge - Orange/Red */
+    .release-type-badge.single {
+        background: rgba(255, 107, 53, 0.9);
+        color: var(--white);
+        border-color: #ff6b35;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        /* Header Discographie Tablet */
+        .discography-header {
+            height: 50vh;
+            min-height: 400px;
+        }
+
+        .header-background {
+            background-attachment: scroll;
+        }
+
+        .discography-title {
+            font-size: 4rem;
+            margin-bottom: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .discography-subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 2rem;
+        }
+
+        .music-stats {
+            gap: 2rem;
+        }
+
+        .stat-item i {
+            font-size: 2rem;
+        }
+
+        .stat-item span {
+            font-size: 0.9rem;
+        }
+
+        /* Section Music Tablet */
+        .music-section-parallax {
+            background-attachment: scroll;
+            padding: 100px 0 60px;
+            transform: translateY(-30px);
+        }
+
+        .music-title {
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+        }
+
+        /* Album Principal Tablet */
+        .main-cover-image,
+        .main-cover-image.placeholder {
+            width: 320px;
+            height: 320px;
+        }
+
+        .main-album-title {
+            font-size: 2.2rem;
+        }
+
+        .main-album-date {
+            font-size: 1.3rem;
+        }
+
+        /* Albums Anciens Tablet */
+        .older-albums-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            max-width: 600px;
+        }
+
+        .older-cover-image,
+        .older-cover-image.placeholder {
+            width: 200px;
+            height: 200px;
+        }
+
+        .older-album-title {
+            font-size: 1.3rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        /* Header Discographie Mobile */
+        .discography-header {
+            height: 45vh;
+            min-height: 350px;
+            padding: 20px 0;
+        }
+
+        .header-background {
+            background-attachment: scroll;
+        }
+
+        .discography-title {
+            font-size: 2.8rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 0px;
+        }
+
+        .title-underline {
+            width: 80px;
+            height: 3px;
+        }
+
+        .discography-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        .music-stats {
+            gap: 1.5rem;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-item {
+            flex-direction: row;
+            gap: 0.5rem;
+        }
+
+        .stat-item i {
+            font-size: 1.5rem;
+        }
+
+        .stat-item span {
+            font-size: 0.8rem;
+        }
+
+        .floating-note {
+            font-size: 1.5rem;
+        }
+
+        /* Section Music Mobile */
+        .music-section-parallax {
+            background-attachment: scroll;
+            padding: 80px 0 50px;
+            transform: translateY(-20px);
+        }
+
+        .container {
+            padding: 0 15px;
+        }
+
+        .music-title {
+            font-size: 2rem;
+            margin-bottom: 2.5rem;
+            letter-spacing: 2px;
+        }
+
+        /* Album Principal Mobile */
+        .main-album {
+            margin-bottom: 4rem;
+        }
+
+        .main-cover-image,
+        .main-cover-image.placeholder {
+            width: 280px;
+            height: 280px;
+        }
+
+        .main-album-title {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-album-date {
+            font-size: 1.1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .main-album-link {
+            padding: 12px 25px;
+            font-size: 0.9rem;
+        }
+
+        /* Albums Anciens Mobile */
+        .older-albums {
+            margin-bottom: 4rem;
+        }
+
+        .older-albums-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 300px;
+        }
+
+        .older-cover-image,
+        .older-cover-image.placeholder {
+            width: 200px;
+            height: 200px;
+        }
+
+        .older-album-title {
+            font-size: 1.2rem;
+        }
+
+        .older-album-date {
+            font-size: 1rem;
+        }
+
+        .older-album-link {
+            padding: 8px 16px;
+            font-size: 0.8rem;
+        }
+
+        /* Badge Responsive */
+        .main-badge {
+            font-size: 0.9rem;
+            padding: 6px 14px;
+        }
+
+        .older-badge {
+            font-size: 0.6rem;
+            padding: 3px 8px;
+        }
+
+        /* Listen On Mobile */
+        .listen-on-title {
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .streaming-links {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .streaming-link {
+            padding: 12px 20px;
+            font-size: 0.9rem;
+        }
+
+        .streaming-link i {
+            font-size: 1rem;
+        }
+
+        /* No Albums Mobile */
+        .no-albums-content i {
+            font-size: 3rem;
+        }
+
+        .no-albums-content h2 {
+            font-size: 1.5rem;
+        }
+
+        .no-albums-content p {
+            font-size: 1rem;
+        }
+    }
+</style>

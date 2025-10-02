@@ -1,0 +1,1038 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import CardProduct from "../../components/ui/CardProduct.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
+
+const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
+const KEY = import.meta.env.WOOCOMMERCE_KEY;
+const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
+
+// Récupérer tous les produits
+const response = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+const allProducts = await response.json();
+
+// Récupérer les catégories pour les filtres
+const categoriesResponse = await
+    fetch(`https://lemonpunch.spaarple.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+const categories = await categoriesResponse.json();
+---
+
+<CardProduct />
+
+<Layout title="E-boutique LemonPunch">
+    <Breadcrumb currentPageTitle="Produits" />
+    <!-- Section Header Produits -->
+    <section class="products-header">
+        <div class="header-background"></div>
+        <div class="floating-elements">
+            <div class="floating-note note-1">🛍️</div>
+            <div class="floating-note note-2">👕</div>
+            <div class="floating-note note-3">🎧</div>
+            <div class="floating-note note-4">💿</div>
+        </div>
+        <div class="header-content">
+            <div class="title-container">
+                <h1 class="products-title">
+                    M<span class="title-accent">erch</span>
+                </h1>
+                <div class="title-underline"></div>
+            </div>
+            <p class="products-subtitle">Découvrez notre collection officielle LemonPunch</p>
+        </div>
+    </section>
+
+    <!-- Section Produits -->
+    {allProducts.length > 0 && (
+        <section class="products-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title" id="products-title">
+                        Tous les produits
+                    </h2>
+                    <div class="filters-container">
+                        <button class="filter-tab active" data-filter="all">
+                            Tous
+                        </button>
+                        {categories.filter(cat => cat.count > 0 && cat.slug !== 'non-classe').map(category => (
+                            <button class="filter-tab" data-filter={category.id.toString()}>
+                                {category.name}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <!-- Contrôles de tri -->
+                <div class="sort-controls">
+                    <div class="sort-dropdown">
+                        <button class="sort-btn" type="button" id="sort-btn">
+                            <span id="sort-label">Par défaut</span>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        <div class="sort-menu">
+                            <button class="sort-option active" data-value="menu_order">Par défaut</button>
+                            <button class="sort-option" data-value="price">Prix croissant</button>
+                            <button class="sort-option" data-value="price-desc">Prix décroissant</button>
+                            <button class="sort-option" data-value="title">Nom A-Z</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="products-grid" id="products-list">
+                    <!-- Les produits seront injectés ici par JavaScript -->
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" id="pagination-container" style="display: none;">
+                    <div class="pagination" id="pagination">
+                        <!-- La pagination sera injectée ici par JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    )}
+
+    <!-- Message si aucun produit -->
+    {allProducts.length === 0 && (
+        <section class="no-products">
+            <div class="container">
+                <div class="no-products-content">
+                    <i class="fas fa-shopping-bag"></i>
+                    <h2>Aucun produit disponible</h2>
+                    <p>Les produits seront bientôt disponibles !</p>
+                </div>
+            </div>
+        </section>
+    )}
+</Layout>
+
+<script define:vars={{ allProducts, categories }}>
+    // Configuration
+    const PRODUCTS_PER_PAGE = 9;
+
+    // État de l'application
+    let currentFilter = 'all';
+    let currentSort = 'menu_order';
+    let currentPage = 1;
+    let filteredProducts = [];
+    let totalPages = 0;
+
+    // Références DOM
+    const productsTitle = document.getElementById('products-title');
+    const productsList = document.getElementById('products-list');
+    const paginationContainer = document.getElementById('pagination-container');
+    const pagination = document.getElementById('pagination');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const sortDropdown = document.querySelector('.sort-dropdown');
+    const sortBtn = document.getElementById('sort-btn');
+    const sortLabel = document.getElementById('sort-label');
+    const sortOptions = document.querySelectorAll('.sort-option');
+
+    // Fonction pour filtrer les produits
+    function filterProducts(filter) {
+        if (filter === 'all') {
+            filteredProducts = [...allProducts];
+        } else {
+            const categoryId = parseInt(filter);
+            filteredProducts = allProducts.filter(product =>
+                product.categories && product.categories.some(cat => cat.id === categoryId)
+            );
+        }
+    }
+
+    // Fonction pour trier les produits
+    function sortProducts(sortType) {
+        filteredProducts.sort((a, b) => {
+            switch (sortType) {
+                case 'price':
+                    return parseFloat(a.price) - parseFloat(b.price);
+                case 'price-desc':
+                    return parseFloat(b.price) - parseFloat(a.price);
+                case 'title':
+                    return a.name.localeCompare(b.name);
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    // Fonction pour mettre à jour le titre
+    function updateTitle(filter) {
+        if (filter === 'all') {
+            productsTitle.textContent = 'Tous les produits';
+        } else {
+            const category = categories.find(cat => cat.id.toString() === filter);
+            productsTitle.textContent = category ? `Produits : ${category.name}` : 'Produits';
+        }
+    }
+
+    // Fonction pour extraire et limiter la description
+    function extractDescription(html) {
+        if (!html) return '';
+        const text = html.replace(/<[^>]*>/g, '').trim();
+        return text.length > 150 ? text.substring(0, 150) + '...' : text;
+    }
+
+    // Fonction pour rendre un produit
+    function renderProduct(product) {
+        const productData = {
+            id: product.id,
+            slug: product.slug,
+            name: product.name,
+            price: product.price,
+            onSale: product.on_sale,
+            salePrice: product.sale_price,
+            regularPrice: product.regular_price,
+            imageSrc: product.images[0]?.src,
+            imageAlt: product.images[0]?.alt || `Image pour ${product.name}`,
+            category: product.categories[0]?.name,
+            description: extractDescription(product.short_description || product.description)
+        };
+
+        const productCard = document.createElement('product-card');
+        productCard.setAttribute('data-product', JSON.stringify(productData));
+        return productCard;
+    }
+
+    // Fonction pour rendre les produits
+    function renderProducts() {
+        const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
+        const endIndex = startIndex + PRODUCTS_PER_PAGE;
+        const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
+
+        productsList.innerHTML = '';
+
+        if (paginatedProducts.length === 0) {
+            productsList.innerHTML = `
+                <div class="no-products-message">
+                    <p>Aucun produit trouvé pour cette catégorie.</p>
+                </div>
+            `;
+            return;
+        }
+
+        paginatedProducts.forEach(product => {
+            const productCard = renderProduct(product);
+            productsList.appendChild(productCard);
+        });
+    }
+
+    // Fonction pour rendre la pagination
+    function renderPagination() {
+        totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+        if (totalPages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+
+        let paginationHTML = '';
+
+        // Bouton précédent
+        if (currentPage > 1) {
+            paginationHTML += `
+                <button class="pagination-btn pagination-prev" data-page="${currentPage - 1}">
+                    <i class="fas fa-chevron-left"></i>
+                    Précédent
+                </button>
+            `;
+        }
+
+        // Numéros de page
+        for (let i = 1; i <= totalPages; i++) {
+            paginationHTML += `
+                <button class="pagination-number ${i === currentPage ? 'active' : ''}" data-page="${i}">
+                    ${i}
+                </button>
+            `;
+        }
+
+        // Bouton suivant
+        if (currentPage < totalPages) {
+            paginationHTML += `
+                <button class="pagination-btn pagination-next" data-page="${currentPage + 1}">
+                    Suivant
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            `;
+        }
+
+        pagination.innerHTML = paginationHTML;
+
+        // Ajouter les écouteurs d'événements
+        pagination.querySelectorAll('[data-page]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                currentPage = parseInt(e.target.closest('[data-page]').dataset.page);
+                renderProducts();
+                renderPagination();
+
+                // Scroller vers le haut de la section
+                document.querySelector('.products-section').scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            });
+        });
+    }
+
+    // Fonction principale pour mettre à jour l'affichage
+    function updateDisplay() {
+        filterProducts(currentFilter);
+        sortProducts(currentSort);
+        updateTitle(currentFilter);
+        currentPage = 1;
+        renderProducts();
+        renderPagination();
+    }
+
+    // Gestionnaires d'événements pour les filtres
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Mettre à jour les états actifs
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Changer le filtre
+            currentFilter = tab.dataset.filter;
+            updateDisplay();
+        });
+    });
+
+    // Gestionnaire pour le dropdown de tri
+    if (sortBtn && sortDropdown) {
+        sortBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            sortDropdown.classList.toggle('active');
+        });
+
+        // Fermer le menu en cliquant ailleurs
+        document.addEventListener('click', (e) => {
+            if (!sortDropdown.contains(e.target)) {
+                sortDropdown.classList.remove('active');
+            }
+        });
+    }
+
+    // Gestionnaire pour les options de tri
+    sortOptions.forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Retirer la classe active de toutes les options
+            sortOptions.forEach(opt => opt.classList.remove('active'));
+
+            // Ajouter la classe active à l'option sélectionnée
+            option.classList.add('active');
+
+            // Mettre à jour le label
+            sortLabel.textContent = option.textContent;
+
+            // Mettre à jour le tri
+            currentSort = option.dataset.value;
+            updateDisplay();
+
+            // Fermer le dropdown
+            sortDropdown.classList.remove('active');
+        });
+    });
+
+    // Initialisation
+    document.addEventListener('DOMContentLoaded', () => {
+        updateDisplay();
+    });
+</script>
+
+<style is:global>
+    /* Section Header Produits */
+    .products-header {
+        background: linear-gradient(135deg, var(--black) 0%, #1a1a1a 50%, var(--black) 100%);
+        position: relative;
+        height: 60vh;
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .header-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: url('../../assets/images/black-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-attachment: fixed;
+        opacity: 0.3;
+        z-index: 1;
+    }
+
+    .header-background::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at center, transparent 20%, rgba(0,0,0,0.4) 70%);
+        z-index: 2;
+    }
+
+    .header-content {
+        position: relative;
+        z-index: 3;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .title-container {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .products-title {
+        font-size: 6rem;
+        font-weight: 900;
+        color: var(--white);
+        margin-bottom: 1rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        line-height: 1;
+        position: relative;
+        animation: slideInFromLeft 1s ease;
+    }
+
+    .title-accent {
+        color: var(--primary-yellow);
+        position: relative;
+    }
+
+    .title-underline {
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary-yellow), #f39c12);
+        margin: 0 auto;
+        border-radius: 2px;
+        animation: slideInFromRight 1s ease 0.3s both;
+    }
+
+    .products-subtitle {
+        font-size: 1.8rem;
+        color: #cccccc;
+        font-weight: 300;
+        letter-spacing: 1px;
+        animation: fadeInUp 1s ease 0.6s both;
+        font-style: italic;
+    }
+
+    /* Éléments flottants */
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .floating-note {
+        position: absolute;
+        color: var(--primary-yellow);
+        font-size: 2rem;
+        opacity: 0.3;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .note-1 {
+        top: 20%;
+        left: 15%;
+        animation-delay: 0s;
+    }
+
+    .note-2 {
+        top: 30%;
+        right: 20%;
+        animation-delay: 1.5s;
+    }
+
+    .note-3 {
+        bottom: 25%;
+        left: 25%;
+        animation-delay: 3s;
+    }
+
+    .note-4 {
+        bottom: 35%;
+        right: 15%;
+        animation-delay: 4.5s;
+    }
+
+    /* Section Produits */
+    .products-section {
+        background: var(--white);
+        background-image: url('../../assets/images/white-bg-with-noise.jpg');
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-blend-mode: multiply;
+        padding: 100px 0;
+    }
+
+    /* Section Header avec titre et filtres */
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 2rem;
+        min-height: 60px;
+    }
+
+    .filters-container {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+        align-items: center;
+    }
+
+    /* Alignement vertical parfait du titre */
+    .section-header .section-title {
+        margin: 0;
+        line-height: 1.2;
+        display: flex;
+        align-items: center;
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: var(--black);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .filter-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 12px 24px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--light-gray);
+        border-radius: 4px;
+        transition: all 0.3s ease;
+        color: var(--black);
+        background: var(--white);
+        cursor: pointer;
+    }
+
+    .filter-tab:hover {
+        border-color: var(--primary-yellow);
+        background: var(--primary-yellow);
+        color: var(--black);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .filter-tab.active {
+        border-color: var(--black);
+        background: var(--black);
+        color: var(--white);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .filter-tab.active:hover {
+        border-color: var(--black);
+        background: var(--black);
+        color: var(--white);
+    }
+
+    /* Contrôles de tri */
+    .sort-controls {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 2rem;
+    }
+
+    .sort-dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .sort-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: transparent;
+        color: var(--black);
+        padding: 14px 28px;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border: 2px solid var(--black);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .sort-btn:hover {
+        background: var(--black);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .dropdown-arrow {
+        transition: transform 0.3s ease;
+        font-size: 0.8rem;
+    }
+
+    .sort-dropdown.active .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .sort-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: var(--white);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 100;
+        overflow: hidden;
+        min-width: 200px;
+        margin-top: 8px;
+    }
+
+    .sort-dropdown.active .sort-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .sort-option {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 12px 16px;
+        color: var(--black);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        border: none;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        background: var(--white);
+        cursor: pointer;
+    }
+
+    .sort-option:last-child {
+        border-bottom: none;
+    }
+
+    .sort-option:hover {
+        background: rgba(0, 0, 0, 0.05);
+        transform: translateX(3px);
+    }
+
+    .sort-option.active {
+        background: var(--primary-yellow);
+        color: var(--black);
+        font-weight: 700;
+    }
+
+    /* Grille de produits */
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    /* Les styles des cartes sont dans le composant CardProduct */
+    product-card {
+        display: block;
+    }
+
+    /* Message aucun produit */
+    .no-products-message {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--gray);
+    }
+
+    .no-products-message p {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    /* Section Aucun produit */
+    .no-products {
+        background: var(--white);
+        padding: 100px 0;
+        text-align: center;
+    }
+
+    .no-products-content {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .no-products-content i {
+        font-size: 4rem;
+        color: var(--primary-yellow);
+        margin-bottom: 2rem;
+    }
+
+    .no-products-content h2 {
+        font-size: 2rem;
+        font-weight: 900;
+        color: var(--black);
+        margin-bottom: 1rem;
+    }
+
+    .no-products-content p {
+        font-size: 1.2rem;
+        color: var(--gray);
+    }
+
+    /* Styles pour la pagination */
+    .pagination-container {
+        margin-top: 3rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--white);
+        padding: 1rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .pagination-btn,
+    .pagination-number {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 10px 15px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        color: var(--black);
+        border: 2px solid transparent;
+        background: var(--white);
+        cursor: pointer;
+    }
+
+    .pagination-btn {
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .pagination-number {
+        min-width: 40px;
+        justify-content: center;
+    }
+
+    .pagination-btn:hover,
+    .pagination-number:hover {
+        background: var(--primary-yellow);
+        color: var(--black);
+        border-color: var(--primary-yellow);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(244, 208, 63, 0.3);
+    }
+
+    .pagination-number.active {
+        background: var(--black);
+        color: var(--white);
+        border-color: var(--black);
+    }
+
+    .pagination-number.active:hover {
+        background: var(--black);
+        color: var(--white);
+        border-color: var(--black);
+    }
+
+    .pagination-prev i {
+        margin-right: 0.3rem;
+    }
+
+    .pagination-next i {
+        margin-left: 0.3rem;
+    }
+
+    /* Animations */
+    @keyframes slideInFromLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes slideInFromRight {
+        from {
+            opacity: 0;
+            transform: translateX(100px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px) rotate(0deg);
+            opacity: 0.3;
+        }
+        25% {
+            transform: translateY(-20px) rotate(5deg);
+            opacity: 0.5;
+        }
+        50% {
+            transform: translateY(-30px) rotate(-5deg);
+            opacity: 0.7;
+        }
+        75% {
+            transform: translateY(-10px) rotate(3deg);
+            opacity: 0.5;
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .products-header {
+            height: 50vh;
+            min-height: 400px;
+        }
+
+        .products-title {
+            font-size: 3.5rem;
+        }
+
+        .products-subtitle {
+            font-size: 1.3rem;
+            padding: 0 1rem;
+        }
+
+        .products-section {
+            padding: 60px 0;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .filters-container {
+            gap: 0.5rem;
+            align-self: stretch;
+            justify-content: flex-start;
+        }
+
+        .filter-tab {
+            padding: 10px 16px;
+            font-size: 0.85rem;
+            flex: 0 1 auto;
+        }
+
+        .section-header .section-title {
+            font-size: 2rem;
+        }
+
+        .sort-controls {
+            width: 100%;
+        }
+
+        .sort-dropdown {
+            width: 100%;
+        }
+
+        .sort-btn {
+            width: 100%;
+            justify-content: space-between;
+            padding: 12px 24px;
+        }
+
+        .sort-menu {
+            width: 100%;
+            right: auto;
+            left: 0;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        .pagination {
+            padding: 0.8rem;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .pagination-btn,
+        .pagination-number {
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .pagination-btn {
+            flex: 1 1 100%;
+            justify-content: center;
+        }
+
+        .pagination-number {
+            min-width: 36px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .products-header {
+            height: 40vh;
+            min-height: 300px;
+        }
+
+        .products-title {
+            font-size: 2.5rem;
+            padding: 0 1rem;
+        }
+
+        .products-subtitle {
+            font-size: 1rem;
+            padding: 0 1.5rem;
+        }
+
+        .products-section {
+            padding: 40px 0;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-container {
+            flex-direction: row;
+            gap: 0.4rem;
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .filters-container::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .filters-container::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 2px;
+        }
+
+        .filters-container::-webkit-scrollbar-thumb {
+            background: var(--primary-yellow);
+            border-radius: 2px;
+        }
+
+        .filter-tab {
+            padding: 8px 14px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .section-header .section-title {
+            font-size: 1.6rem;
+        }
+
+        .sort-btn {
+            padding: 10px 20px;
+            font-size: 0.85rem;
+        }
+
+        .sort-option {
+            padding: 10px 14px;
+            font-size: 0.85rem;
+        }
+
+        .products-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .pagination {
+            padding: 0.6rem;
+            gap: 0.3rem;
+        }
+
+        .pagination-btn,
+        .pagination-number {
+            padding: 6px 10px;
+            font-size: 0.75rem;
+        }
+
+        .pagination-number {
+            min-width: 32px;
+        }
+
+        .pagination-btn {
+            flex: 1 1 100%;
+        }
+
+        .floating-note {
+            font-size: 1.5rem;
+        }
+    }
+</style>
