@@ -108,7 +108,8 @@ if (breadcrumbItems.length === 0) {
         background: var(--light-gray);
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         padding: 1rem 0;
-        margin-top: 80px; /* Espace pour la navigation fixe */
+        padding-top: var(--header-height-desktop); /* Le padding-top remplace margin-top */
+        margin-top: 0;
         margin-bottom: 0;
     }
 
@@ -161,7 +162,7 @@ if (breadcrumbItems.length === 0) {
     @media (max-width: 768px) {
         .breadcrumb {
             padding: 0.7rem 0;
-            margin-top: 90px;
+            padding-top: var(--header-height-mobile); /* Le padding-top remplace margin-top */
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
@@ -206,7 +207,7 @@ if (breadcrumbItems.length === 0) {
     @media (max-width: 480px) {
         .breadcrumb {
             padding: 0.5rem 0;
-            margin-top: 79px;
+            padding-top: var(--header-height-mobile); /* Le padding-top remplace margin-top */
         }
 
         .container {

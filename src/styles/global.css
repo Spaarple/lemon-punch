@@ -10,6 +10,10 @@
     --shadow: rgba(0, 0, 0, 0.1);
     --gradient-yellow: linear-gradient(135deg, #F4D03F 0%, #F1C40F 100%);
     --gradient-dark: linear-gradient(135deg, #2C2C2C 0%, #1C1C1C 100%);
+
+    /* Variables de hauteur pour le header */
+    --header-height-desktop: 110px; /* 20px padding + 70px logo + 20px padding */
+    --header-height-mobile: 110px; /* Même hauteur sur mobile */
 }
 
 /* Reset et base */
