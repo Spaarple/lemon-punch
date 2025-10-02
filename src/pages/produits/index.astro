@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import CardProduct from "../../components/ui/CardProduct.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 
 const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
 const KEY = import.meta.env.WOOCOMMERCE_KEY;
@@ -19,6 +20,7 @@ const categories = await categoriesResponse.json();
 <CardProduct />
 
 <Layout title="E-boutique LemonPunch">
+    <Breadcrumb currentPageTitle="Produits" />
     <!-- Section Header Produits -->
     <section class="products-header">
         <div class="header-background"></div>
@@ -354,7 +356,6 @@ const categories = await categoriesResponse.json();
         align-items: center;
         justify-content: center;
         text-align: center;
-        margin-top: 80px;
         overflow: hidden;
     }
 

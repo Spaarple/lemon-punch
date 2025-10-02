@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import ArticleCard from "../../components/blog/ArticleCard.astro";
 
 // URL de l'API WordPress pour récupérer les articles et catégories
@@ -85,6 +86,7 @@ try {
 ---
 
 <Layout title="Blog - LemonPunch">
+    <Breadcrumb currentPageTitle="Blog" />
     <!-- Section Header Blog -->
     <section class="blog-header">
         <div class="header-background"></div>
@@ -355,7 +357,6 @@ try {
         align-items: center;
         justify-content: center;
         text-align: center;
-        margin-top: 80px;
         overflow: hidden;
     }
 
