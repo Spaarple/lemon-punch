@@ -202,11 +202,10 @@ try {
         const coverImage = post._embedded?.['wp:featuredmedia']?.[0];
         const defaultImage = '/placeholder-article.jpg';
 
-        // Récupérer la première catégorie pour construire l'URL
+        // Récupérer la première catégorie pour l'affichage uniquement
         const firstCategory = post.categories?.length ? allCategories.find(cat => cat.id === post.categories[0]) : null;
-        const categorySlug = firstCategory?.slug || 'uncategorized';
         const categoryName = firstCategory?.name || '';
-        const articleUrl = `/blog/${categorySlug}/${post.slug}/`;
+        const articleUrl = `/blog/${post.slug}/`;
 
         return `
             <article class="article-card">

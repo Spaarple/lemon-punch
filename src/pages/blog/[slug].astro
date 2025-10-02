@@ -1,7 +1,7 @@
 ---
-import Layout from "../../../layouts/Layout.astro";
-import Breadcrumb from "../../../components/ui/Breadcrumb.astro";
-import BlogSidebar from "../../../components/blog/BlogSidebar.astro";
+import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
+import BlogSidebar from "../../components/blog/BlogSidebar.astro";
 
 export async function getStaticPaths() {
     // Récupérer les articles et catégories
@@ -60,6 +60,8 @@ const author = post._embedded?.author?.[0];
 const postCategories = post.categories?.map(catId =>
     allCategories.find(cat => cat.id === catId)
 ).filter(Boolean) || [];
+
+console.log(post.title.rendered)
 ---
 
 <Layout title={post.title.rendered}>
@@ -270,7 +272,7 @@ const postCategories = post.categories?.map(catId =>
     /* Section du contenu */
     .article-content-section {
         background: var(--white);
-        background-image: url('../../../assets/images/white-bg-with-noise.jpg');
+        background-image: url('../../assets/images/white-bg-with-noise.jpg');
         background-size: cover;
         background-repeat: no-repeat;
         background-position: center;
