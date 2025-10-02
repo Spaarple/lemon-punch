@@ -32,6 +32,7 @@
                             <div class="product-image">
                                 <img src="${data.imageSrc || defaultImage}"
                                      alt="${data.imageAlt || data.name}"
+                                     title="${data.imageTitle || data.name}"
                                      onerror="this.src='${defaultImage}'">
                                 ${data.onSale ? `<div class="sale-badge">-${salePercentage}%</div>` : ''}
                                 <div class="product-overlay">

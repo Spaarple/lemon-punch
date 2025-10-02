@@ -184,6 +184,7 @@ const categories = await categoriesResponse.json();
             regularPrice: product.regular_price,
             imageSrc: product.images[0]?.src,
             imageAlt: product.images[0]?.alt || `Image pour ${product.name}`,
+            imageTitle: product.images[0]?.title || `Image pour ${product.name}`,
             category: product.categories[0]?.name,
             description: extractDescription(product.short_description || product.description)
         };
