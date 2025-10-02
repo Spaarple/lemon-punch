@@ -1,0 +1,182 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout>
+	<main class="error-page">
+		<div class="error-content">
+			<div class="lemon-icon">
+				<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+					<ellipse cx="50" cy="55" rx="35" ry="40" fill="#F4D03F"/>
+					<ellipse cx="50" cy="55" rx="30" ry="35" fill="#F1C40F"/>
+					<path d="M 50 15 Q 60 10 65 5 L 70 15 Q 60 20 50 20 Z" fill="#5D8B3A"/>
+				</svg>
+			</div>
+			<h1 class="error-code">404</h1>
+			<h2 class="error-title">Page introuvable</h2>
+			<p class="error-text">Le citron que vous cherchez n'est pas dans ce punch.</p>
+			<div class="error-actions">
+				<a href="/" class="btn-back">← Accueil</a>
+				<a href="/produits" class="btn-shop">Boutique</a>
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<style>
+	.error-page {
+		min-height: calc(100vh - 140px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+		background: var(--white);
+		background-image: url('../assets/images/white-bg-with-noise.jpg');
+		background-size: cover;
+		background-position: center;
+	}
+
+	.error-content {
+		text-align: center;
+		max-width: 600px;
+	}
+
+	.lemon-icon {
+		width: 180px;
+		height: 180px;
+		margin: 0 auto 2rem;
+	}
+
+	.lemon-icon svg {
+		width: 100%;
+		height: 100%;
+		animation: squeeze 2s ease-in-out infinite;
+	}
+
+	@keyframes squeeze {
+		0%, 100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(0.95) rotate(-5deg);
+		}
+	}
+
+	.error-code {
+		font-size: 5rem;
+		font-weight: 900;
+		color: var(--black);
+		margin: 0;
+		line-height: 1;
+		letter-spacing: -5px;
+	}
+
+	.error-title {
+		font-size: 2rem;
+		font-weight: 900;
+		color: var(--black);
+		margin: 1.5rem 0 1rem 0;
+		text-transform: uppercase;
+		letter-spacing: 2px;
+	}
+
+	.error-text {
+		font-size: 1.2rem;
+		color: var(--gray);
+		margin: 0 0 3rem 0;
+		font-weight: 500;
+	}
+
+	.error-actions {
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
+		flex-wrap: wrap;
+	}
+
+	.btn-back,
+	.btn-shop {
+		padding: 15px 30px;
+		font-weight: 700;
+		text-decoration: none;
+		transition: all 0.3s ease;
+		font-size: 1rem;
+		text-transform: uppercase;
+		letter-spacing: 1px;
+		border: 2px solid var(--black);
+	}
+
+	.btn-back {
+		background: var(--black);
+		color: var(--white);
+	}
+
+	.btn-back:hover {
+		background: var(--primary-yellow);
+		color: var(--black);
+		border-color: var(--primary-yellow);
+		transform: translateY(-2px);
+		box-shadow: 0 5px 20px rgba(244, 208, 63, 0.4);
+	}
+
+	.btn-shop {
+		background: transparent;
+		color: var(--black);
+	}
+
+	.btn-shop:hover {
+		background: var(--black);
+		color: var(--white);
+		transform: translateY(-2px);
+		box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+	}
+
+	@media (max-width: 768px) {
+		.lemon-icon {
+			width: 120px;
+			height: 120px;
+		}
+
+		.error-code {
+			font-size: 8rem;
+		}
+
+		.error-title {
+			font-size: 2rem;
+		}
+
+		.error-text {
+			font-size: 1.1rem;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.lemon-icon {
+			width: 100px;
+			height: 100px;
+			margin-bottom: 1.5rem;
+		}
+
+		.error-code {
+			font-size: 6rem;
+		}
+
+		.error-title {
+			font-size: 1.5rem;
+		}
+
+		.error-text {
+			font-size: 1rem;
+			margin-bottom: 2rem;
+		}
+
+		.error-actions {
+			flex-direction: column;
+		}
+
+		.btn-back,
+		.btn-shop {
+			width: 100%;
+		}
+	}
+</style>
