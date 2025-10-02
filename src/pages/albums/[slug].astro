@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import StreamingLinks from "../../components/ui/album/StreamingLinks.astro";
 import TrackList from "../../components/ui/album/TrackList.astro";
 import AudioPlayer from "../../components/ui/album/AudioPlayer.astro";
@@ -50,6 +51,7 @@ const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length
 ---
 
 <Layout title={album.title.rendered}>
+    <Breadcrumb currentPageTitle={album.title.rendered} />
     <section class="music-section album-page">
         <div class="container">
             <h2 class="section-title">{album.title.rendered}</h2>
@@ -114,7 +116,6 @@ const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length
 <style is:global>
     /* On applique exactement les mêmes styles que le composant Music original */
     .album-page {
-        margin-top: 80px;
     }
 
     .album-page .section-title {
