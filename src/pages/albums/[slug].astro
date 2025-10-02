@@ -63,6 +63,7 @@ const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length
                         <img
                             src={album._embedded['wp:featuredmedia'][0].source_url}
                             alt={`Pochette de ${album.title.rendered}`}
+                            title={`Pochette de ${album.title.rendered}`}
                             class="release-image"
                         />
                     ) : (
