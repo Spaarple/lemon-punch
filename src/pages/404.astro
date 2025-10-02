@@ -1,8 +1,13 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Breadcrumb from '../components/ui/Breadcrumb.astro';
 ---
 
 <Layout>
+	<Breadcrumb items={[
+		{ label: 'Accueil', href: '/' },
+		{ label: '404 - Page non trouvée' }
+	]} />
 	<main class="error-page">
 		<div class="error-content">
 			<div class="lemon-icon">
