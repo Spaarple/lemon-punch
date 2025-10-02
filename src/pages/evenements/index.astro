@@ -1,5 +1,6 @@
 ---
 import Layout from "../../layouts/Layout.astro";
+import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import CardEvent from "../../components/CardEvent.astro";
 
 // URL de l'API WordPress pour récupérer les événements
@@ -98,6 +99,7 @@ try {
 ---
 
 <Layout title="Événements - LemonPunch">
+    <Breadcrumb currentPageTitle="Événements" />
     <!-- Section Header Événements -->
     <section class="events-header">
         <div class="header-background"></div>
