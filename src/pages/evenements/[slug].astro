@@ -91,18 +91,11 @@ const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
 const month = eventDate ? monthNames[eventDate.getMonth()] : '';
 
 const lieu = getFieldValue(event, 'lieu_sur_carte');
-
-// Breadcrumb items
-const breadcrumbItems = [
-    { name: "Événements", url: "/evenements/" },
-    { name: event.title.rendered, url: `/evenements/${event.slug}/` }
-];
-
 ---
 
 <Layout title={`${event.title.rendered} - Événements - LemonPunch`}>
     <!-- Breadcrumb -->
-    <Breadcrumb items={breadcrumbItems} />
+    <Breadcrumb currentPageTitle={event.title.rendered} />
 
     <!-- Hero Section avec style du site -->
     <section class="event-hero-section">
