@@ -211,7 +211,8 @@ try {
             <article class="article-card">
                 <div class="article-image">
                     <img src="${coverImage?.source_url || defaultImage}"
-                         alt="${post.title?.rendered || ''}"
+                         alt="${coverImage.alt_text || ''}"
+                         title="${coverImage.title.rendered || ''}"
                          onerror="this.src='${defaultImage}'">
                     <div class="article-overlay">
                         <a href="${articleUrl}" class="article-link">
