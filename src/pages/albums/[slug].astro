@@ -74,7 +74,6 @@ const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length
                 </div>
                 <div class="latest-release-info">
                     <span class="release-badge">{releaseType}</span>
-                    <h3 class="release-title">{album.title.rendered}</h3>
 
                     {album.content.rendered && (
                         <div class="release-description" set:html={album.content.rendered} />
