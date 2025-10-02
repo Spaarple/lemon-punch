@@ -1,8 +1,10 @@
 ---
 export interface Props {
     items?: Array<{
-        label: string;
+        label?: string;
         href?: string;
+        name?: string;  // Support pour l'ancien format
+        url?: string;   // Support pour l'ancien format
     }>;
     autoGenerate?: boolean;
     separator?: string;
@@ -18,6 +20,12 @@ const {
     currentPageTitle
 } = Astro.props;
 
+// Normaliser les items pour supporter les deux formats (label/href et name/url)
+const normalizedItems = items.map(item => ({
+    label: item.label || item.name || '',
+    href: item.href || item.url
+}));
+
 // Fonction pour générer automatiquement les breadcrumbs basés sur l'URL
 function generateBreadcrumbs(url: URL, currentTitle?: string) {
     const pathSegments = url.pathname.split('/').filter(segment => segment !== '');
@@ -32,8 +40,10 @@ function generateBreadcrumbs(url: URL, currentTitle?: string) {
     const segmentMap: Record<string, string> = {
         'produits': 'Produits',
         'albums': 'Albums',
+        'evenements': 'Événements',
         'concerts': 'Concerts',
         'videos': 'Vidéos',
+        'blog': 'Blog',
         'contact': 'Contact',
         'panier': 'Panier',
         'commande': 'Commande',
@@ -60,7 +70,7 @@ function generateBreadcrumbs(url: URL, currentTitle?: string) {
 }
 
 // Utiliser les items fournis ou générer automatiquement
-const breadcrumbItems = items.length > 0 ? items : (autoGenerate ? generateBreadcrumbs(Astro.url, currentPageTitle) : []);
+const breadcrumbItems = normalizedItems.length > 0 ? normalizedItems : (autoGenerate ? generateBreadcrumbs(Astro.url, currentPageTitle) : []);
 
 // Ne rien afficher si pas de breadcrumbs
 if (breadcrumbItems.length === 0) {
