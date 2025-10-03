@@ -62,10 +62,20 @@ import GroupBackground from '../assets/images/lmp-cover-yellow-r.webp';
 </header>
 
 <script>
-    // Effet de scroll sur le texte Lemon Punch
+    // Effet de scroll sur le texte Lemon Punch et changement de couleur du header
     window.addEventListener('scroll', () => {
         const scrolled = window.pageYOffset;
         const headerBgText = document.querySelector('.header-bg-text');
+        const headerNav = document.querySelector('.header-nav');
+
+        // Changer la couleur du header au scroll
+        if (headerNav) {
+            if (scrolled > 100) {
+                headerNav.classList.add('scrolled');
+            } else {
+                headerNav.classList.remove('scrolled');
+            }
+        }
 
         if (headerBgText) {
             // Calculer l'opacité et la transformation basées sur le scroll
