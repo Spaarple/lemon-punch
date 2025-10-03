@@ -110,7 +110,6 @@ body::before {
 .nav-link {
     text-decoration: none;
     color: var(--black);
-    font-family: var(--font-condensed);
     font-weight: 600;
     font-size: 1.1rem;
     letter-spacing: 1px;
@@ -125,7 +124,7 @@ body::before {
     height: 2px;
     bottom: -5px;
     left: 50%;
-    background: var(--primary-yellow);
+    background: var(--bright-yellow);
     transition: all 0.3s ease;
     transform: translateX(-50%);
 }
@@ -135,7 +134,7 @@ body::before {
 }
 
 .nav-link:hover {
-    color: var(--primary-yellow);
+    color: var(--black);
     transform: translateY(-2px);
 }
 
@@ -1459,7 +1458,8 @@ a {
         left: -100%;
         width: 100%;
         height: calc(100vh - 80px);
-        background: rgba(244, 208, 63, 0.98);
+        background: var(--color-same-of-image-header);
+        opacity: 0.95;
         backdrop-filter: blur(10px);
         flex-direction: column;
         justify-content: flex-start;
