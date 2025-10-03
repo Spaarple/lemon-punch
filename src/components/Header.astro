@@ -1,7 +1,8 @@
 ---
 // src/components/Header.astro
 import Logo from '../assets/images/lmp-logo-transparent-black.png';
-import GroupBackground from '../assets/images/lmp-cover-yellow-r.jpg';
+// import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
+import GroupBackground from '../assets/images/lmp-cover-yellow-r.webp';
 ---
 
 <header class="header" id="home">
@@ -39,8 +40,16 @@ import GroupBackground from '../assets/images/lmp-cover-yellow-r.jpg';
         </div>
     </nav>
 
-    <!-- Background image et contenu -->
-    <div class="header-background">
+    <!-- Background avec couleur -->
+    <div class="header-background"></div>
+
+    <!-- Texte en arrière-plan -->
+    <div class="header-bg-text">
+        <h1 class="bg-text-line">Lemon Punch</h1>
+    </div>
+
+    <!-- Image du groupe -->
+    <div class="header-image-container">
         <img src={GroupBackground.src}
              alt="Groupe de musique Lemon Punch photo"
              title="Groupe de musique Lemon Punch photo"
@@ -51,3 +60,23 @@ import GroupBackground from '../assets/images/lmp-cover-yellow-r.jpg';
         <i class="fas fa-chevron-down"></i>
     </div>
 </header>
+
+<script>
+    // Effet de scroll sur le texte Lemon Punch
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const headerBgText = document.querySelector('.header-bg-text');
+
+        if (headerBgText) {
+            // Calculer l'opacité et la transformation basées sur le scroll
+            const opacity = Math.max(0, 1 - (scrolled / 500));
+            const scale = Math.max(0.5, 1 - (scrolled / 1000));
+            const translateY = scrolled * 0.5;
+            const blur = Math.min(10, scrolled / 50);
+
+            headerBgText.style.opacity = opacity.toString();
+            headerBgText.style.transform = `translate(-50%, -50%) scale(${scale}) translateY(${translateY}px)`;
+            headerBgText.style.filter = `blur(${blur}px) drop-shadow(0 0 20px rgba(0, 0, 0, 0.1))`;
+        }
+    });
+</script>

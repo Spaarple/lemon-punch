@@ -10,6 +10,7 @@
     --shadow: rgba(0, 0, 0, 0.1);
     --gradient-yellow: linear-gradient(135deg, #F4D03F 0%, #F1C40F 100%);
     --gradient-dark: linear-gradient(135deg, #2C2C2C 0%, #1C1C1C 100%);
+    --color-same-of-image-header: RGB(234, 219, 96);
 
     /* Variables de hauteur pour le header */
     --header-height-desktop: 110px; /* 20px padding + 70px logo + 20px padding */
@@ -166,7 +167,45 @@ a {
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 0;
+    background-color: var(--color-same-of-image-header);
+}
+
+.header-bg-text {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     z-index: 1;
+    text-align: center;
+    width: 100%;
+}
+
+.bg-text-line {
+    font-size: clamp(4rem, 15vw, 15rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: transparent;
+    background: linear-gradient(180deg, #000000 0%, #2C2C2C 50%, #000000 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 3px rgba(0, 0, 0, 0.3);
+    margin: 0;
+    line-height: 1;
+    text-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.4),
+        0 10px 30px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.05em;
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.1));
+}
+
+.header-image-container {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
 }
 
 .header-bg-image {
@@ -174,6 +213,49 @@ a {
     height: 100%;
     object-fit: cover;
     object-position: center;
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .header-bg-text {
+        top: 20%;
+    }
+
+    .bg-text-line {
+        font-size: clamp(3rem, 12vw, 10rem);
+    }
+
+    .header-image-container {
+        top: 12%;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-bg-text {
+        top: 18%;
+    }
+
+    .bg-text-line {
+        font-size: clamp(2.5rem, 10vw, 6rem);
+    }
+
+    .header-image-container {
+        top: 10%;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-bg-text {
+        top: 25%;
+    }
+
+    .bg-text-line {
+        font-size: clamp(4rem, 8vw, 4rem);
+    }
+
+    .header-image-container {
+        top: 8%;
+    }
 }
 
 .sunburst-overlay {
