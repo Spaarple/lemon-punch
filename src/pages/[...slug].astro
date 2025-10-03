@@ -1,0 +1,232 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Breadcrumb from "../components/ui/Breadcrumb.astro";
+
+export async function getStaticPaths() {
+    const slugsToFetch = [
+        "politique-de-confidentialite",
+        "remboursements-retours",
+        // Ajoutez d'autres slugs ici à l'avenir
+    ];
+
+    // Crée une liste de promesses pour appeler l'API pour chaque slug
+    const pagePromises = slugsToFetch.map(async (slug) => {
+        const response = await fetch(`${import.meta.env.BASE_URL_WORDPRESS}pages?slug=${slug}`);
+        const data = await response.json();
+
+        if (data && data[0]) {
+            return {
+                params: { slug: slug },
+                props: { page: data[0] },
+            };
+        }
+        return null;
+    });
+
+    const pages = await Promise.all(pagePromises);
+    return pages.filter(page => page !== null);
+}
+
+const { page } = Astro.props;
+---
+
+<Layout title={page.title.rendered}>
+    <Breadcrumb currentPageTitle={page.title.rendered} />
+    <main class="container">
+        <h1>{page.title.rendered}</h1>
+        <div set:html={page.content.rendered} />
+    </main>
+</Layout>
+
+<style>
+    .container {
+        max-width: 800px;
+        margin: 2rem auto;
+        padding: 1rem;
+        line-height: 1.6;
+    }
+
+    .container h1 {
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        color: var(--black, #000);
+    }
+
+    /* Styles pour les liens */
+    .container :global(a) {
+        color: var(--primary-yellow, #FFD700);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid transparent;
+    }
+
+    .container :global(a:hover) {
+        color: var(--black, #000);
+        border-bottom: 1px solid var(--primary-yellow, #FFD700);
+    }
+
+    /* Styles pour les boutons WordPress */
+    .container :global(button),
+    .container :global(.wp-block-button__link),
+    .container :global(input[type="submit"]),
+    .container :global(.button) {
+        display: inline-block;
+        padding: 12px 24px;
+        background: var(--primary-yellow, #FFD700);
+        color: var(--black, #000);
+        border: none;
+        border-radius: 4px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .container :global(button:hover),
+    .container :global(.wp-block-button__link:hover),
+    .container :global(input[type="submit"]:hover),
+    .container :global(.button:hover) {
+        background: var(--black, #000);
+        color: var(--primary-yellow, #FFD700);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .container :global(.wp-block-button) {
+        margin: 1.5rem 0;
+    }
+
+    /* Styles pour les listes à puces */
+    .container :global(ul),
+    .container :global(ol) {
+        margin: 1.5rem 0;
+        padding-left: 2rem;
+    }
+
+    .container :global(ul li),
+    .container :global(ol li) {
+        margin: 0.75rem 0;
+        line-height: 1.8;
+    }
+
+    .container :global(ul li) {
+        list-style-type: disc;
+    }
+
+    .container :global(ul li::marker) {
+        color: var(--primary-yellow, #FFD700);
+        font-size: 1.2em;
+    }
+
+    .container :global(ol li) {
+        list-style-type: decimal;
+    }
+
+    .container :global(ol li::marker) {
+        color: var(--primary-yellow, #FFD700);
+        font-weight: 600;
+    }
+
+    /* Listes imbriquées */
+    .container :global(ul ul),
+    .container :global(ol ol),
+    .container :global(ul ol),
+    .container :global(ol ul) {
+        margin: 0.5rem 0;
+        padding-left: 1.5rem;
+    }
+
+    /* Styles pour les paragraphes */
+    .container :global(p) {
+        margin: 1.2rem 0;
+        color: var(--black);
+    }
+
+    /* Styles pour les titres */
+    .container :global(h2) {
+        font-size: 2rem;
+        margin-top: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--black, #000);
+    }
+
+    .container :global(h3) {
+        font-size: 1.5rem;
+        margin-top: 2rem;
+        margin-bottom: 0.8rem;
+        color: var(--black, #000);
+    }
+
+    .container :global(h4) {
+        font-size: 1.25rem;
+        margin-top: 1.5rem;
+        margin-bottom: 0.6rem;
+        color: var(--black, #000);
+    }
+
+    /* Styles pour les images */
+    .container :global(img) {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 1.5rem 0;
+    }
+
+    /* Styles pour les blockquotes */
+    .container :global(blockquote) {
+        border-left: 4px solid var(--primary-yellow, #FFD700);
+        padding-left: 1.5rem;
+        margin: 1.5rem 0;
+        font-style: italic;
+        color: var(--gray, #555);
+    }
+
+    /* Styles pour les tableaux */
+    .container :global(table) {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+    }
+
+    .container :global(table th),
+    .container :global(table td) {
+        padding: 0.75rem;
+        border: 1px solid var(--light-gray, #ddd);
+        text-align: left;
+    }
+
+    .container :global(table th) {
+        background: var(--primary-yellow, #FFD700);
+        font-weight: 600;
+    }
+
+    .container :global(table tr:nth-child(even)) {
+        background: var(--light-gray, #f9f9f9);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .container {
+            padding: 1rem 0.5rem;
+        }
+
+        .container h1 {
+            font-size: 2rem;
+        }
+
+        .container :global(h2) {
+            font-size: 1.5rem;
+        }
+
+        .container :global(h3) {
+            font-size: 1.25rem;
+        }
+
+        .container :global(ul),
+        .container :global(ol) {
+            padding-left: 1.5rem;
+        }
+    }
+</style>

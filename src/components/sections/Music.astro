@@ -5,7 +5,7 @@ import AudioPlayer from '../ui/album/AudioPlayer.astro';
 import LogoFondJaune from '../../assets/images/lmp-logo-bg-yellow.jpg';
 
 // URL de l'API WordPress pour récupérer les albums
-const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed&per_page=100`;
+const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed&per_page=100`;
 
 let latestAlbum = null;
 let tracklist = [];
@@ -73,9 +73,6 @@ try {
 } catch (error) {
     console.error('Erreur lors du chargement des albums:', error);
 }
-
-
-console.log(latestAlbum.alt)
 ---
 
 <!-- Music Section -->
