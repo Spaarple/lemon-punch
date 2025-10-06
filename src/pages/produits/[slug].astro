@@ -3,6 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import CardProduct from "../../components/ui/CardProduct.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 
+export const prerender = true;
+
 // 1. getStaticPaths va lister toutes les pages à créer
 export async function getStaticPaths() {
     const WOO_URL = "https://shop.lemonpunch.fr/wp-json/wc/v3/products";
@@ -58,7 +60,7 @@ function sortSizes(sizes) {
 }
 
 // Récupérer les variations du produit si c'est un produit variable
-const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
+const WOO_URL = "https://shop.lemonpunch.fr/wp-json/wc/v3/products";
 const KEY = import.meta.env.WOOCOMMERCE_KEY;
 const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
 
@@ -453,7 +455,7 @@ if (product.categories && product.categories.length > 0) {
             const quantity = document.getElementById('quantity').value;
 
             if (!hasVariations) {
-                window.location.href = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}`;
+                window.location.href = `https://shop.lemonpunch.fr/panier/?add-to-cart=${productId}&quantity=${quantity}`;
                 return;
             }
 
@@ -473,7 +475,7 @@ if (product.categories && product.categories.length > 0) {
             this.disabled = true;
 
             // ✨ FIX #3: Construction de l'URL avec les slugs de la variation trouvée
-            let addToCartUrl = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}&variation_id=${matchedVariation.id}`;
+            let addToCartUrl = `https://shop.lemonpunch.fr/panier/?add-to-cart=${productId}&quantity=${quantity}&variation_id=${matchedVariation.id}`;
 
             matchedVariation.attributes.forEach(attr => {
                 const attributeSlug = attr.name.toLowerCase().replace(/\s+/g, '-');

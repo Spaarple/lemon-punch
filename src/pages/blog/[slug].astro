@@ -3,6 +3,8 @@ import Layout from "../../layouts/Layout.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import BlogSidebar from "../../components/blog/BlogSidebar.astro";
 
+export const prerender = true;
+
 export async function getStaticPaths() {
     // Récupérer les articles et catégories
     const [postsRes, categoriesRes] = await Promise.all([

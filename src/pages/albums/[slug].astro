@@ -5,6 +5,8 @@ import StreamingLinks from "../../components/ui/album/StreamingLinks.astro";
 import TrackList from "../../components/ui/album/TrackList.astro";
 import AudioPlayer from "../../components/ui/album/AudioPlayer.astro";
 
+export const prerender = true;
+
 // ===== PARTIE 1 : GÉNÉRER TOUTES LES PAGES D'ALBUMS =====
 export async function getStaticPaths() {
     const ALBUMS_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed`;
