@@ -3,6 +3,11 @@
 import Logo from '../assets/images/lmp-logo-white.png';
 
 const annualDate= new Date().getFullYear();
+
+const INSTAGRAM = import.meta.env.INSTAGRAM_LINK || '#';
+const FACEBOOK = import.meta.env.FACEBOOK_LINK || '#';
+const YOUTUBE = import.meta.env.YOUTUBE_LINK || '#';
+const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
 ---
 
 <!-- Footer -->
@@ -10,19 +15,21 @@ const annualDate= new Date().getFullYear();
     <div class="container">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src={Logo.src} alt="LemonPunch Logo" class="footer-logo-img">
+                <img src={Logo.src} alt="Logo du groupe de musique Lemon Punch"
+                     title="Groupe de musique Lemon Punch"
+                     class="footer-logo-img">
             </div>
             <div class="footer-links">
-                <a href="#music">Music</a>
-                <a href="#shop">Shop</a>
-                <a href="#concerts">Concerts</a>
+                <a href="/albums">Music</a>
+                <a href="/produits">Shop</a>
+                <a href="/evenements">Concerts</a>
                 <a href="#contact">Contact</a>
             </div>
             <div class="footer-social">
-                <a href="#"><i class="fab fa-spotify"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-facebook"></i></a>
-                <a href="#"><i class="fab fa-youtube"></i></a>
+                <a href={INSTAGRAM} target="_blank" class="social-nav-link"><i class="fab fa-instagram"></i></a>
+                <a href={FACEBOOK} target="_blank" class="social-nav-link"><i class="fab fa-facebook"></i></a>
+                <a href={YOUTUBE} target="_blank" class="social-nav-link"><i class="fab fa-youtube"></i></a>
+                <a href={SPOTIFY} target="_blank" class="social-nav-link"><i class="fab fa-spotify"></i></a>
             </div>
         </div>
         <div class="footer-bottom">

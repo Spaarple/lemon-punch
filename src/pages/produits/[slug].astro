@@ -103,6 +103,7 @@ if (product.categories && product.categories.length > 0) {
                                     <img
                                             src={product.images[0].src}
                                             alt={product.images[0].alt || product.name}
+                                            title={product.images[0].title || product.name}
                                             class="main-product-image"
                                             id="mainImage"
                                     />
@@ -118,6 +119,7 @@ if (product.categories && product.categories.length > 0) {
                                             <img
                                                     src={image.src}
                                                     alt={image.alt || `${product.name} - Image ${index + 1}`}
+                                                    title={image.title || `${product.name} - Image ${index + 1}`}
                                                     class="thumbnail"
                                                     data-main-src={image.src}
                                                     data-index={index}
@@ -310,6 +312,7 @@ if (product.categories && product.categories.length > 0) {
                                 regularPrice: parseFloat(relatedProduct.regular_price),
                                 imageSrc: relatedProduct.images[0]?.src,
                                 imageAlt: relatedProduct.images[0]?.alt || `Image pour ${relatedProduct.name}`,
+                                imageTitle: relatedProduct.images[0]?.title || `Image pour ${relatedProduct.name}`,
                                 category: relatedProduct.categories[0]?.name,
                                 description: extractDescription(relatedProduct.short_description || relatedProduct.description)
                             };
@@ -941,8 +944,6 @@ if (product.categories && product.categories.length > 0) {
     .quantity-selector {
         display: flex;
         align-items: center;
-        border: 2px solid var(--gray);
-        border-radius: 5px;
         overflow: hidden;
     }
 

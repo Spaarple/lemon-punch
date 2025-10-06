@@ -54,14 +54,54 @@ function formatDateFrench(dateString) {
 
 const formattedDate = formatDateFrench(post.date);
 const coverImage = post._embedded?.['wp:featuredmedia']?.[0];
-const author = post._embedded?.author?.[0];
+
+// Préparer les attributs alt et title pour l'image de couverture
+const imageAlt = coverImage?.alt_text || post.title?.rendered || 'Image de l\'article';
+const imageTitle = coverImage?.title?.rendered || post.title?.rendered || 'Image de l\'article';
 
 // Récupérer toutes les catégories de l'article
 const postCategories = post.categories?.map(catId =>
     allCategories.find(cat => cat.id === catId)
 ).filter(Boolean) || [];
 
-console.log(post.title.rendered)
+// Extraire les IDs des images depuis le contenu HTML
+function extractImageIds(content) {
+    const regex = /wp-image-(\d+)/g;
+    const ids = [];
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+        ids.push(parseInt(match[1]));
+    }
+    return [...new Set(ids)]; // Supprimer les doublons
+}
+
+// Récupérer les métadonnées des images depuis WordPress
+const imageIds = extractImageIds(post.content.rendered);
+let imageMetadata = {};
+
+if (imageIds.length > 0) {
+    try {
+        const mediaPromises = imageIds.map(id =>
+            fetch(`${import.meta.env.BASE_URL_WORDPRESS}media/${id}`)
+                .then(res => res.ok ? res.json() : null)
+                .catch(() => null)
+        );
+        const mediaData = await Promise.all(mediaPromises);
+
+        mediaData.forEach(media => {
+            if (media) {
+                imageMetadata[media.id] = {
+                    alt: media.alt_text || '',
+                    title: media.title?.rendered || '',
+                    caption: media.caption?.rendered || ''
+                };
+            }
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des métadonnées des images:', error);
+    }
+}
+
 ---
 
 <Layout title={post.title.rendered}>
@@ -72,7 +112,8 @@ console.log(post.title.rendered)
             {coverImage && (
                 <img
                     src={coverImage.source_url}
-                    alt={post.title.rendered}
+                    alt={imageAlt}
+                    title={imageTitle}
                     class="header-image"
                 />
             )}
@@ -135,19 +176,6 @@ console.log(post.title.rendered)
         </div>
     </section>
 
-    <!-- Modal de zoom d'image avec navigation -->
-    <div class="image-modal" id="imageModal">
-        <button class="close-modal" id="closeModal">×</button>
-        <button class="nav-btn prev-btn" id="prevBtn">‹</button>
-        <button class="nav-btn next-btn" id="nextBtn">›</button>
-        <div class="modal-content">
-            <img src="" alt="" id="modalImage" />
-            <div class="image-info">
-                <div class="image-counter" id="imageCounter">1 / 1</div>
-                <div class="image-caption" id="imageCaption"></div>
-            </div>
-        </div>
-    </div>
 </Layout>
 
 <style is:global>
@@ -234,16 +262,6 @@ console.log(post.title.rendered)
         color: rgba(255, 255, 255, 0.8);
         font-weight: 500;
         font-size: 1.5rem;
-    }
-
-    .article-author {
-        color: rgba(255, 255, 255, 0.8);
-        font-weight: 500;
-    }
-
-    .author-name {
-        color: var(--primary-yellow);
-        font-weight: 700;
     }
 
     /* Titre de l'article */
@@ -1291,25 +1309,159 @@ console.log(post.title.rendered)
     }
 </style>
 
-<script>
+<script define:vars={{ imageMetadata }}>
     document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('imageModal');
-        const modalImage = document.getElementById('modalImage');
-        const closeModal = document.getElementById('closeModal');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const imageCounter = document.getElementById('imageCounter');
-        const imageCaption = document.getElementById('imageCaption');
         const articleContent = document.querySelector('.article-content');
+        if (!articleContent) return;
 
-        if (!modal || !modalImage || !closeModal || !articleContent) return;
+        // Variables pour la modal (créée à la demande)
+        let modal = null;
+        let modalImage = null;
+        let closeModal = null;
+        let prevBtn = null;
+        let nextBtn = null;
+        let imageCounter = null;
+        let imageCaption = null;
 
         let currentGalleryImages = [];
         let currentImageIndex = 0;
         let isGalleryMode = false;
 
+        // Fonction pour créer la modal à la volée
+        function createModal() {
+            if (modal) return; // Déjà créée
+
+            modal = document.createElement('div');
+            modal.className = 'image-modal';
+            modal.id = 'imageModal';
+
+            modal.innerHTML = `
+                <button class="close-modal" id="closeModal">×</button>
+                <button class="nav-btn prev-btn" id="prevBtn">‹</button>
+                <button class="nav-btn next-btn" id="nextBtn">›</button>
+                <div class="modal-content">
+                    <img src="" alt="" title="" id="modalImage" />
+                    <div class="image-info">
+                        <div class="image-counter" id="imageCounter">1 / 1</div>
+                        <div class="image-caption" id="imageCaption"></div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Récupérer les références
+            modalImage = document.getElementById('modalImage');
+            closeModal = document.getElementById('closeModal');
+            prevBtn = document.getElementById('prevBtn');
+            nextBtn = document.getElementById('nextBtn');
+            imageCounter = document.getElementById('imageCounter');
+            imageCaption = document.getElementById('imageCaption');
+
+            // Ajouter les événements
+            setupModalEvents();
+        }
+
+        // Fonction pour configurer les événements de la modal
+        function setupModalEvents() {
+            // Fermer la modal
+            closeModal.addEventListener('click', function() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+
+            // Fermer en cliquant sur le fond
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Fermer avec Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+
+            // Navigation précédent
+            prevBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (currentImageIndex > 0) {
+                    currentImageIndex--;
+                    showImage();
+                }
+            });
+
+            // Navigation suivant
+            nextBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                if (currentImageIndex < currentGalleryImages.length - 1) {
+                    currentImageIndex++;
+                    showImage();
+                }
+            });
+
+            // Navigation au clavier
+            document.addEventListener('keydown', function(e) {
+                if (modal && modal.classList.contains('active')) {
+                    if (e.key === 'ArrowLeft' && currentImageIndex > 0) {
+                        currentImageIndex--;
+                        showImage();
+                    } else if (e.key === 'ArrowRight' && currentImageIndex < currentGalleryImages.length - 1) {
+                        currentImageIndex++;
+                        showImage();
+                    }
+                }
+            });
+        }
+
         // Collecter toutes les images
         const allImages = Array.from(articleContent.querySelectorAll('img'));
+
+        // Appliquer les métadonnées des images depuis WordPress
+        allImages.forEach((img, index) => {
+            // Extraire l'ID de l'image depuis la classe wp-image-XXX
+            const classList = Array.from(img.classList);
+            const wpImageClass = classList.find(cls => cls.startsWith('wp-image-'));
+
+            if (wpImageClass) {
+                const imageId = parseInt(wpImageClass.replace('wp-image-', ''));
+                const metadata = imageMetadata[imageId];
+
+                if (metadata) {
+                    // Appliquer l'alt depuis WordPress si disponible
+                    if (metadata.alt && (!img.alt || img.alt.trim() === '')) {
+                        img.alt = metadata.alt;
+                    }
+
+                    // Appliquer le title depuis WordPress si disponible
+                    if (metadata.title && (!img.title || img.title.trim() === '')) {
+                        img.title = metadata.title;
+                    }
+
+                    // Stocker la caption pour l'affichage dans la modal
+                    if (metadata.caption) {
+                        img.dataset.caption = metadata.caption.replace(/<[^>]*>/g, '');
+                    }
+                }
+            }
+
+            // Fallback : si toujours pas d'alt après avoir vérifié WordPress
+            if (!img.alt || img.alt.trim() === '') {
+                const figure = img.closest('figure');
+                const caption = figure?.querySelector('figcaption')?.textContent?.trim();
+                img.alt = caption || img.title || `Image ${index + 1}`;
+            }
+
+            // Fallback pour title : si toujours pas de title après avoir vérifié WordPress
+            if (!img.title || img.title.trim() === '') {
+                // Utiliser l'alt comme title si disponible
+                img.title = img.alt || `Image ${index + 1}`;
+            }
+        });
 
         // Ajouter les événements de clic sur toutes les images
         allImages.forEach((img, index) => {
@@ -1317,6 +1469,9 @@ console.log(post.title.rendered)
                 e.preventDefault();
 
                 if (this.src && this.src !== '') {
+                    // Créer la modal si elle n'existe pas encore
+                    createModal();
+
                     // Vérifier si l'image fait partie d'une galerie
                     const galleryItem = this.closest('.gallery-item, .wp-block-gallery-item');
                     const gallery = this.closest('.gallery, .wp-block-gallery');
@@ -1347,6 +1502,7 @@ console.log(post.title.rendered)
             const currentImg = currentGalleryImages[currentImageIndex];
             modalImage.src = currentImg.src;
             modalImage.alt = currentImg.alt || '';
+            modalImage.title = currentImg.title || '';
 
             // Mettre à jour le compteur
             if (isGalleryMode) {
@@ -1356,14 +1512,16 @@ console.log(post.title.rendered)
                 imageCounter.style.display = 'none';
             }
 
-            // Mettre à jour la légende
-            const caption = currentImg.getAttribute('alt') ||
+            // Mettre à jour la légende - priorité aux métadonnées WordPress
+            const caption = currentImg.dataset.caption ||
                            currentImg.closest('figure')?.querySelector('figcaption')?.textContent ||
                            currentImg.closest('.gallery-item')?.querySelector('.gallery-caption')?.textContent ||
-                           currentImg.closest('.wp-block-gallery-item')?.querySelector('figcaption')?.textContent;
+                           currentImg.closest('.wp-block-gallery-item')?.querySelector('figcaption')?.textContent ||
+                           currentImg.getAttribute('alt');
+                           currentImg.getAttribute('title');
 
-            if (caption) {
-                imageCaption.textContent = caption;
+            if (caption && caption.trim()) {
+                imageCaption.textContent = caption.trim();
                 imageCaption.style.display = 'block';
             } else {
                 imageCaption.style.display = 'none';
@@ -1379,72 +1537,6 @@ console.log(post.title.rendered)
                 prevBtn.style.display = 'none';
                 nextBtn.style.display = 'none';
             }
-        }
-
-        // Navigation précédent
-        prevBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (currentImageIndex > 0) {
-                currentImageIndex--;
-                showImage();
-            }
-        });
-
-        // Navigation suivant
-        nextBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            if (currentImageIndex < currentGalleryImages.length - 1) {
-                currentImageIndex++;
-                showImage();
-            }
-        });
-
-        // Fermer le modal
-        closeModal.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            closeImageModal();
-        });
-
-        // Fermer le modal en cliquant sur l'arrière-plan
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeImageModal();
-            }
-        });
-
-        // Navigation au clavier
-        document.addEventListener('keydown', function(e) {
-            if (!modal.classList.contains('active')) return;
-
-            switch(e.key) {
-                case 'Escape':
-                    closeImageModal();
-                    break;
-                case 'ArrowLeft':
-                    if (isGalleryMode && currentImageIndex > 0) {
-                        currentImageIndex--;
-                        showImage();
-                    }
-                    break;
-                case 'ArrowRight':
-                    if (isGalleryMode && currentImageIndex < currentGalleryImages.length - 1) {
-                        currentImageIndex++;
-                        showImage();
-                    }
-                    break;
-            }
-        });
-
-        // Fonction pour fermer le modal
-        function closeImageModal() {
-            modal.classList.remove('active');
-            document.body.style.overflow = '';
-            modalImage.src = '';
-            modalImage.alt = '';
-            currentGalleryImages = [];
-            currentImageIndex = 0;
-            isGalleryMode = false;
         }
 
         // ========== VRAIE GALERIE PHOTO MODERNE ==========
@@ -1491,15 +1583,40 @@ console.log(post.title.rendered)
                 const img = document.createElement('img');
                 img.src = originalImg.src;
                 img.alt = originalImg.alt || `Photo ${index + 1}`;
+                img.title = originalImg.title || originalImg.alt || `Photo ${index + 1}`;
                 img.loading = 'lazy';
+
+                // Préserver les métadonnées WordPress
+                if (originalImg.dataset.caption) {
+                    img.dataset.caption = originalImg.dataset.caption;
+                }
 
                 // Préserver les attributs de légende
                 const figcaption = originalImg.closest('figure')?.querySelector('figcaption');
-                if (figcaption) {
-                    img.setAttribute('data-caption', figcaption.textContent);
+                if (figcaption && !img.dataset.caption) {
+                    img.dataset.caption = figcaption.textContent;
                 }
 
                 photoContainer.appendChild(img);
+
+                // Ajouter le clic sur le conteneur pour ouvrir la modal
+                photoContainer.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    // Créer la modal si elle n'existe pas
+                    createModal();
+
+                    // Mode galerie avec toutes les images de cette galerie
+                    isGalleryMode = true;
+                    currentGalleryImages = Array.from(gallery.querySelectorAll('.gallery-photo img'));
+                    currentImageIndex = Array.from(gallery.querySelectorAll('.gallery-photo')).indexOf(photoContainer);
+
+                    showImage();
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+
                 gridContainer.appendChild(photoContainer);
             });
 

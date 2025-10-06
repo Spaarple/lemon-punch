@@ -102,7 +102,7 @@ const lieu = getFieldValue(event, 'lieu_sur_carte');
         <div class="hero-overlay"></div>
         {coverImage && (
             <div class="hero-background-image">
-                <img src={coverImage.source_url} alt={event.title.rendered} />
+                <img src={coverImage.source_url} alt={event.title.rendered} title={event.title.rendered}/>
             </div>
         )}
 

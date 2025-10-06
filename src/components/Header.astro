@@ -1,7 +1,13 @@
 ---
 // src/components/Header.astro
 import Logo from '../assets/images/lmp-logo-transparent-black.png';
-import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
+// import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
+import GroupBackground from '../assets/images/lmp-cover-yellow-r.webp';
+
+const INSTAGRAM = import.meta.env.INSTAGRAM_LINK || '#';
+const FACEBOOK = import.meta.env.FACEBOOK_LINK || '#';
+const YOUTUBE = import.meta.env.YOUTUBE_LINK || '#';
+const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
 ---
 
 <header class="header" id="home">
@@ -10,7 +16,10 @@ import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
         <div class="nav-container">
             <div class="nav-logo">
                 <a href="/">
-                    <img src={Logo.src} alt="LemonPunch Logo" class="logo">
+                    <img src={Logo.src}
+                         alt="Logo du groupe de musique Lemon Punch"
+                         title="Groupe de musique Lemon Punch"
+                         class="logo">
                 </a>
             </div>
             <div class="nav-menu" id="nav-menu">
@@ -22,11 +31,10 @@ import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
                 <a href="#contact" class="nav-link">CONTACT</a>
             </div>
             <div class="social-nav">
-                <a href="#" class="social-nav-link"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-nav-link"><i class="fab fa-facebook"></i></a>
-                <a href="#" class="social-nav-link"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="social-nav-link"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="social-nav-link"><i class="fab fa-spotify"></i></a>
+                <a href={INSTAGRAM} target="_blank" class="social-nav-link"><i class="fab fa-instagram"></i></a>
+                <a href={FACEBOOK} target="_blank" class="social-nav-link"><i class="fab fa-facebook"></i></a>
+                <a href={YOUTUBE} target="_blank" class="social-nav-link"><i class="fab fa-youtube"></i></a>
+                <a href={SPOTIFY} target="_blank" class="social-nav-link"><i class="fab fa-spotify"></i></a>
             </div>
             <div class="nav-toggle" id="nav-toggle">
                 <span class="bar"></span>
@@ -36,12 +44,53 @@ import GroupBackground from '../assets/images/lmp-cover-yellow.jpg';
         </div>
     </nav>
 
-    <!-- Background image et contenu -->
-    <div class="header-background">
-        <img src={GroupBackground.src} alt="LemonPunch Band" class="header-bg-image">
+    <!-- Background avec couleur -->
+    <div class="header-background"></div>
+
+    <!-- Texte en arrière-plan -->
+    <div class="header-bg-text">
+        <h1 class="bg-text-line">Lemon Punch</h1>
+    </div>
+
+    <!-- Image du groupe -->
+    <div class="header-image-container">
+        <img src={GroupBackground.src}
+             alt="Groupe de musique Lemon Punch photo"
+             title="Groupe de musique Lemon Punch photo"
+             class="header-bg-image">
     </div>
 
     <div class="scroll-indicator">
         <i class="fas fa-chevron-down"></i>
     </div>
 </header>
+
+<script>
+    // Effet de scroll sur le texte Lemon Punch et changement de couleur du header
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const headerBgText = document.querySelector('.header-bg-text');
+        const headerNav = document.querySelector('.header-nav');
+
+        // Changer la couleur du header au scroll
+        if (headerNav) {
+            if (scrolled > 100) {
+                headerNav.classList.add('scrolled');
+            } else {
+                headerNav.classList.remove('scrolled');
+            }
+        }
+
+        if (headerBgText) {
+            // Calculer l'opacité et la transformation basées sur le scroll
+            const opacity = Math.max(0, 1 - (scrolled / 500));
+            const scale = Math.max(0.5, 1 - (scrolled / 1000));
+            const translateY = scrolled * 0.5;
+            const blur = Math.min(10, scrolled / 50);
+
+            headerBgText.style.opacity = opacity.toString();
+            headerBgText.style.transform = `translate(-50%, -50%) scale(${scale}) translateY(${translateY}px)`;
+            headerBgText.style.filter = `blur(${blur}px) drop-shadow(0 0 20px rgba(0, 0, 0, 0.1))`;
+        }
+    });
+</script>

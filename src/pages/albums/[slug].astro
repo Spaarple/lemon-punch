@@ -7,7 +7,7 @@ import AudioPlayer from "../../components/ui/album/AudioPlayer.astro";
 
 // ===== PARTIE 1 : GÉNÉRER TOUTES LES PAGES D'ALBUMS =====
 export async function getStaticPaths() {
-    const ALBUMS_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed`;
+    const ALBUMS_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed`;
 
     const res = await fetch(ALBUMS_URL);
     const albums = await res.json();
@@ -63,6 +63,7 @@ const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length
                         <img
                             src={album._embedded['wp:featuredmedia'][0].source_url}
                             alt={`Pochette de ${album.title.rendered}`}
+                            title={`Pochette de ${album.title.rendered}`}
                             class="release-image"
                         />
                     ) : (

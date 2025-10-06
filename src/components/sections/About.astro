@@ -1,5 +1,10 @@
 ---
 import GroupLemonPunch from '../../assets/images/lmp-color-about.jpg';
+
+const INSTAGRAM = import.meta.env.INSTAGRAM_LINK || '#';
+const FACEBOOK = import.meta.env.FACEBOOK_LINK || '#';
+const YOUTUBE = import.meta.env.YOUTUBE_LINK || '#';
+const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
 ---
 
 <section class="about-section" id="about">
@@ -10,14 +15,17 @@ import GroupLemonPunch from '../../assets/images/lmp-color-about.jpg';
                 <p>LemonPunch est un groupe français d'électro-pop qui mélange des sonorités modernes avec une énergie live explosive. Formé de trois musiciens passionnés, le groupe propose un univers musical unique, coloré et énergique.</p>
                 <p>Avec des influences allant de la pop française aux beats électroniques contemporains, LemonPunch crée une atmosphère festive et engageante qui fait danser les foules dans toute la France.</p>
                 <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+                    <a href={INSTAGRAM} target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href={FACEBOOK} target="_blank" class="social-link"><i class="fab fa-facebook"></i></a>
+                    <a href={YOUTUBE} target="_blank" class="social-link"><i class="fab fa-youtube"></i></a>
+                    <a href={SPOTIFY} target="_blank" class="social-link"><i class="fab fa-spotify"></i></a>
                 </div>
             </div>
             <div class="about-image">
-                <img src={GroupLemonPunch.src} alt="LemonPunch Band Photo" class="about-photo">
+                <img src={GroupLemonPunch.src}
+                     alt="LemonPunch Band Photo"
+                     title="LemonPunch Band Photo"
+                     class="about-photo">
             </div>
         </div>
     </div>

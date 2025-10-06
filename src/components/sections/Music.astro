@@ -5,7 +5,7 @@ import AudioPlayer from '../ui/album/AudioPlayer.astro';
 import LogoFondJaune from '../../assets/images/lmp-logo-bg-yellow.jpg';
 
 // URL de l'API WordPress pour récupérer les albums
-const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}album?_embed&per_page=100`;
+const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed&per_page=100`;
 
 let latestAlbum = null;
 let tracklist = [];
@@ -87,6 +87,7 @@ try {
                         <img
                             src={latestAlbum._embedded['wp:featuredmedia'][0].source_url}
                             alt={`Pochette de ${latestAlbum.title.rendered}`}
+                            title={`Pochette de ${latestAlbum.title.rendered}`}
                             class="release-image"
                         />
                     ) : (
@@ -145,17 +146,17 @@ try {
             <h3 class="subsection-title">Nos Clips</h3>
             <div class="video-grid">
                 <a href="#" class="video-card">
-                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" title="Music Video Thumbnail" class="video-thumbnail">
                     <div class="video-overlay"><i class="fas fa-play"></i></div>
                     <p class="video-title">Clip Officiel</p>
                 </a>
                 <a href="#" class="video-card">
-                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" title="Music Video Thumbnail" class="video-thumbnail">
                     <div class="video-overlay"><i class="fas fa-play"></i></div>
                     <p class="video-title">Live Session</p>
                 </a>
                 <a href="#" class="video-card">
-                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" class="video-thumbnail">
+                    <img src={LogoFondJaune.src} alt="Music Video Thumbnail" title="Music Video Thumbnail" class="video-thumbnail">
                     <div class="video-overlay"><i class="fas fa-play"></i></div>
                     <p class="video-title">Visualizer</p>
                 </a>

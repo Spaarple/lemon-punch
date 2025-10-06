@@ -1,5 +1,8 @@
 ---
-
+const INSTAGRAM = import.meta.env.INSTAGRAM_LINK || '#';
+const FACEBOOK = import.meta.env.FACEBOOK_LINK || '#';
+const YOUTUBE = import.meta.env.YOUTUBE_LINK || '#';
+const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
 ---
 
 <section class="contact-section" id="contact">
@@ -13,27 +16,90 @@
                     <p><i class="fas fa-phone"></i> +33 1 23 45 67 89</p>
                 </div>
                 <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-spotify"></i></a>
+                    <a href={INSTAGRAM} target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href={FACEBOOK} target="_blank" class="social-link"><i class="fab fa-facebook"></i></a>
+                    <a href={YOUTUBE} target="_blank" class="social-link"><i class="fab fa-youtube"></i></a>
+                    <a href={SPOTIFY} target="_blank" class="social-link"><i class="fab fa-spotify"></i></a>
                 </div>
             </div>
             <div class="contact-form">
-                <form>
+                <form id="contactForm">
                     <div class="form-group">
-                        <input type="text" placeholder="Votre nom" required>
+                        <input type="text" name="nom" placeholder="Votre nom" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="Votre email" required>
+                        <input type="email" name="email" placeholder="Votre email" required>
                     </div>
                     <div class="form-group">
-                        <textarea placeholder="Votre message" rows="5" required></textarea>
+                        <textarea name="message" placeholder="Votre message" rows="5" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">Envoyer</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Envoyer</button>
+                    <div id="formStatus" style="margin-top: 1rem; padding: 0.75rem; border-radius: 4px; display: none;"></div>
                 </form>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+    const form = document.getElementById('contactForm') as HTMLFormElement;
+    const submitBtn = document.getElementById('submitBtn') as HTMLButtonElement;
+    const formStatus = document.getElementById('formStatus') as HTMLDivElement;
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Désactiver le bouton pendant l'envoi
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Envoi en cours...';
+        formStatus.style.display = 'none';
+
+        // Récupérer les données du formulaire
+        const formData = new FormData(form);
+        const data = {
+            nom: formData.get('nom') as string,
+            email: formData.get('email') as string,
+            message: formData.get('message') as string
+        };
+
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Succès
+                formStatus.textContent = '✅ Message envoyé avec succès ! Nous vous répondrons bientôt.';
+                formStatus.style.background = '#d4edda';
+                formStatus.style.color = '#155724';
+                formStatus.style.border = '1px solid #c3e6cb';
+                formStatus.style.display = 'block';
+                form.reset();
+            } else {
+                // Erreur
+                formStatus.textContent = '❌ ' + (result.error || 'Une erreur est survenue');
+                formStatus.style.background = '#f8d7da';
+                formStatus.style.color = '#721c24';
+                formStatus.style.border = '1px solid #f5c6cb';
+                formStatus.style.display = 'block';
+            }
+        } catch (error) {
+            formStatus.textContent = '❌ Erreur de connexion. Veuillez réessayer.';
+            formStatus.style.background = '#f8d7da';
+            formStatus.style.color = '#721c24';
+            formStatus.style.border = '1px solid #f5c6cb';
+            formStatus.style.display = 'block';
+        } finally {
+            // Réactiver le bouton
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
+</script>
