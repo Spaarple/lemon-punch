@@ -4,6 +4,11 @@ import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import DiscographyHeader from "../../components/ui/album/DiscographyHeader.astro";
 import AlbumCard from "../../components/ui/album/AlbumCard.astro";
 
+const YOUTUBE = import.meta.env.YOUTUBE_LINK || '#';
+const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
+const DEEZER = import.meta.env.DEEZER_LINK || '#';
+const APPLE_MUSIC = import.meta.env.APPLE_LINK || '#';
+
 // Récupérer toutes les sorties musicales depuis WordPress (Albums, EPs, Singles)
 const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed&per_page=100`;
 
@@ -108,19 +113,19 @@ try {
             <div class="listen-on">
                 <p class="listen-on-title">Rejoignez-nous sur les plateformes d'écoute</p>
                 <div class="streaming-links">
-                    <a href="#" class="streaming-link youtube">
+                    <a href={YOUTUBE} target="_blank" class="streaming-link youtube">
                         <i class="fab fa-youtube"></i>
                         YouTube
                     </a>
-                    <a href="#" class="streaming-link spotify">
+                    <a href={SPOTIFY} target="_blank" class="streaming-link spotify">
                         <i class="fab fa-spotify"></i>
                         Spotify
                     </a>
-                    <a href="#" class="streaming-link deezer">
+                    <a href={DEEZER} target="_blank" class="streaming-link deezer">
                         <i class="fa-brands fa-deezer"></i>
                         Deezer
                     </a>
-                    <a href="#" class="streaming-link apple-music">
+                    <a href={APPLE_MUSIC} target="_blank" class="streaming-link apple-music">
                         <i class="fab fa-apple"></i>
                         Apple Music
                     </a>

@@ -1,4 +1,8 @@
 ---
+const INSTAGRAM = import.meta.env.INSTAGRAM_LINK || '#';
+const FACEBOOK = import.meta.env.FACEBOOK_LINK || '#';
+const YOUTUBE = import.meta.env.YOUTUBE_LINK || '#';
+const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
 ---
 
 <section class="contact-section" id="contact">
@@ -12,11 +16,10 @@
                     <p><i class="fas fa-phone"></i> +33 1 23 45 67 89</p>
                 </div>
                 <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-spotify"></i></a>
+                    <a href={INSTAGRAM} target="_blank" class="social-link"><i class="fab fa-instagram"></i></a>
+                    <a href={FACEBOOK} target="_blank" class="social-link"><i class="fab fa-facebook"></i></a>
+                    <a href={YOUTUBE} target="_blank" class="social-link"><i class="fab fa-youtube"></i></a>
+                    <a href={SPOTIFY} target="_blank" class="social-link"><i class="fab fa-spotify"></i></a>
                 </div>
             </div>
             <div class="contact-form">

@@ -1332,14 +1332,10 @@ a {
 }
 
 .contact-section .social-link:nth-child(3):hover {
-    background: #1DA1F2;
-}
-
-.contact-section .social-link:nth-child(4):hover {
     background: #FF0000;
 }
 
-.contact-section .social-link:nth-child(5):hover {
+.contact-section .social-link:nth-child(4):hover {
     background: #1DB954;
 }
 
@@ -1353,11 +1349,11 @@ a {
 }
 
 .about-section .social-link:nth-child(3):hover {
-    background: #1DA1F2;
+    background: #FF0000;
 }
 
 .about-section .social-link:nth-child(4):hover {
-    background: #FF0000;
+    background: #1DB954;
 }
 
 /* Footer */
