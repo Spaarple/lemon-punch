@@ -13,7 +13,7 @@ const allProducts = await response.json();
 
 // Récupérer les catégories pour les filtres
 const categoriesResponse = await
-    fetch(`https://shop.lemonpunch.fr/wp-json//wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+    fetch(`https://shop.lemonpunch.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
 const categories = await categoriesResponse.json();
 ---
 
