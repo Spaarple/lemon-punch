@@ -5,7 +5,7 @@ import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 
 // 1. getStaticPaths va lister toutes les pages à créer
 export async function getStaticPaths() {
-    const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
+    const WOO_URL = "https://shop.lemonpunch.fr/wp-json/wc/v3/products";
     const KEY = import.meta.env.WOOCOMMERCE_KEY;
     const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
 
