@@ -2,34 +2,37 @@
 import Layout from "../layouts/Layout.astro";
 import Breadcrumb from "../components/ui/Breadcrumb.astro";
 
-export const prerender = true;
+// ✅ MODE SERVEUR
+const { slug } = Astro.params;
 
-export async function getStaticPaths() {
-    const slugsToFetch = [
-        "politique-de-confidentialite",
-        "remboursements-retours",
-        // Ajoutez d'autres slugs ici à l'avenir
-    ];
 
-    // Crée une liste de promesses pour appeler l'API pour chaque slug
-    const pagePromises = slugsToFetch.map(async (slug) => {
-        const response = await fetch(`${import.meta.env.BASE_URL_WORDPRESS}pages?slug=${slug}`);
-        const data = await response.json();
+// Liste des slugs autorisés (sécurité)
+const allowedSlugs = [
+    "politique-de-confidentialite",
+    "remboursements-retours",
+];
 
-        if (data && data[0]) {
-            return {
-                params: { slug: slug },
-                props: { page: data[0] },
-            };
-        }
-        return null;
-    });
-
-    const pages = await Promise.all(pagePromises);
-    return pages.filter(page => page !== null);
+// Vérifier que le slug est autorisé
+if (!allowedSlugs.includes(slug)) {
+    return Astro.redirect('/404');
 }
 
-const { page } = Astro.props;
+// Récupérer la page depuis WordPress
+const response = await fetch(
+    `${import.meta.env.BASE_URL_WORDPRESS}pages?slug=${slug}`
+);
+
+if (!response.ok) {
+    return Astro.redirect('/404');
+}
+
+const pages = await response.json();
+
+if (!pages || pages.length === 0) {
+    return Astro.redirect('/404');
+}
+
+const page = pages[0];
 ---
 
 <Layout title={page.title.rendered}>
