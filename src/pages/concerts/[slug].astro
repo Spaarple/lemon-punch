@@ -260,7 +260,7 @@ const lieu = getFieldValue(event, 'lieu_sur_carte');
                                 location={getFieldValue(event, 'nom_du_lieu')}
                                 startDate={eventDate}
                                 description={getFieldValue(event, 'description') || event.content?.rendered?.replace(/<[^>]*>/g, '')}
-                                url={`https://shop.lemonpunch.fr/evenements/${event.slug}/`}
+                                url={`https://shop.lemonpunch.fr/concerts/${event.slug}/`}
                             />
                         )}
                     </div>
@@ -313,9 +313,9 @@ const lieu = getFieldValue(event, 'lieu_sur_carte');
 
             <!-- Bouton Retour -->
             <div class="back-navigation-inline">
-                <a href="/evenements/" class="btn-back">
+                <a href="/concerts/" class="btn-back">
                     <i class="fas fa-arrow-left"></i>
-                    <span>Retour aux événements</span>
+                    <span>Retour aux concerts</span>
                 </a>
             </div>
         </div>

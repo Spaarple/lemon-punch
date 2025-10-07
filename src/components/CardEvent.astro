@@ -23,7 +23,7 @@ const { day, month, title, venue, time, isPast = false, slug } = Astro.props;
         {time && <p class="concert-time">{time}</p>}
     </div>
     <div class="concert-action">
-        <a href={`/evenements/${slug}/`} class={`btn btn-ticket ${isPast ? 'past-btn' : ''}`}>
+        <a href={`/concerts/${slug}/`} class={`btn btn-ticket ${isPast ? 'past-btn' : ''}`}>
             {isPast ? 'Voir le récap' : 'Détails'}
         </a>
     </div>

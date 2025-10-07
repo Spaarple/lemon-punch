@@ -99,7 +99,7 @@ try {
 ---
 
 <Layout title="Événements - LemonPunch">
-    <Breadcrumb currentPageTitle="Événements" />
+    <Breadcrumb currentPageTitle="Concerts" />
     <!-- Section Header Événements -->
     <section class="events-header">
         <div class="header-background"></div>
@@ -112,7 +112,7 @@ try {
         <div class="header-content">
             <div class="title-container">
                 <h1 class="events-title">
-                    Évén<span class="title-accent">ements</span>
+                    Con<span class="title-accent">certs</span>
                 </h1>
                 <div class="title-underline"></div>
             </div>
@@ -126,7 +126,7 @@ try {
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title" id="events-title">
-                        Tous les événements
+                        Tous les concerts
                     </h2>
                     <div class="filters-container">
                         <button class="filter-tab active" data-filter="all">
@@ -178,8 +178,8 @@ try {
             <div class="container">
                 <div class="no-events-content">
                     <i class="fas fa-calendar-alt"></i>
-                    <h2>Aucun événement disponible</h2>
-                    <p>Les prochains événements seront bientôt annoncés !</p>
+                    <h2>Aucun concert disponible</h2>
+                    <p>Les prochains concerts seront bientôt annoncés !</p>
                 </div>
             </div>
         </section>
@@ -245,9 +245,9 @@ try {
     // Fonction pour mettre à jour le titre
     function updateTitle(filter) {
         const titles = {
-            'all': 'Tous les événements',
-            'upcoming': 'Événements à venir',
-            'past': 'Événements passés'
+            'all': 'Tous les concerts',
+            'upcoming': 'Concerts à venir',
+            'past': 'Concerts passés'
         };
         eventsTitle.textContent = titles[filter] || titles['all'];
     }
@@ -269,7 +269,7 @@ try {
                     ${time ? `<p class="concert-time">${time}</p>` : ''}
                 </div>
                 <div class="concert-action">
-                    <a href="/evenements/${event.slug}/" class="btn btn-ticket ${event.isPast ? 'past-btn' : ''}">
+                    <a href="/concerts/${event.slug}/" class="btn btn-ticket ${event.isPast ? 'past-btn' : ''}">
                         ${event.isPast ? 'Voir le récap' : 'Détails'}
                     </a>
                 </div>
