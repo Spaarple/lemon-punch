@@ -5,25 +5,32 @@ import StreamingLinks from "../../components/ui/album/StreamingLinks.astro";
 import TrackList from "../../components/ui/album/TrackList.astro";
 import AudioPlayer from "../../components/ui/album/AudioPlayer.astro";
 
-export const prerender = true;
+// ✅ MODE SERVEUR : Récupération dynamique
+const { slug } = Astro.params;
 
-// ===== PARTIE 1 : GÉNÉRER TOUTES LES PAGES D'ALBUMS =====
-export async function getStaticPaths() {
-    const ALBUMS_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed`;
+// Récupérer l'album depuis WordPress
+const albumResponse = await fetch(
+    `${import.meta.env.BASE_URL_WORDPRESS}albums?slug=${slug}&_embed`
+);
 
-    const res = await fetch(ALBUMS_URL);
-    const albums = await res.json();
-
-    return albums.map((album) => ({
-        params: { slug: album.slug },
-        props: { album },
-    }));
+if (!albumResponse.ok) {
+    return Astro.redirect('/404');
 }
 
-// ===== PARTIE 2 : RÉCUPÉRER LES DONNÉES POUR CETTE PAGE SPÉCIFIQUE =====
-const { album } = Astro.props;
+const albums = await albumResponse.json();
 
-// On va créer des tableaux propres pour nos champs numérotés
+if (!albums || albums.length === 0) {
+    return Astro.redirect('/404');
+}
+
+const album = albums[0];
+
+// Vérifier que ACF est présent
+if (!album.acf) {
+    return Astro.redirect('/404');
+}
+
+// Extraire les données ACF
 const maxTracks = 20;
 const maxLinks = 10;
 
@@ -42,7 +49,7 @@ const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
     return null;
 }).filter(Boolean);
 
-// Fonction pour déterminer le type de sortie basé sur le nombre de pistes
+// Fonction pour déterminer le type de sortie
 function getReleaseType(trackCount) {
     if (trackCount < 2) return 'SINGLE';
     return 'ALBUM';

@@ -4,41 +4,37 @@ import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import CalendarButtons from "../../components/ui/event/CalendarButtons.astro";
 import Map from "../../components/ui/Map.astro";
 
-export const prerender = true;
+// ✅ MODE SERVEUR : Récupération dynamique
+const { slug } = Astro.params;
 
-export async function getStaticPaths() {
-    const EVENTS_URL = `${import.meta.env.BASE_URL_WORDPRESS}evenements?_embed&per_page=100`;
+// Récupérer l'événement depuis WordPress
+const eventResponse = await fetch(
+    `${import.meta.env.BASE_URL_WORDPRESS}evenements?slug=${slug}&_embed`
+);
 
-    try {
-        const res = await fetch(EVENTS_URL);
-
-        if (res.ok) {
-            const events = await res.json();
-
-            return events.map((event) => {
-                return {
-                    params: { slug: event.slug },
-                    props: { event },
-                };
-            });
-        } else {
-            console.error('❌ API Response not OK:', res.status, res.statusText);
-        }
-    } catch (error) {
-        console.error('💥 Error loading events:', error);
-    }
-
-    return [];
+if (!eventResponse.ok) {
+    return Astro.redirect('/404');
 }
 
-const { event } = Astro.props;
+const events = await eventResponse.json();
+
+if (!events || events.length === 0) {
+    return Astro.redirect('/404');
+}
+
+const event = events[0];
+
+// Vérifier que ACF est présent
+if (!event.acf) {
+    console.warn('⚠️ ACF manquant pour l\'événement:', slug);
+}
 
 // Fonction helper pour récupérer les valeurs ACF ou meta
 function getFieldValue(event, fieldName) {
     return event.acf?.[fieldName] ||
-           event.meta?.[fieldName] ||
-           event.meta?.[`${fieldName}`] ||
-           null;
+        event.meta?.[fieldName] ||
+        event.meta?.[`${fieldName}`] ||
+        null;
 }
 
 // Fonction pour formater la date depuis ACF ou meta
@@ -89,7 +85,7 @@ const isUpcoming = eventDate && eventDate >= new Date();
 // Format pour les données structurées de date
 const day = eventDate ? eventDate.getDate().toString().padStart(2, '0') : '';
 const monthNames = ['JAN', 'FÉV', 'MAR', 'AVR', 'MAI', 'JUN',
-                  'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
+    'JUL', 'AOÛ', 'SEP', 'OCT', 'NOV', 'DÉC'];
 const month = eventDate ? monthNames[eventDate.getMonth()] : '';
 
 const lieu = getFieldValue(event, 'lieu_sur_carte');

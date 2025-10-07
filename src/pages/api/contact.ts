@@ -27,8 +27,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const mailOptions = {
-      from: import.meta.env.SMTP_USER,
-      to: email,
+      from: email,
+      to: import.meta.env.SMTP_USER,
       subject: `Nouveau message de ${nom}`,
       text: `Nom: ${nom}\nEmail: ${email}\n\nMessage:\n${message}`,
       html: `
