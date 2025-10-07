@@ -257,21 +257,6 @@ import Logo from '../assets/images/lmp-logo-bg-yellow.jpg';
 		setTimeout(typeWriter, 1000);
 	}
 
-	// Gestion des liens sociaux avec animation
-	document.querySelectorAll('.social-link').forEach(link => {
-		link.addEventListener('click', (e) => {
-			e.preventDefault();
-
-			// Animation de clic
-			link.style.transform = 'scale(0.95)';
-			setTimeout(() => {
-				link.style.transform = '';
-			}, 150);
-
-			// Ici vous pourriez ajouter la redirection réelle
-			console.log('Redirection vers:', link.href);
-		});
-	});
 
 	// Animation des cartes de concert au hover
 	document.querySelectorAll('.concert-card').forEach(card => {
