@@ -285,8 +285,11 @@ try {
 
         if (paginatedEvents.length === 0) {
             eventsList.innerHTML = `
-                <div class="no-events-message">
-                    <p>Aucun événement trouvé pour ce filtre.</p>
+                <div class="concert-card event-card no-event-card">
+                    <div class="concert-info no-event-info">
+                        <h3 class="concert-venue">Aucun concert trouvé pour ce filtre</h3>
+                        <p class="concert-city">Restez connectés sur nos réseaux sociaux pour ne rien manquer !</p>
+                    </div>
                 </div>
             `;
             return;

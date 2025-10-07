@@ -1084,6 +1084,38 @@ a {
     position: relative;
 }
 
+.no-event-card {
+    cursor: default !important;
+    pointer-events: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.no-event-card:hover {
+    transform: none !important;
+    box-shadow: 0 5px 15px var(--shadow) !important;
+    border-left: none !important;
+}
+
+.no-event-info {
+    text-align: center !important;
+    width: 100%;
+}
+
+.no-event-info .concert-venue {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.no-event-info .concert-city {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
 .concert-card {
     display: grid;
     grid-template-columns: auto 1fr auto;
