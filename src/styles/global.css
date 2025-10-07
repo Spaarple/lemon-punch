@@ -207,7 +207,7 @@ a {
 
 .header-bg-text {
     position: absolute;
-    top: 25%;
+    top: 20%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1;
@@ -280,7 +280,7 @@ a {
 
 @media (max-width: 480px) {
     .header-bg-text {
-        top: 25%;
+        top: 21%;
     }
 
     .bg-text-line {
