@@ -1220,6 +1220,10 @@ a {
     background: var(--primary-yellow);
 }
 
+.contact-section .section-title::after {
+    background: var(--black);
+}
+
 .about-photo {
     width: 100%;
     height: auto;
@@ -1229,7 +1233,7 @@ a {
 /* Contact Section */
 .contact-section {
     padding: 100px 0;
-    background: var(--light-gray);
+    background: var(--color-same-of-image-header);
     background-image: url('../assets/images/white-bg-with-noise.jpg');
     background-size: cover;
     background-repeat: no-repeat;
@@ -1258,19 +1262,12 @@ a {
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
 }
 
 .contact-details i {
-    color: var(--primary-yellow);
-    font-size: 1.2rem;
-}
-
-.contact-form {
-    background: transparent;
-    padding: 2rem;
-    border-radius: 0;
-    border: 8px solid var(--black);
+    color: var(--black);
+    font-size: 1.3rem;
 }
 
 .form-group {
@@ -1292,7 +1289,8 @@ a {
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    box-shadow: 0 5px 15px rgba(244, 208, 63, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
 }
 
 /* Social Links */
