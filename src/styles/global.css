@@ -729,6 +729,41 @@ a {
     color: var(--primary-yellow);
 }
 
+/* Grille pour les iframes YouTube */
+.video-grid-iframe {
+    display: flex;
+    gap: 2rem;
+    margin: 0 auto;
+    max-width: 1400px;
+    justify-content: center;
+}
+
+.video-grid-iframe .video-iframe-wrapper {
+    flex: 0 0 400px;
+    max-width: 400px;
+    padding-bottom: 0;
+    height: 225px; /* 400 * 9/16 = 225 pour ratio 16:9 */
+}
+
+.video-iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Ratio 16:9 */
+    height: 0;
+    overflow: hidden;
+    border-radius: 0;
+    box-shadow: 0 10px 30px var(--shadow);
+    background: var(--black);
+}
+
+.video-iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
 .video-title {
     position: absolute;
     bottom: 15px;
@@ -1535,6 +1570,16 @@ a {
 
     .video-grid {
         grid-template-columns: 1fr;
+    }
+
+    .video-grid-iframe {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .video-grid-iframe .video-iframe-wrapper {
+        flex: 1 1 auto;
+        max-width: 100%;
     }
 
     .music-content,
