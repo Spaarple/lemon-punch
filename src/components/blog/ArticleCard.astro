@@ -20,7 +20,7 @@
 
                     const coverImage = data._embedded?.['wp:featuredmedia']?.[0];
                     const defaultImage = '/placeholder-article.jpg';
-                    const articleUrl = `/blog/${data.slug}/`;
+                    const articleUrl = `/actus/${data.slug}/`;
 
                     // Construire le HTML de la carte
                     this.innerHTML = `
