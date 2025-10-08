@@ -3,23 +3,30 @@ import Layout from "../../layouts/Layout.astro";
 import CardProduct from "../../components/ui/CardProduct.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 
-// 1. getStaticPaths va lister toutes les pages à créer
-export async function getStaticPaths() {
-    const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
-    const KEY = import.meta.env.WOOCOMMERCE_KEY;
-    const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
+// ✅ MODE SERVEUR : Récupération dynamique
+const { slug } = Astro.params;
 
-    const res = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&per_page=100`);
-    const products = await res.json();
+// Configuration WooCommerce
+const WOO_URL = "https://shop.lemonpunch.fr/wp-json/wc/v3/products";
+const KEY = import.meta.env.WOOCOMMERCE_KEY;
+const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
 
-    return products.map((product) => ({
-        params: { slug: product.slug },
-        props: { product },
-    }));
+// Récupérer le produit par son slug
+const productResponse = await fetch(
+    `${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&slug=${slug}`
+);
+
+if (!productResponse.ok) {
+    return Astro.redirect('/404');
 }
 
-// 2. On récupère les données du produit pour cette page spécifique
-const { product } = Astro.props;
+const products = await productResponse.json();
+
+if (!products || products.length === 0) {
+    return Astro.redirect('/404');
+}
+
+const product = products[0];
 
 // Fonction pour convertir les noms de couleurs en codes couleurs
 function getColorValue(colorName) {
@@ -58,15 +65,16 @@ function sortSizes(sizes) {
 }
 
 // Récupérer les variations du produit si c'est un produit variable
-const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
-const KEY = import.meta.env.WOOCOMMERCE_KEY;
-const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
-
 let productVariations = [];
 if (product.type === 'variable') {
     try {
-        const variationsRes = await fetch(`${WOO_URL}/${product.id}/variations?consumer_key=${KEY}&consumer_secret=${SECRET}&per_page=100`);
-        productVariations = await variationsRes.json();
+        const variationsRes = await fetch(
+            `${WOO_URL}/${product.id}/variations?consumer_key=${KEY}&consumer_secret=${SECRET}&per_page=100`
+        );
+
+        if (variationsRes.ok) {
+            productVariations = await variationsRes.json();
+        }
     } catch (error) {
         console.error('Erreur lors du chargement des variations:', error);
     }
@@ -77,8 +85,13 @@ let relatedProducts = [];
 if (product.categories && product.categories.length > 0) {
     const categoryId = product.categories[0].id;
     try {
-        const relatedRes = await fetch(`${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&category=${categoryId}&exclude=${product.id}&per_page=3`);
-        relatedProducts = await relatedRes.json();
+        const relatedRes = await fetch(
+            `${WOO_URL}?consumer_key=${KEY}&consumer_secret=${SECRET}&category=${categoryId}&exclude=${product.id}&per_page=3`
+        );
+
+        if (relatedRes.ok) {
+            relatedProducts = await relatedRes.json();
+        }
     } catch (error) {
         console.error('Erreur lors du chargement des produits similaires:', error);
     }
@@ -326,10 +339,6 @@ if (product.categories && product.categories.length > 0) {
     )}
 </Layout>
 
-<style is:global>
-    /* ... Votre CSS reste inchangé ... */
-</style>
-
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // --- Initialisation ---
@@ -453,7 +462,7 @@ if (product.categories && product.categories.length > 0) {
             const quantity = document.getElementById('quantity').value;
 
             if (!hasVariations) {
-                window.location.href = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}`;
+                window.location.href = `https://shop.lemonpunch.fr/panier/?add-to-cart=${productId}&quantity=${quantity}`;
                 return;
             }
 
@@ -473,7 +482,7 @@ if (product.categories && product.categories.length > 0) {
             this.disabled = true;
 
             // ✨ FIX #3: Construction de l'URL avec les slugs de la variation trouvée
-            let addToCartUrl = `https://lemonpunch.spaarple.fr/panier/?add-to-cart=${productId}&quantity=${quantity}&variation_id=${matchedVariation.id}`;
+            let addToCartUrl = `https://shop.lemonpunch.fr/panier/?add-to-cart=${productId}&quantity=${quantity}&variation_id=${matchedVariation.id}`;
 
             matchedVariation.attributes.forEach(attr => {
                 const attributeSlug = attr.name.toLowerCase().replace(/\s+/g, '-');

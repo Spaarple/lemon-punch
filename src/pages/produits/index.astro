@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import CardProduct from "../../components/ui/CardProduct.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 
-const WOO_URL = "https://lemonpunch.spaarple.fr/wp-json/wc/v3/products";
+const WOO_URL = "https://shop.lemonpunch.fr/wp-json/wc/v3/products";
 const KEY = import.meta.env.WOOCOMMERCE_KEY;
 const SECRET = import.meta.env.WOOCOMMERCE_SECRET;
 
@@ -13,7 +13,7 @@ const allProducts = await response.json();
 
 // Récupérer les catégories pour les filtres
 const categoriesResponse = await
-    fetch(`https://lemonpunch.spaarple.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
+    fetch(`https://shop.lemonpunch.fr/wp-json/wc/v3/products/categories?consumer_key=${KEY}&consumer_secret=${SECRET}`);
 const categories = await categoriesResponse.json();
 ---
 

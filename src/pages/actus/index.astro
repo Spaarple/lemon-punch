@@ -86,7 +86,7 @@ try {
 ---
 
 <Layout title="Blog - LemonPunch">
-    <Breadcrumb currentPageTitle="Blog" />
+    <Breadcrumb currentPageTitle="Actus" />
     <!-- Section Header Blog -->
     <section class="blog-header">
         <div class="header-background"></div>
@@ -99,7 +99,7 @@ try {
         <div class="header-content">
             <div class="title-container">
                 <h1 class="blog-title">
-                    B<span class="title-accent">log</span>
+                    Ac<span class="title-accent">tus</span>
                 </h1>
                 <div class="title-underline"></div>
             </div>
@@ -113,7 +113,7 @@ try {
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title" id="articles-title">
-                        Tous les articles
+                        Toutes les actualités
                     </h2>
                     <div class="filters-container">
                         <button class="filter-tab active" data-filter="all">
@@ -146,8 +146,8 @@ try {
             <div class="container">
                 <div class="no-articles-content">
                     <i class="fas fa-newspaper"></i>
-                    <h2>Aucun article disponible</h2>
-                    <p>Les premiers articles seront bientôt publiés !</p>
+                    <h2>Aucune actualité disponible</h2>
+                    <p>Les premières actualités seront bientôt publiés !</p>
                 </div>
             </div>
         </section>
@@ -190,10 +190,10 @@ try {
     // Fonction pour mettre à jour le titre
     function updateTitle(filter) {
         if (filter === 'all') {
-            articlesTitle.textContent = 'Tous les articles';
+            articlesTitle.textContent = 'Toutes les actualités';
         } else {
             const category = allCategories.find(cat => cat.id.toString() === filter);
-            articlesTitle.textContent = category ? `Articles : ${category.name}` : 'Articles';
+            articlesTitle.textContent = category ? `Actualités : ${category.name}` : 'Actualité';
         }
     }
 
@@ -205,7 +205,7 @@ try {
         // Récupérer la première catégorie pour l'affichage uniquement
         const firstCategory = post.categories?.length ? allCategories.find(cat => cat.id === post.categories[0]) : null;
         const categoryName = firstCategory?.name || '';
-        const articleUrl = `/blog/${post.slug}/`;
+        const articleUrl = `/actus/${post.slug}/`;
 
         return `
             <article class="article-card">
@@ -247,7 +247,7 @@ try {
         if (paginatedPosts.length === 0) {
             articlesList.innerHTML = `
                 <div class="no-articles-message">
-                    <p>Aucun article trouvé pour cette catégorie.</p>
+                    <p>Aucune actualité trouvé pour cette catégorie.</p>
                 </div>
             `;
             return;

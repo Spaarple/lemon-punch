@@ -207,7 +207,7 @@ a {
 
 .header-bg-text {
     position: absolute;
-    top: 25%;
+    top: 20%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1;
@@ -280,7 +280,7 @@ a {
 
 @media (max-width: 480px) {
     .header-bg-text {
-        top: 25%;
+        top: 21%;
     }
 
     .bg-text-line {
@@ -729,6 +729,67 @@ a {
     color: var(--primary-yellow);
 }
 
+/* Grille pour les iframes YouTube */
+.video-grid-iframe {
+    display: flex;
+    gap: 2rem;
+    margin: 0 auto;
+    max-width: 1400px;
+    justify-content: center;
+}
+
+.video-grid-iframe .video-iframe-wrapper {
+    flex: 0 0 400px;
+    max-width: 400px;
+    padding-bottom: 0;
+    height: 225px; /* 400 * 9/16 = 225 pour ratio 16:9 */
+    border: 4px solid var(--black);
+    transition: all 0.3s ease;
+}
+
+.video-grid-iframe .video-iframe-wrapper:hover {
+    border-color: var(--primary-yellow);
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(244, 208, 63, 0.3);
+}
+
+.video-iframe-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Ratio 16:9 */
+    height: 0;
+    overflow: hidden;
+    border-radius: 0;
+    box-shadow: 0 10px 30px var(--shadow);
+    background: var(--black);
+}
+
+.video-iframe-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.video-iframe-wrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(244, 208, 63, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.video-iframe-wrapper:hover::before {
+    opacity: 1;
+}
+
 .video-title {
     position: absolute;
     bottom: 15px;
@@ -1084,6 +1145,38 @@ a {
     position: relative;
 }
 
+.no-event-card {
+    cursor: default !important;
+    pointer-events: none !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.no-event-card:hover {
+    transform: none !important;
+    box-shadow: 0 5px 15px var(--shadow) !important;
+    border-left: none !important;
+}
+
+.no-event-info {
+    text-align: center !important;
+    width: 100%;
+}
+
+.no-event-info .concert-venue {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.no-event-info .concert-city {
+    font-size: 1.2rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
 .concert-card {
     display: grid;
     grid-template-columns: auto 1fr auto;
@@ -1220,6 +1313,10 @@ a {
     background: var(--primary-yellow);
 }
 
+.contact-section .section-title::after {
+    background: var(--black);
+}
+
 .about-photo {
     width: 100%;
     height: auto;
@@ -1229,7 +1326,7 @@ a {
 /* Contact Section */
 .contact-section {
     padding: 100px 0;
-    background: var(--light-gray);
+    background: var(--color-same-of-image-header);
     background-image: url('../assets/images/white-bg-with-noise.jpg');
     background-size: cover;
     background-repeat: no-repeat;
@@ -1258,19 +1355,12 @@ a {
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
-    font-size: 1.1rem;
+    font-size: 1.5rem;
 }
 
 .contact-details i {
-    color: var(--primary-yellow);
-    font-size: 1.2rem;
-}
-
-.contact-form {
-    background: transparent;
-    padding: 2rem;
-    border-radius: 0;
-    border: 8px solid var(--black);
+    color: var(--black);
+    font-size: 1.3rem;
 }
 
 .form-group {
@@ -1292,7 +1382,8 @@ a {
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    box-shadow: 0 5px 15px rgba(244, 208, 63, 0.3);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
 }
 
 /* Social Links */
@@ -1323,6 +1414,11 @@ a {
 }
 
 /* Couleurs spécifiques par plateforme - Contact section */
+.contact-section .social-link {
+    background: var(--black);
+    color: var(--white);
+}
+
 .contact-section .social-link:nth-child(1):hover {
     background: linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%);
 }
@@ -1500,6 +1596,16 @@ a {
 
     .video-grid {
         grid-template-columns: 1fr;
+    }
+
+    .video-grid-iframe {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .video-grid-iframe .video-iframe-wrapper {
+        flex: 1 1 auto;
+        max-width: 100%;
     }
 
     .music-content,
