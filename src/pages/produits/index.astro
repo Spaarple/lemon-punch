@@ -174,6 +174,9 @@ const categories = await categoriesResponse.json();
 
     // Fonction pour rendre un produit
     function renderProduct(product) {
+        // Vérifier si le produit a des attributs (taille, couleur, etc.)
+        const hasAttributes = product.attributes && product.attributes.length > 0;
+
         const productData = {
             id: product.id,
             slug: product.slug,
@@ -186,7 +189,8 @@ const categories = await categoriesResponse.json();
             imageAlt: product.images[0]?.alt || `Image pour ${product.name}`,
             imageTitle: product.images[0]?.title || `Image pour ${product.name}`,
             category: product.categories[0]?.name,
-            description: extractDescription(product.short_description || product.description)
+            description: extractDescription(product.short_description || product.description),
+            hasOptions: hasAttributes || product.type === 'variable'
         };
 
         const productCard = document.createElement('product-card');

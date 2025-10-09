@@ -20,6 +20,10 @@
                     const cartUrl = `https://shop.lemonpunch.fr/panier/?add-to-cart=${data.id}`;
                     const defaultImage = '/placeholder-product.jpg';
 
+                    // Si le produit a des options (taille, couleur, etc.), rediriger vers la fiche produit
+                    // Sinon, ajouter directement au panier
+                    const buttonUrl = data.hasOptions ? productUrl : cartUrl;
+
                     // Calculer le pourcentage de réduction
                     let salePercentage = 0;
                     if (data.onSale && data.regularPrice && data.salePrice) {
@@ -36,7 +40,7 @@
                                      onerror="this.src='${defaultImage}'">
                                 ${data.onSale ? `<div class="sale-badge">-${salePercentage}%</div>` : ''}
                                 <div class="product-overlay">
-                                    <a href="${cartUrl}" class="product-link">
+                                    <a href="${buttonUrl}" class="product-link">
                                         <i class="fas fa-cart-plus"></i>
                                     </a>
                                 </div>

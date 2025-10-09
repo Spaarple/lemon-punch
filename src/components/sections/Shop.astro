@@ -35,6 +35,9 @@ const productsToDisplay = limit ? allProducts.slice(0, limit) : allProducts;
                     return text.length > 150 ? text.substring(0, 150) + '...' : text;
                 };
 
+                // Vérifier si le produit a des attributs (taille, couleur, etc.)
+                const hasAttributes = product.attributes && product.attributes.length > 0;
+
                 const productData = {
                     id: product.id,
                     slug: product.slug,
@@ -46,7 +49,8 @@ const productsToDisplay = limit ? allProducts.slice(0, limit) : allProducts;
                     imageSrc: product.images[0]?.src,
                     imageAlt: product.images[0]?.alt || `Image pour ${product.name}`,
                     category: product.categories[0]?.name,
-                    description: extractDescription(product.short_description || product.description)
+                    description: extractDescription(product.short_description || product.description),
+                    hasOptions: hasAttributes || product.type === 'variable'
                 };
                 return (
                     <product-card data-product={JSON.stringify(productData)}></product-card>
