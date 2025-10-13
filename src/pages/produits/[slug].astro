@@ -284,7 +284,6 @@ if (product.categories && product.categories.length > 0) {
             <div class="tabs-navigation">
                 <button class="tab-btn active" data-tab="description">Description</button>
                 <button class="tab-btn" data-tab="details">Détails</button>
-                <button class="tab-btn" data-tab="reviews">Avis</button>
             </div>
             <div class="tabs-content">
                 <div class="tab-panel active" id="description"><div class="content" set:html={product.description} /></div>
@@ -295,9 +294,6 @@ if (product.categories && product.categories.length > 0) {
                         <div class="detail-item"><strong>Poids:</strong><span>{product.weight ? `${product.weight} kg` : 'N/A'}</span></div>
                         <div class="detail-item"><strong>Dimensions:</strong><span>{product.dimensions && (product.dimensions.length || product.dimensions.width || product.dimensions.height) ? `${product.dimensions.length || '0'} x ${product.dimensions.width || '0'} x ${product.dimensions.height || '0'} cm` : 'N/A'}</span></div>
                     </div>
-                </div>
-                <div class="tab-panel" id="reviews">
-                    <div class="reviews-placeholder"><p>Les avis clients seront bientôt disponibles.</p><div class="rating-display"><div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div><span>5.0 sur 5 (basé sur les retours de nos fans)</span></div></div>
                 </div>
             </div>
         </div>
@@ -1091,25 +1087,6 @@ if (product.categories && product.categories.length > 0) {
 
     .detail-item:last-child {
         border-bottom: none;
-    }
-
-    /* Reviews */
-    .reviews-placeholder {
-        text-align: center;
-        padding: 2rem 0;
-    }
-
-    .rating-display {
-        margin-top: 1rem;
-    }
-
-    .stars {
-        color: var(--primary-yellow);
-        margin-bottom: 0.5rem;
-    }
-
-    .stars i {
-        margin: 0 2px;
     }
 
     /* Related Products */
