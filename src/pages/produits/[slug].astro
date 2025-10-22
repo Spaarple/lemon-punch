@@ -104,11 +104,7 @@ if (product.categories && product.categories.length > 0) {
 
     <section class="product-hero">
         <div class="container">
-            <div
-                    class="product-main"
-                    id="product-data-container"
-                    data-variations={JSON.stringify(productVariations)}
-            >
+            <div class="product-main" id="product-data-container" data-variations={JSON.stringify(productVariations)}>
                 <div class="product-gallery">
                     {product.images && product.images.length > 1 ? (
                             <div class="image-gallery">
@@ -188,7 +184,7 @@ if (product.categories && product.categories.length > 0) {
                         )}
                     </div>
 
-                    <div class="product-description" set:html={product.short_description || product.description} />
+                    <div class="product-description" set:html={product.description}/>
 
                     {product.attributes && product.attributes.length > 0 && (
                             <div class="product-variations">
@@ -286,7 +282,9 @@ if (product.categories && product.categories.length > 0) {
                 <button class="tab-btn" data-tab="details">Détails</button>
             </div>
             <div class="tabs-content">
-                <div class="tab-panel active" id="description"><div class="content" set:html={product.description} /></div>
+                <div class="tab-panel active" id="description">
+                    <div class="content " set:html={product.short_description} />
+                </div>
                 <div class="tab-panel" id="details">
                     <div class="details-grid">
                         <div class="detail-item"><strong>Catégories:</strong><span>{product.categories.map(cat => cat.name).join(', ')}</span></div>
@@ -762,10 +760,44 @@ if (product.categories && product.categories.length > 0) {
         margin-left: 1rem;
     }
 
+    /*
+    * STYLES POUR LE CONTENU DYNAMIQUE (DESCRIPTION DE PRODUIT)
+    */
+
+    /*
+ * STYLES POUR LES CONTENUS DYNAMIQUES (WordPress)
+*/
+
+    /* Cible les conteneurs où le HTML est injecté */
     .product-description {
         margin-bottom: 2rem;
         line-height: 1.6;
-        color: var(--gray);
+    }
+
+    /* Cible les conteneurs où le HTML est injecté */
+    .content {
+        line-height: 1.6;
+    }
+
+    /* Ajoute de l'espace ENTRE les paragraphes et les listes */
+    .product-description p,
+    .product-description ul,
+    .content p,
+    .content ul {
+        margin-bottom: 1.25rem; /* Crée de l'espace vertical */
+    }
+
+    /* Style la liste à puces */
+    .product-description ul,
+    .content ul {
+        list-style: disc;     /* Ajoute les puces */
+        padding-left: 1.75rem; /* Crée l'indentation (le décalage) */
+    }
+
+    /* S'assure que le tout dernier élément n'a pas de marge en bas */
+    .product-description > *:last-child,
+    .content > *:last-child {
+        margin-bottom: 0;
     }
 
     .product-attributes {
