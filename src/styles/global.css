@@ -256,9 +256,9 @@ a {
     -webkit-text-stroke: 3px rgba(0, 0, 0, 0.3);
     margin: 0;
     line-height: 1;
-    /*text-shadow:*/
-    /*    0 2px 7px rgba(0, 0, 0, 0.4),*/
-    /*    0 4px 14px rgba(0, 0, 0, 0.2);*/
+    text-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.4),
+        0 10px 30px rgba(0, 0, 0, 0.2);
     letter-spacing: 0.05em;
     filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.1));
 }
