@@ -437,49 +437,6 @@ const categories = await categoriesResponse.json();
         font-style: italic;
     }
 
-    /* Éléments flottants */
-    .floating-elements {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        pointer-events: none;
-        z-index: 2;
-    }
-
-    .floating-note {
-        position: absolute;
-        color: var(--primary-yellow);
-        font-size: 2rem;
-        opacity: 0.3;
-        animation: float 6s ease-in-out infinite;
-    }
-
-    .note-1 {
-        top: 20%;
-        left: 15%;
-        animation-delay: 0s;
-    }
-
-    .note-2 {
-        top: 30%;
-        right: 20%;
-        animation-delay: 1.5s;
-    }
-
-    .note-3 {
-        bottom: 25%;
-        left: 25%;
-        animation-delay: 3s;
-    }
-
-    .note-4 {
-        bottom: 35%;
-        right: 15%;
-        animation-delay: 4.5s;
-    }
-
     /* Section Produits */
     .products-section {
         background: var(--white);
@@ -538,6 +495,49 @@ const categories = await categoriesResponse.json();
         color: var(--black);
         background: var(--white);
         cursor: pointer;
+    }
+
+    /* Éléments flottants */
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        pointer-events: none;
+        z-index: 2;
+    }
+
+    .floating-note {
+        position: absolute;
+        color: var(--primary-yellow);
+        font-size: 2rem;
+        opacity: 0.3;
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .note-1 {
+        top: 20%;
+        left: 15%;
+        animation-delay: 0s;
+    }
+
+    .note-2 {
+        top: 30%;
+        right: 20%;
+        animation-delay: 1.5s;
+    }
+
+    .note-3 {
+        bottom: 25%;
+        left: 25%;
+        animation-delay: 3s;
+    }
+
+    .note-4 {
+        bottom: 35%;
+        right: 15%;
+        animation-delay: 4.5s;
     }
 
     .filter-tab:hover {

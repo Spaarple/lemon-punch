@@ -25,12 +25,20 @@ const SPOTIFY = import.meta.env.SPOTIFY_LINK || '#';
             <a href="/concerts" class="nav-link">CONCERTS</a>
             <a href="/actus" class="nav-link">ACTUS</a>
             <a href="/#contact" class="nav-link">CONTACT</a>
+            <a href="https://shop.lemonpunch.fr/panier/" class="nav-link cart-nav-link" target="_blank" rel="noopener">
+                <i class="fas fa-shopping-cart"></i> PANIER
+            </a>
         </div>
         <div class="social-nav">
             <a href={INSTAGRAM} target="_blank" class="social-nav-link"><i class="fab fa-instagram"></i></a>
             <a href={FACEBOOK} target="_blank" class="social-nav-link"><i class="fab fa-facebook"></i></a>
             <a href={YOUTUBE} target="_blank" class="social-nav-link"><i class="fab fa-youtube"></i></a>
             <a href={SPOTIFY} target="_blank" class="social-nav-link"><i class="fab fa-spotify"></i></a>
+        </div>
+        <div class="cart-icon">
+            <a href="https://shop.lemonpunch.fr/panier/" class="cart-link" target="_blank" rel="noopener">
+                <i class="fas fa-shopping-cart"></i>
+            </a>
         </div>
         <div class="nav-toggle" id="nav-toggle">
             <span class="bar"></span>

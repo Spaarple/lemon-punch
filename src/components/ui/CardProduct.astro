@@ -32,7 +32,7 @@
 
                     // Construire le HTML de la carte
                     this.innerHTML = `
-                        <article class="product-card">
+                        <article class="product-card" data-product-url="${productUrl}">
                             <div class="product-image">
                                 <img src="${data.imageSrc || defaultImage}"
                                      alt="${data.imageAlt || data.name}"
@@ -40,15 +40,13 @@
                                      onerror="this.src='${defaultImage}'">
                                 ${data.onSale ? `<div class="sale-badge">-${salePercentage}%</div>` : ''}
                                 <div class="product-overlay">
-                                    <a href="${buttonUrl}" class="product-link">
+                                    <a href="${buttonUrl}" class="product-link cart-icon" data-cart-link>
                                         <i class="fas fa-cart-plus"></i>
                                     </a>
                                 </div>
                             </div>
                             <div class="product-content">
-                                <h3 class="product-title">
-                                    <a href="${productUrl}">${data.name}</a>
-                                </h3>
+                                <h3 class="product-title">${data.name}</h3>
                                 <div class="product-meta">
                                     ${data.onSale ? `
                                         <div class="product-price-container">
@@ -60,15 +58,34 @@
                                     `}
                                     ${data.category && data.category !== 'Non classé' ? `<span class="product-category">${data.category}</span>` : ''}
                                 </div>
-                                
+
                                 ${data.description ? `<p class="product-description">${data.description}</p>` : ''}
-                                <a href="${productUrl}" class="product-read-more">
+                                <span class="product-read-more">
                                     Voir le produit
                                     <i class="fas fa-chevron-right"></i>
-                                </a>
+                                </span>
                             </div>
                         </article>
                     `;
+
+                    // Rendre toute la carte cliquable
+                    const card = this.querySelector('.product-card');
+                    card.style.cursor = 'pointer';
+
+                    card.addEventListener('click', (e) => {
+                        // Ne pas rediriger si on clique sur l'icône du panier
+                        if (!e.target.closest('[data-cart-link]')) {
+                            window.location.href = productUrl;
+                        }
+                    });
+
+                    // Empêcher la propagation du clic sur l'icône du panier
+                    const cartLink = this.querySelector('[data-cart-link]');
+                    if (cartLink) {
+                        cartLink.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                        });
+                    }
                 } catch (error) {
                     console.error('Erreur lors du rendu de product-card:', error);
                     this.innerHTML = '<p>Erreur de chargement du produit</p>';
@@ -218,22 +235,15 @@
         line-height: 1.3;
     }
 
-    .product-title a {
-        color: var(--black);
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    .product-title a:hover {
+    .product-card:hover .product-title {
         color: var(--primary-yellow);
     }
 
     .product-description {
         font-size: 1rem;
-        color: var(--gray);
         line-height: 1.6;
         margin-bottom: 1.5rem;
-        display: -webkit-box;
+        //display: -webkit-box; //Principe de coupe du paragraphe
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
         overflow: hidden;
