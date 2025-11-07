@@ -6,7 +6,6 @@ export interface Props {
     };
     title: string;
     size?: 'main' | 'older' | 'standard';
-    showPlayButton?: boolean;
     href?: string;
     releaseType?: string;
 }
@@ -15,7 +14,6 @@ const {
     image,
     title,
     size = 'standard',
-    showPlayButton = true,
     href,
     releaseType
 } = Astro.props;
@@ -24,12 +22,6 @@ const sizeClasses = {
     main: 'main-cover-image',
     older: 'older-cover-image',
     standard: 'cover-image'
-};
-
-const overlayClasses = {
-    main: 'main-cover-overlay',
-    older: 'older-cover-overlay',
-    standard: 'cover-overlay'
 };
 ---
 
@@ -43,12 +35,6 @@ const overlayClasses = {
     ) : (
         <div class={`${sizeClasses[size]} placeholder`}>
             <span>Pas d'image</span>
-        </div>
-    )}
-
-    {showPlayButton && (
-        <div class={overlayClasses[size]}>
-            <i class="fas fa-play"></i>
         </div>
     )}
 
@@ -85,19 +71,16 @@ const overlayClasses = {
     .main-cover-image {
         width: 400px;
         height: 400px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
     }
 
     .older-cover-image {
         width: 250px;
         height: 250px;
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
     }
 
     .cover-image {
         width: 300px;
         height: 300px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
 
     .placeholder {
@@ -110,51 +93,16 @@ const overlayClasses = {
         font-weight: 600;
     }
 
-    /* Overlays */
-    .cover-overlay, .main-cover-overlay, .older-cover-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: all 0.4s ease;
-    }
-
-    .album-cover:hover .cover-overlay,
-    .album-cover:hover .main-cover-overlay,
-    .album-cover:hover .older-cover-overlay {
-        opacity: 1;
-    }
-
     .album-cover:hover .main-cover-image {
         transform: scale(1.03);
-        box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
     }
 
     .album-cover:hover .older-cover-image {
         transform: scale(1.05);
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
     }
 
     .album-cover:hover .cover-image {
         transform: scale(1.04);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-    }
-
-    .main-cover-overlay i {
-        font-size: 4rem;
-        color: var(--white);
-    }
-
-    .older-cover-overlay i,
-    .cover-overlay i {
-        font-size: 3rem;
-        color: var(--white);
     }
 
     /* Release Type Badge */

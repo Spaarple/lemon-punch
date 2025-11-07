@@ -541,31 +541,6 @@ a {
     transform: scale(1.05);
 }
 
-.play-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 0;
-    cursor: pointer;
-}
-
-.latest-release-art:hover .play-overlay {
-    opacity: 1;
-}
-
-.play-overlay i {
-    font-size: 4rem;
-    color: var(--primary-yellow);
-}
-
 .latest-release-info {
     flex: 1;
 }
@@ -863,31 +838,8 @@ a {
     transition: transform 0.3s ease;
 }
 
-.play-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.album-cover:hover .play-overlay {
-    opacity: 1;
-}
-
 .album-cover:hover .album-image {
     transform: scale(1.05);
-}
-
-.play-overlay i {
-    font-size: 3rem;
-    color: var(--primary-yellow);
 }
 
 .album-title {
