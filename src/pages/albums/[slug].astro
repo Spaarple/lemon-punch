@@ -39,6 +39,12 @@ const tracklist = Array.from({ length: maxTracks }, (_, i) => {
     return album.acf['liste_des_piste_' + (i + 1)];
 }).filter(Boolean);
 
+// Extraction des URLs audio pour chaque piste
+const audioUrls = Array.from({ length: maxTracks }, (_, i) => {
+    const audioField = album.acf['url_pour_lintegration_de_lecoute_de_la_musique_' + (i + 1)];
+    return audioField || null;
+}).filter((url, index) => tracklist[index] !== undefined);
+
 // Extraction des liens de streaming
 const streamingLinks = Array.from({ length: maxLinks }, (_, i) => {
     const platform = album.acf['plateforme_' + (i + 1)];
@@ -102,6 +108,7 @@ const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length
                     {tracklist.length > 0 && (
                         <TrackList
                             tracks={tracklist}
+                            audioUrls={audioUrls}
                             title="Liste des pistes"
                             numbered={true}
                             variant="expanded"

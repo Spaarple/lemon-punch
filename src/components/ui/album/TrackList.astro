@@ -1,6 +1,7 @@
 ---
 export interface Props {
     tracks: string[];
+    audioUrls?: string[];
     title?: string;
     numbered?: boolean;
     variant?: 'compact' | 'expanded';
@@ -8,23 +9,53 @@ export interface Props {
 
 const {
     tracks,
+    audioUrls = [],
     title = "Liste des pistes",
     numbered = true,
     variant = 'expanded'
 } = Astro.props;
+
+const uniqueId = `tracklist-${Math.random().toString(36).substr(2, 9)}`;
 ---
 
 {tracks.length > 0 && (
-    <div class={`tracklist ${variant}`}>
+    <div class={`tracklist ${variant}`} data-tracklist-id={uniqueId}>
         <h4 class="tracklist-title">{title}</h4>
         <ul class="tracks">
             {tracks.map((trackTitle, index) => (
-                <li class="track-item">
+                <li class="track-item" data-track-index={index}>
                     {numbered && <span class="track-number">{index + 1}.</span>}
                     <span class="track-title">{trackTitle}</span>
+                    {audioUrls[index] && (
+                        <>
+                            <button
+                                class="play-pause-btn"
+                                data-audio-url={audioUrls[index]}
+                                data-track-index={index}
+                                data-track-id={`track-${uniqueId}-${index}`}
+                                aria-label={`Jouer ${trackTitle}`}
+                            >
+                                <svg class="play-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                                <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                                </svg>
+                            </button>
+                            <audio class="track-audio" data-track-index={index} preload="metadata" style="display: none;">
+                                <source src={audioUrls[index]} type="audio/mpeg" />
+                            </audio>
+                        </>
+                    )}
                 </li>
             ))}
         </ul>
+        <!-- Conteneur unique partagé pour l'iframe YouTube (créé une seule fois) -->
+        <div
+            id={`youtube-player-shared-${uniqueId}`}
+            class="youtube-player-shared"
+            style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; top: -9999px;"
+        ></div>
     </div>
 )}
 
@@ -68,6 +99,7 @@ const {
         border-bottom: 1px solid rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
         position: relative;
+        gap: 1rem;
     }
 
     .track-item:last-child {
@@ -139,6 +171,57 @@ const {
     .tracklist.expanded .track-title {
         font-size: 1.2rem;
         margin-left: 0.5rem;
+    }
+
+    /* Play/Pause Button Styles */
+    .play-pause-btn {
+        background: var(--primary-yellow);
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        padding: 0;
+        flex-shrink: 0;
+        margin-left: auto;
+    }
+
+    .play-pause-btn:hover {
+        background: #f39c12;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(244, 208, 63, 0.4);
+    }
+
+    .play-pause-btn:active {
+        transform: scale(0.95);
+    }
+
+    .play-pause-btn svg {
+        width: 20px;
+        height: 20px;
+        color: var(--black);
+    }
+
+    .play-pause-btn.playing .play-icon {
+        display: none;
+    }
+
+    .play-pause-btn.playing .pause-icon {
+        display: block !important;
+    }
+
+    .tracklist.compact .play-pause-btn {
+        width: 36px;
+        height: 36px;
+    }
+
+    .tracklist.compact .play-pause-btn svg {
+        width: 18px;
+        height: 18px;
     }
 
     /* Responsive */
@@ -217,5 +300,298 @@ const {
             transform: none;
             padding-left: 5px;
         }
+
+        .play-pause-btn {
+            width: 34px;
+            height: 34px;
+        }
+
+        .play-pause-btn svg {
+            width: 16px;
+            height: 16px;
+        }
     }
 </style>
+
+<script is:inline>
+    // Charger l'API YouTube une seule fois
+    if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // Fonction pour extraire l'ID YouTube depuis l'URL
+    function extractYouTubeId(url) {
+        const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[7].length === 11) ? match[7] : null;
+    }
+
+    // Store global pour les lecteurs YouTube partagés (1 par tracklist)
+    if (!window.trackListPlayers) {
+        window.trackListPlayers = new Map();
+    }
+
+    let isYouTubeAPIReady = false;
+    let currentAudioElement = null;
+    let currentButton = null;
+
+    // Callback quand l'API YouTube est prête
+    window.onYouTubeIframeAPIReady = function() {
+        console.log('✅ YouTube API ready');
+        isYouTubeAPIReady = true;
+        initTrackList();
+    };
+
+    // Fonction d'initialisation pour chaque tracklist
+    function initTrackList() {
+        const tracklists = document.querySelectorAll('.tracklist');
+
+        tracklists.forEach((tracklist) => {
+            const tracklistId = tracklist.getAttribute('data-tracklist-id');
+            const sharedPlayerContainerId = `youtube-player-shared-${tracklistId}`;
+            const sharedPlayerContainer = document.getElementById(sharedPlayerContainerId);
+
+            // Variables pour gérer l'état du lecteur partagé
+            let sharedYouTubePlayer = null;
+            let currentYouTubeVideoId = null;
+            let isPlayerReady = false;
+
+            const playPauseBtns = tracklist.querySelectorAll('.play-pause-btn');
+
+            playPauseBtns.forEach((btn) => {
+                const button = btn;
+                const trackIndex = button.getAttribute('data-track-index');
+                const audioUrl = button.getAttribute('data-audio-url');
+                const trackItem = tracklist.querySelector(`.track-item[data-track-index="${trackIndex}"]`);
+
+                if (!audioUrl) {
+                    console.warn('Audio URL not found for track index:', trackIndex);
+                    return;
+                }
+
+                // Vérifier si c'est une URL YouTube
+                const isYouTubeUrl = /youtube\.com|youtu\.be/i.test(audioUrl);
+                const youtubeId = isYouTubeUrl ? extractYouTubeId(audioUrl) : null;
+
+                if (isYouTubeUrl && youtubeId) {
+                    console.log(`🎵 Track ${trackIndex} - YouTube ID: ${youtubeId}`);
+
+                    // Gestionnaire de clic pour YouTube
+                    button.addEventListener('click', async (e) => {
+                        e.preventDefault();
+
+                        // Créer le lecteur YouTube partagé au premier clic (lazy loading)
+                        if (!sharedYouTubePlayer && isYouTubeAPIReady && window.YT && window.YT.Player) {
+                            console.log(`📺 Creating shared YouTube player for tracklist ${tracklistId}`);
+
+                            try {
+                                sharedYouTubePlayer = new window.YT.Player(sharedPlayerContainerId, {
+                                    height: '1',
+                                    width: '1',
+                                    videoId: youtubeId,
+                                    playerVars: {
+                                        autoplay: 0,
+                                        controls: 0,
+                                        modestbranding: 1,
+                                        playsinline: 1,
+                                        rel: 0
+                                    },
+                                    events: {
+                                        onReady: (event) => {
+                                            console.log('✅ Shared YouTube player ready');
+                                            isPlayerReady = true;
+                                            currentYouTubeVideoId = youtubeId;
+                                            // Auto-play après la création
+                                            sharedYouTubePlayer.playVideo();
+                                            button.classList.add('playing');
+                                            currentButton = button;
+                                        },
+                                        onStateChange: (event) => {
+                                            // 0 = ENDED
+                                            if (event.data === 0) {
+                                                button.classList.remove('playing');
+                                                if (currentButton === button) {
+                                                    currentButton = null;
+                                                }
+                                            }
+                                            // 1 = PLAYING, 2 = PAUSED
+                                        },
+                                        onError: (event) => {
+                                            console.error('❌ YouTube player error:', event.data);
+                                            button.classList.remove('playing');
+                                            // Code d'erreur YouTube :
+                                            // 2 = invalid ID
+                                            // 5 = HTML5 player error
+                                            // 100 = video not found
+                                            // 101/150 = video not embeddable
+                                        }
+                                    }
+                                });
+
+                                window.trackListPlayers.set(tracklistId, sharedYouTubePlayer);
+                                return; // Le playVideo() sera appelé dans onReady
+
+                            } catch (error) {
+                                console.error('Error creating shared YouTube player:', error);
+                                return;
+                            }
+                        }
+
+                        // Si le lecteur existe déjà
+                        if (sharedYouTubePlayer && isPlayerReady) {
+                            try {
+                                // Arrêter l'audio HTML5 si en cours
+                                if (currentAudioElement && !currentAudioElement.paused) {
+                                    currentAudioElement.pause();
+                                    currentAudioElement.currentTime = 0;
+                                }
+
+                                // Retirer la classe playing de tous les autres boutons
+                                if (currentButton && currentButton !== button) {
+                                    currentButton.classList.remove('playing');
+                                }
+
+                                const playerState = sharedYouTubePlayer.getPlayerState();
+
+                                // Si c'est la même vidéo et qu'elle joue, mettre en pause
+                                if (currentYouTubeVideoId === youtubeId && playerState === 1) {
+                                    console.log(`⏸️ Pausing YouTube track ${trackIndex}`);
+                                    sharedYouTubePlayer.pauseVideo();
+                                    button.classList.remove('playing');
+                                    currentButton = null;
+                                }
+                                // Sinon, charger et jouer la nouvelle vidéo (ou reprendre)
+                                else {
+                                    // Si c'est une nouvelle vidéo, la charger
+                                    if (currentYouTubeVideoId !== youtubeId) {
+                                        console.log(`🔄 Loading new YouTube track ${trackIndex}: ${youtubeId}`);
+                                        sharedYouTubePlayer.loadVideoById(youtubeId);
+                                        currentYouTubeVideoId = youtubeId;
+                                    } else {
+                                        // Reprendre la même vidéo
+                                        console.log(`▶️ Playing YouTube track ${trackIndex}`);
+                                        sharedYouTubePlayer.playVideo();
+                                    }
+                                    button.classList.add('playing');
+                                    currentButton = button;
+                                }
+                            } catch (error) {
+                                console.error('Error controlling YouTube player:', error);
+                            }
+                        } else if (!isYouTubeAPIReady) {
+                            console.warn('⏳ YouTube API not ready yet');
+                        }
+                    });
+
+                } else {
+                    // Lecteur audio classique (fichiers mp3, wav, ogg)
+                    const audio = trackItem?.querySelector('.track-audio');
+
+                    if (!audio) {
+                        console.warn('Audio element not found for track index:', trackIndex);
+                        return;
+                    }
+
+                    const source = audio.querySelector('source');
+                    if (!source || !source.src) {
+                        console.warn('Audio source not found for track index:', trackIndex);
+                        return;
+                    }
+
+                    console.log(`🎵 Track ${trackIndex} - HTML5 audio: ${source.src}`);
+
+                    let isChangingState = false;
+
+                    button.addEventListener('click', async (e) => {
+                        e.preventDefault();
+
+                        if (isChangingState) return;
+                        isChangingState = true;
+
+                        try {
+                            // Arrêter YouTube si en cours
+                            if (sharedYouTubePlayer && isPlayerReady) {
+                                const state = sharedYouTubePlayer.getPlayerState();
+                                if (state === 1) { // Playing
+                                    sharedYouTubePlayer.pauseVideo();
+                                }
+                            }
+
+                            // Arrêter l'autre audio HTML5 si en cours
+                            if (currentAudioElement && currentAudioElement !== audio && !currentAudioElement.paused) {
+                                currentAudioElement.pause();
+                                currentAudioElement.currentTime = 0;
+                            }
+
+                            // Retirer la classe playing de l'autre bouton
+                            if (currentButton && currentButton !== button) {
+                                currentButton.classList.remove('playing');
+                            }
+
+                            if (audio.paused) {
+                                console.log(`▶️ Playing HTML5 audio track ${trackIndex}`);
+                                if (audio.readyState === 0) {
+                                    audio.load();
+                                }
+                                await audio.play();
+                                button.classList.add('playing');
+                                currentAudioElement = audio;
+                                currentButton = button;
+                            } else {
+                                console.log(`⏸️ Pausing HTML5 audio track ${trackIndex}`);
+                                audio.pause();
+                                button.classList.remove('playing');
+                                currentAudioElement = null;
+                                currentButton = null;
+                            }
+                        } catch (error) {
+                            console.error('Error playing HTML5 audio:', error);
+                            button.classList.remove('playing');
+                        } finally {
+                            setTimeout(() => {
+                                isChangingState = false;
+                            }, 300);
+                        }
+                    });
+
+                    audio.addEventListener('ended', () => {
+                        button.classList.remove('playing');
+                        audio.currentTime = 0;
+                        if (currentAudioElement === audio) {
+                            currentAudioElement = null;
+                            currentButton = null;
+                        }
+                    });
+
+                    audio.addEventListener('error', (e) => {
+                        console.error('HTML5 audio error for track', trackIndex, ':', e);
+                        button.classList.remove('playing');
+                    });
+                }
+            });
+        });
+    }
+
+    // Initialiser au chargement de la page
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (isYouTubeAPIReady) {
+                initTrackList();
+            }
+        });
+    } else {
+        if (isYouTubeAPIReady) {
+            initTrackList();
+        }
+    }
+
+    // Réinitialiser après les navigations Astro
+    document.addEventListener('astro:page-load', () => {
+        if (isYouTubeAPIReady) {
+            initTrackList();
+        }
+    });
+</script>

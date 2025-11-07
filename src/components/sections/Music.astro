@@ -8,6 +8,7 @@ const MUSIC_URL = `${import.meta.env.BASE_URL_WORDPRESS}albums?_embed&per_page=1
 
 let latestAlbum = null;
 let tracklist = [];
+let audioUrls = [];
 let streamingLinks = [];
 let releaseType = '';
 
@@ -53,6 +54,12 @@ try {
             tracklist = Array.from({ length: maxTracks }, (_, i) => {
                 return latestAlbum.acf['liste_des_piste_' + (i + 1)];
             }).filter(Boolean);
+
+            // Extraction des URLs audio pour chaque piste
+            audioUrls = Array.from({ length: maxTracks }, (_, i) => {
+                const audioField = latestAlbum.acf['url_pour_lintegration_de_lecoute_de_la_musique_' + (i + 1)];
+                return audioField || null;
+            }).filter((url, index) => tracklist[index] !== undefined);
 
             // Extraction des liens de streaming
             const maxLinks = 10;
@@ -117,6 +124,7 @@ try {
                     {tracklist.length > 0 && (
                         <TrackList
                             tracks={tracklist}
+                            audioUrls={audioUrls}
                             title="Liste des pistes"
                             numbered={true}
                             variant="expanded"
