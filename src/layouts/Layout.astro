@@ -22,12 +22,19 @@ if (seoUrl) {
 	seoMetadata = await fetchSeoMetadata(seoUrl);
 }
 
-// Déterminer les valeurs SEO (priorité: Rank Math > Props > Défaut)
-const pageTitle = seoMetadata?.title || title || import.meta.env.SEO_DEFAULT_TITLE;
-const pageDescription = seoMetadata?.description || description || import.meta.env.SEO_DEFAULT_DESCRIPTION;
+// On vérifie que les valeurs ne sont pas vides avec trim()
+const pageTitle = (seoMetadata?.title && seoMetadata.title.trim())
+	|| (title && title.trim())
+	|| import.meta.env.SEO_DEFAULT_TITLE;
+
+const pageDescription = (seoMetadata?.description && seoMetadata.description.trim())
+	|| (description && description.trim())
+	|| import.meta.env.SEO_DEFAULT_DESCRIPTION;
 
 // Déterminer l'URL canonical (priorité: Rank Math > URL actuelle > Défaut)
-const pageCanonical = seoMetadata?.canonicalUrl || Astro.url.href || `${import.meta.env.SEO_URL_FRONTEND}/`;
+const pageCanonical = (seoMetadata?.canonicalUrl && seoMetadata.canonicalUrl.trim())
+	|| Astro.url.href
+	|| `${import.meta.env.SEO_URL_FRONTEND}/`;
 ---
 
 <!doctype html>
