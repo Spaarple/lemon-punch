@@ -26,20 +26,17 @@ import Logo from '../assets/images/lmp-logo-bg-yellow.jpg';
 		<link rel="icon" type="image/png" href="/favicon.png?v=1.0"/>
 
 		<meta name="generator" content={Astro.generator} />
-		<title>Lemon Punch</title>
-		<meta name="description"
-			  content="Lemon Punch - Boutique officielle de merchandising et musique du groupe de rock français Lemon Punch.
-			   Découvrez nos t-shirts, vinyles, CD, et plus encore !" />
-		<link rel="canonical" href="https://lemonpunch.fr/">
+		<title>{import.meta.env.SEO_DEFAULT_TITLE}</title>
+		<meta name="description" content={import.meta.env.SEO_DEFAULT_DESCRIPTION} />
+		<link rel="canonical" href={import.meta.env.SEO_URL_FRONTEND}>
 		<meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
 
 		<meta property="og:image" content={Logo.src}>
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
-		<meta property="og:title" content="Lemon Punch" />
+		<meta property="og:title" content={import.meta.env.SEO_DEFAULT_TITLE} />
 		<meta property="og:locale" content="fr_FR">
-		<meta property="og:description" content="Lemon Punch - Boutique officielle de merchandising et musique du groupe de rock français Lemon Punch.
-			   Découvrez nos t-shirts, vinyles, CD, et plus encore !">
+		<meta property="og:description" content={import.meta.env.SEO_DEFAULT_DESCRIPTION}>
 
 		<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
