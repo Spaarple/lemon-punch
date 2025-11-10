@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import CalendarButtons from "../../components/ui/event/CalendarButtons.astro";
 import Map from "../../components/ui/Map.astro";
+import { buildCptUrl } from "../../lib/rankMath";
 
 // ✅ MODE SERVEUR : Récupération dynamique
 const { slug } = Astro.params;
@@ -91,7 +92,7 @@ const month = eventDate ? monthNames[eventDate.getMonth()] : '';
 const lieu = getFieldValue(event, 'lieu_sur_carte');
 ---
 
-<Layout title={`${event.title.rendered} - Événements - LemonPunch`}>
+<Layout seoUrl={buildCptUrl("evenements", slug)}>
     <!-- Breadcrumb -->
     <Breadcrumb currentPageTitle={event.title.rendered} />
 

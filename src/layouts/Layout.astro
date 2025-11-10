@@ -4,6 +4,30 @@ import Footer from '../components/Footer.astro';
 import Navigation from "../components/Navigation.astro";
 import NewsLetter from "../components/ui/NewsLetter.astro";
 import Logo from '../assets/images/lmp-logo-bg-yellow.jpg';
+import { fetchSeoMetadata, type SeoMetadata } from '../lib/rankMath';
+
+/**
+ * Props du composant Layout
+ */
+interface Props {
+	seoUrl?: string;
+	title?: string;
+	description?: string;
+}
+
+const { seoUrl, title, description } = Astro.props;
+
+let seoMetadata: SeoMetadata | null = null;
+if (seoUrl) {
+	seoMetadata = await fetchSeoMetadata(seoUrl);
+}
+
+// Déterminer les valeurs SEO (priorité: Rank Math > Props > Défaut)
+const pageTitle = seoMetadata?.title || title || import.meta.env.SEO_DEFAULT_TITLE;
+const pageDescription = seoMetadata?.description || description || import.meta.env.SEO_DEFAULT_DESCRIPTION;
+
+// Déterminer l'URL canonical (priorité: Rank Math > URL actuelle > Défaut)
+const pageCanonical = seoMetadata?.canonicalUrl || Astro.url.href || `${import.meta.env.SEO_URL_FRONTEND}/`;
 ---
 
 <!doctype html>
@@ -24,20 +48,17 @@ import Logo from '../assets/images/lmp-logo-bg-yellow.jpg';
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/png" href="/favicon.png?v=1.0">
 		<meta name="generator" content={Astro.generator} />
-		<title>Lemon Punch</title>
-		<meta name="description"
-			  content="Lemon Punch - Boutique officielle de merchandising et musique du groupe de rock français Lemon Punch.
-			   Découvrez nos t-shirts, vinyles, CD, et plus encore !" />
-		<link rel="canonical" href="https://lemonpunch.fr/">
+		<title>{pageTitle}</title>
+		<meta name="description" content={pageDescription} />
+		<link rel="canonical" href={pageCanonical} />
 		<meta name="robots" content="follow, index, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
 
 		<meta property="og:image" content={Logo.src}>
 		<meta property="og:image:width" content="1200">
 		<meta property="og:image:height" content="630">
-		<meta property="og:title" content="Lemon Punch" />
+		<meta property="og:title" content={pageTitle} />
 		<meta property="og:locale" content="fr_FR">
-		<meta property="og:description" content="Lemon Punch - Boutique officielle de merchandising et musique du groupe de rock français Lemon Punch.
-			   Découvrez nos t-shirts, vinyles, CD, et plus encore !">
+		<meta property="og:description" content={pageDescription}>
 
 		<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">

@@ -4,6 +4,7 @@ import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import StreamingLinks from "../../components/ui/album/StreamingLinks.astro";
 import TrackList from "../../components/ui/album/TrackList.astro";
 import AudioPlayer from "../../components/ui/album/AudioPlayer.astro";
+import { buildCptUrl } from "../../lib/rankMath";
 
 // ✅ MODE SERVEUR : Récupération dynamique
 const { slug } = Astro.params;
@@ -65,7 +66,7 @@ function getReleaseType(trackCount) {
 const releaseType = album.acf?.type_de_sortie || getReleaseType(tracklist.length);
 ---
 
-<Layout title={album.title.rendered}>
+<Layout seoUrl={buildCptUrl("albums", slug)}>
     <Breadcrumb currentPageTitle={album.title.rendered} />
     <section class="music-section album-page">
         <div class="container">

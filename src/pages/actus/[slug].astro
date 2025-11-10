@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import BlogSidebar from "../../components/blog/BlogSidebar.astro";
+import { buildWordPressUrl } from "../../lib/rankMath";
 
 // ✅ Récupération dynamique à chaque requête
 const { slug } = Astro.params;
@@ -95,7 +96,7 @@ if (imageIds.length > 0) {
 }
 ---
 
-<Layout title={post.title.rendered}>
+<Layout seoUrl={buildWordPressUrl(slug)}>
     <Breadcrumb currentPageTitle={post.title.rendered} />
     <!-- Header de l'article -->
     <article class="article-header">
