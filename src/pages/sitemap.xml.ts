@@ -51,7 +51,7 @@ export const GET: APIRoute = async ({ site }) => {
   // Récupérer les événements depuis WordPress
   let events: Array<{ slug: string; modified: string }> = [];
   try {
-    const eventsResponse = await fetch(`${WORDPRESS_URL}evenements?per_page=100`);
+    const eventsResponse = await fetch(`${WORDPRESS_URL}concerts?per_page=100`);
     if (eventsResponse.ok) {
       const eventsData = await eventsResponse.json();
       events = eventsData.map((event: any) => ({

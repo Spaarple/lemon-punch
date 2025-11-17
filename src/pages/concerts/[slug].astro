@@ -10,7 +10,7 @@ const { slug } = Astro.params;
 
 // Récupérer l'événement depuis WordPress
 const eventResponse = await fetch(
-    `${import.meta.env.BASE_URL_WORDPRESS}evenements?slug=${slug}&_embed`
+    `${import.meta.env.BASE_URL_WORDPRESS}concerts?slug=${slug}&_embed`
 );
 
 if (!eventResponse.ok) {
@@ -92,7 +92,7 @@ const month = eventDate ? monthNames[eventDate.getMonth()] : '';
 const lieu = getFieldValue(event, 'lieu_sur_carte');
 ---
 
-<Layout seoUrl={buildCptUrl("evenements", slug)}>
+<Layout seoUrl={buildCptUrl("concerts", slug)}>
     <!-- Breadcrumb -->
     <Breadcrumb currentPageTitle={event.title.rendered} />
 

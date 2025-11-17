@@ -211,7 +211,7 @@ try {
             <article class="article-card">
                 <div class="article-image">
                     <img src="${coverImage?.source_url || defaultImage}"
-                         alt="${coverImage.alt_text || ''}"
+                         alt="${coverImage.alt_text || 'aucun texte alternatif'}"
                          title="${coverImage.title.rendered || ''}"
                          onerror="this.src='${defaultImage}'">
                     <div class="article-overlay">
