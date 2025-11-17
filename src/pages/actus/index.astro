@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import Breadcrumb from "../../components/ui/Breadcrumb.astro";
 import ArticleCard from "../../components/blog/ArticleCard.astro";
+import defaultArticleImage from "../../assets/images/lmp-logo-bg-yellow.jpg";
 
 // URL de l'API WordPress pour récupérer les articles et catégories
 const POSTS_URL = `${import.meta.env.BASE_URL_WORDPRESS}posts?_embed&per_page=100`;
@@ -157,7 +158,7 @@ try {
     <ArticleCard />
 </Layout>
 
-<script define:vars={{ allPosts, allCategories }}>
+<script define:vars={{ allPosts, allCategories, defaultArticleImage }}>
     // Configuration
     const ARTICLES_PER_PAGE = 9;
 
@@ -200,7 +201,7 @@ try {
     // Fonction pour rendre un article
     function renderArticle(post) {
         const coverImage = post._embedded?.['wp:featuredmedia']?.[0];
-        const defaultImage = '/placeholder-article.jpg';
+        const defaultImage = defaultArticleImage.src;
 
         // Récupérer la première catégorie pour l'affichage uniquement
         const firstCategory = post.categories?.length ? allCategories.find(cat => cat.id === post.categories[0]) : null;
@@ -211,8 +212,8 @@ try {
             <article class="article-card">
                 <div class="article-image">
                     <img src="${coverImage?.source_url || defaultImage}"
-                         alt="${coverImage.alt_text || 'aucun texte alternatif'}"
-                         title="${coverImage.title.rendered || ''}"
+                         alt="${coverImage?.alt_text || 'Lemon Punch Logo'}"
+                         title="${coverImage?.title?.rendered || 'Lemon Punch Logo'}"
                          onerror="this.src='${defaultImage}'">
                     <div class="article-overlay">
                         <a href="${articleUrl}" class="article-link">
